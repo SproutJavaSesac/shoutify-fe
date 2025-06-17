@@ -80,7 +80,7 @@ export function PopularPosts() {
   return (
     <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
       {popularPosts.map((post) => (
-        <Link key={post.id} href={`/post/${post.id}`}>
+        <Link key={post.id} href={`/posts/${post.id}`}>
           <Card className="min-w-[300px] w-[300px] h-[200px] hover:shadow-md transition-shadow cursor-pointer flex-shrink-0">
             <CardContent className="p-4 h-full flex flex-col">
               <div className="flex items-start justify-between mb-2 flex-shrink-0">

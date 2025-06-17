@@ -330,7 +330,7 @@ export function PostFeed({ selectedCategory, searchQuery = "" }: PostFeedProps) 
                   <Badge className={emotionColors[post.emotion as keyof typeof emotionColors]}>{post.emotion}</Badge>
                 </div>
 
-                <Link href={`/post/${post.id}`}>
+                <Link href={`/posts/${post.id}`}>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-gray-700 cursor-pointer">
                     {post.title}
                   </h3>
@@ -351,7 +351,7 @@ export function PostFeed({ selectedCategory, searchQuery = "" }: PostFeedProps) 
                     <span className="text-sm text-gray-500">❤️ {post.totalReactions}</span>
                   </div>
 
-                  <Link href={`/post/${post.id}#comments`}>
+                  <Link href={`/posts/${post.id}#comments`}>
                     <Button variant="ghost" size="sm" className="flex items-center space-x-1">
                       <MessageCircle className="h-4 w-4" />
                       <span>{post.comments}</span>

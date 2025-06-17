@@ -1,12 +1,20 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Heart, MessageCircle, Bookmark, Eye, Trash2, Award, Settings } from "lucide-react"
-import Link from "next/link"
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Heart,
+  MessageCircle,
+  Bookmark,
+  Eye,
+  Trash2,
+  Award,
+  Settings,
+} from "lucide-react";
+import Link from "next/link";
 
 const myPosts = [
   {
@@ -33,7 +41,7 @@ const myPosts = [
     isHidden: true,
     createdAt: "1 day ago",
   },
-]
+];
 
 const myComments = [
   {
@@ -46,11 +54,12 @@ const myComments = [
   {
     id: 2,
     postTitle: "The Solitude of Stars",
-    content: "The transformation is remarkable. The AI truly captured the essence.",
+    content:
+      "The transformation is remarkable. The AI truly captured the essence.",
     reactions: 12,
     createdAt: "3 hours ago",
   },
-]
+];
 
 const bookmarkedPosts = [
   {
@@ -69,32 +78,104 @@ const bookmarkedPosts = [
     reactions: 43,
     comments: 18,
   },
-]
+];
 
 const badges = [
-  { id: 1, name: "First Post", description: "Published your first post", earned: true, icon: "🎉" },
-  { id: 2, name: "Poet Laureate", description: "Posts in all categories", earned: true, icon: "👑" },
-  { id: 3, name: "Popular Writer", description: "10+ reactions on a post", earned: true, icon: "❤️" },
-  { id: 4, name: "Community Favorite", description: "10+ bookmarks on a post", earned: false, icon: "⭐" },
-  { id: 5, name: "Regular Visitor", description: "10th visit to the site", earned: true, icon: "🏠" },
-  { id: 6, name: "Conversation Starter", description: "10+ comments on your posts", earned: false, icon: "💬" },
-  { id: 7, name: "Literary Master", description: "50+ total reactions", earned: false, icon: "📚" },
-  { id: 8, name: "Dedicated Reader", description: "50+ bookmarked posts", earned: false, icon: "🔖" },
-  { id: 9, name: "Active Commenter", description: "25+ comments posted", earned: false, icon: "✍️" },
-  { id: 10, name: "Emotion Explorer", description: "Used all emotion tags", earned: false, icon: "🎭" },
-  { id: 11, name: "Weekly Writer", description: "Posted every day for a week", earned: false, icon: "📅" },
-  { id: 12, name: "Community Champion", description: "Helped moderate content", earned: false, icon: "🛡️" },
-]
+  {
+    id: 1,
+    name: "First Post",
+    description: "Published your first post",
+    earned: true,
+    icon: "🎉",
+  },
+  {
+    id: 2,
+    name: "Poet Laureate",
+    description: "Posts in all categories",
+    earned: true,
+    icon: "👑",
+  },
+  {
+    id: 3,
+    name: "Popular Writer",
+    description: "10+ reactions on a post",
+    earned: true,
+    icon: "❤️",
+  },
+  {
+    id: 4,
+    name: "Community Favorite",
+    description: "10+ bookmarks on a post",
+    earned: false,
+    icon: "⭐",
+  },
+  {
+    id: 5,
+    name: "Regular Visitor",
+    description: "10th visit to the site",
+    earned: true,
+    icon: "🏠",
+  },
+  {
+    id: 6,
+    name: "Conversation Starter",
+    description: "10+ comments on your posts",
+    earned: false,
+    icon: "💬",
+  },
+  {
+    id: 7,
+    name: "Literary Master",
+    description: "50+ total reactions",
+    earned: false,
+    icon: "📚",
+  },
+  {
+    id: 8,
+    name: "Dedicated Reader",
+    description: "50+ bookmarked posts",
+    earned: false,
+    icon: "🔖",
+  },
+  {
+    id: 9,
+    name: "Active Commenter",
+    description: "25+ comments posted",
+    earned: false,
+    icon: "✍️",
+  },
+  {
+    id: 10,
+    name: "Emotion Explorer",
+    description: "Used all emotion tags",
+    earned: false,
+    icon: "🎭",
+  },
+  {
+    id: 11,
+    name: "Weekly Writer",
+    description: "Posted every day for a week",
+    earned: false,
+    icon: "📅",
+  },
+  {
+    id: 12,
+    name: "Community Champion",
+    description: "Helped moderate content",
+    earned: false,
+    icon: "🛡️",
+  },
+];
 
 const emotionColors = {
   melancholy: "bg-blue-100 text-blue-800",
   peaceful: "bg-teal-100 text-teal-800",
   romantic: "bg-pink-100 text-pink-800",
   inspiring: "bg-green-100 text-green-800",
-}
+};
 
 export function MyPageTabs() {
-  const [activeTab, setActiveTab] = useState("posts")
+  const [activeTab, setActiveTab] = useState("posts");
 
   return (
     <div className="space-y-6">
@@ -123,24 +204,44 @@ export function MyPageTabs() {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Badge className={emotionColors[post.emotion as keyof typeof emotionColors]}>
+                      <Badge
+                        className={
+                          emotionColors[
+                            post.emotion as keyof typeof emotionColors
+                          ]
+                        }
+                      >
                         {post.emotion}
                       </Badge>
-                      <span className="text-sm text-gray-500">{post.createdAt}</span>
-                      {post.isHidden && <Badge variant="secondary">Hidden</Badge>}
+                      <span className="text-sm text-gray-500">
+                        {post.createdAt}
+                      </span>
+                      {post.isHidden && (
+                        <Badge variant="secondary">Hidden</Badge>
+                      )}
                     </div>
 
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{post.title}</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {post.title}
+                    </h3>
 
                     <div className="space-y-3">
                       <div>
-                        <p className="text-sm font-medium text-gray-700 mb-1">Original:</p>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{post.originalContent}</p>
+                        <p className="text-sm font-medium text-gray-700 mb-1">
+                          Original:
+                        </p>
+                        <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                          {post.originalContent}
+                        </p>
                       </div>
 
                       <div>
-                        <p className="text-sm font-medium text-gray-700 mb-1">Transformed:</p>
-                        <p className="text-sm text-gray-800 bg-blue-50 p-2 rounded">{post.transformedContent}</p>
+                        <p className="text-sm font-medium text-gray-700 mb-1">
+                          Transformed:
+                        </p>
+                        <p className="text-sm text-gray-800 bg-blue-50 p-2 rounded">
+                          {post.transformedContent}
+                        </p>
                       </div>
                     </div>
 
@@ -185,12 +286,14 @@ export function MyPageTabs() {
                     <div className="flex items-center space-x-2 mb-2">
                       <span className="text-sm text-gray-500">on</span>
                       <Link
-                        href={`/post/${comment.id}`}
+                        href={`/posts/${comment.id}`}
                         className="text-sm font-medium text-blue-600 hover:text-blue-800"
                       >
                         {comment.postTitle}
                       </Link>
-                      <span className="text-sm text-gray-500">{comment.createdAt}</span>
+                      <span className="text-sm text-gray-500">
+                        {comment.createdAt}
+                      </span>
                     </div>
 
                     <p className="text-gray-800 mb-3">{comment.content}</p>
@@ -216,11 +319,15 @@ export function MyPageTabs() {
             {bookmarkedPosts.map((post) => (
               <Card key={post.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
-                  <Badge className={`mb-2 ${emotionColors[post.emotion as keyof typeof emotionColors]}`}>
+                  <Badge
+                    className={`mb-2 ${
+                      emotionColors[post.emotion as keyof typeof emotionColors]
+                    }`}
+                  >
                     {post.emotion}
                   </Badge>
 
-                  <Link href={`/post/${post.id}`}>
+                  <Link href={`/posts/${post.id}`}>
                     <h3 className="font-semibold text-gray-900 mb-2 hover:text-gray-700 cursor-pointer">
                       {post.title}
                     </h3>
@@ -249,15 +356,35 @@ export function MyPageTabs() {
             {badges.map((badge) => (
               <Card
                 key={badge.id}
-                className={`${badge.earned ? "bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200" : "bg-gray-50 border-gray-200"}`}
+                className={`${
+                  badge.earned
+                    ? "bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200"
+                    : "bg-gray-50 border-gray-200"
+                }`}
               >
                 <CardContent className="p-4 text-center">
-                  <div className="text-3xl mb-2 opacity-75">{badge.earned ? badge.icon : "🔒"}</div>
-                  <h3 className={`font-semibold mb-1 ${badge.earned ? "text-gray-900" : "text-gray-500"}`}>
+                  <div className="text-3xl mb-2 opacity-75">
+                    {badge.earned ? badge.icon : "🔒"}
+                  </div>
+                  <h3
+                    className={`font-semibold mb-1 ${
+                      badge.earned ? "text-gray-900" : "text-gray-500"
+                    }`}
+                  >
                     {badge.name}
                   </h3>
-                  <p className={`text-xs ${badge.earned ? "text-gray-700" : "text-gray-400"}`}>{badge.description}</p>
-                  {badge.earned && <Badge className="mt-2 bg-yellow-100 text-yellow-800">Earned</Badge>}
+                  <p
+                    className={`text-xs ${
+                      badge.earned ? "text-gray-700" : "text-gray-400"
+                    }`}
+                  >
+                    {badge.description}
+                  </p>
+                  {badge.earned && (
+                    <Badge className="mt-2 bg-yellow-100 text-yellow-800">
+                      Earned
+                    </Badge>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -279,7 +406,13 @@ export function MyPageTabs() {
                 <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
                   <div
                     className="bg-yellow-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(badges.filter((b) => b.earned).length / badges.length) * 100}%` }}
+                    style={{
+                      width: `${
+                        (badges.filter((b) => b.earned).length /
+                          badges.length) *
+                        100
+                      }%`,
+                    }}
                   ></div>
                 </div>
               </div>
@@ -288,5 +421,5 @@ export function MyPageTabs() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
