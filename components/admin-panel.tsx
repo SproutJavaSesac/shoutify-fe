@@ -5,43 +5,69 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 import { Flag, Users, Settings, Eye, Check, X, AlertTriangle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
-const reportedPosts = [
+const pendingReports = [
   {
     id: 1,
+    type: "post",
     title: "Controversial Literary Piece",
     author: "SomeUser",
     reportCount: 3,
     reasons: ["Inappropriate language", "Hate speech"],
-    status: "pending",
     content: "This is the reported content that needs review...",
     reportedAt: "2 hours ago",
   },
   {
     id: 2,
+    type: "post",
     title: "Spam Advertisement",
     author: "SpamUser",
     reportCount: 5,
     reasons: ["Spam/Advertisement"],
-    status: "pending",
     content: "Buy our amazing products now! Visit our website...",
     reportedAt: "4 hours ago",
   },
-]
-
-const reportedComments = [
   {
-    id: 1,
+    id: 3,
+    type: "comment",
     postTitle: "Beautiful Poetry",
     author: "BadCommenter",
     reportCount: 2,
     reasons: ["Inappropriate language"],
-    status: "pending",
     content: "This comment contains inappropriate language...",
     reportedAt: "1 hour ago",
+  },
+]
+
+const processedReports = [
+  {
+    id: 4,
+    type: "post",
+    title: "Previously Reported Post",
+    author: "ReportedUser",
+    reportCount: 2,
+    reasons: ["Inappropriate language"],
+    status: "accepted",
+    content: "This content was found to violate guidelines...",
+    reportedAt: "1 day ago",
+    processedAt: "1 day ago",
+  },
+  {
+    id: 5,
+    type: "comment",
+    postTitle: "Some Post Title",
+    author: "CommentUser",
+    reportCount: 1,
+    reasons: ["Spam"],
+    status: "rejected",
+    content: "This comment was reported but found to be acceptable...",
+    reportedAt: "2 days ago",
+    processedAt: "2 days ago",
   },
 ]
 
@@ -52,7 +78,6 @@ const users = [
     email: "user@example.com",
     posts: 23,
     joinDate: "March 2024",
-    status: "active",
     reports: 0,
   },
   {
@@ -61,19 +86,12 @@ const users = [
     email: "spam@example.com",
     posts: 5,
     joinDate: "December 2024",
-    status: "suspended",
     reports: 8,
   },
 ]
 
-const aiPrompts = {
-  classical: "Transform the following text into classical poetry style with elegant language and formal structure...",
-  biblical: "Rewrite the following in a biblical, reverent tone with spiritual undertones...",
-  modern: "Convert this text into modern poetry with contemporary language and free verse...",
-}
-
 export function AdminPanel() {
-  const [activeTab, setActiveTab] = useState("reports")
+  const [activeTab, setActiveTab] = useState("pending-reports")
   const { toast } = useToast()
 
   const handleReportAction = (id: number, action: "accept" | "reject", type: "post" | "comment") => {
@@ -82,146 +100,108 @@ export function AdminPanel() {
     })
   }
 
-  const handleUserAction = (id: number, action: "suspend" | "activate" | "delete") => {
+  const handleUserAction = (id: number, action: "delete") => {
     toast({
       description: `User ${action}d successfully`,
     })
   }
 
+  const ReportCard = ({ report, showActions = true }: { report: any; showActions?: boolean }) => (
+    <div className="border border-gray-200 rounded-lg p-4">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <h3 className="font-semibold text-gray-900">
+            {report.type === "post" ? report.title : `Comment on "${report.postTitle}"`}
+          </h3>
+          <p className="text-sm text-gray-600">
+            by {report.author} • {report.reportedAt}
+            {report.processedAt && ` • Processed ${report.processedAt}`}
+          </p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Badge variant="destructive">
+            <AlertTriangle className="h-3 w-3 mr-1" />
+            {report.reportCount} reports
+          </Badge>
+          {report.status && (
+            <Badge variant={report.status === "accepted" ? "destructive" : "default"}>{report.status}</Badge>
+          )}
+        </div>
+      </div>
+
+      <div className="mb-3">
+        <p className="text-sm text-gray-700 mb-2">Reported for:</p>
+        <div className="flex flex-wrap gap-1">
+          {report.reasons.map((reason: string, index: number) => (
+            <Badge key={index} variant="secondary" className="text-xs">
+              {reason}
+            </Badge>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-gray-50 p-3 rounded mb-3">
+        <p className="text-sm text-gray-800">{report.content}</p>
+      </div>
+
+      {showActions && (
+        <div className="flex space-x-2">
+          <Button size="sm" variant="outline" onClick={() => handleReportAction(report.id, "accept", report.type)}>
+            <Check className="h-4 w-4 mr-1" />
+            Accept Report
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => handleReportAction(report.id, "reject", report.type)}>
+            <X className="h-4 w-4 mr-1" />
+            Reject Report
+          </Button>
+          <Button size="sm" variant="outline">
+            <Eye className="h-4 w-4 mr-1" />
+            View Full {report.type === "post" ? "Post" : "Comment"}
+          </Button>
+        </div>
+      )}
+    </div>
+  )
+
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
-      <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="reports">Reported Content</TabsTrigger>
+      <TabsList className="grid w-full grid-cols-4">
+        <TabsTrigger value="pending-reports">Pending Reports</TabsTrigger>
+        <TabsTrigger value="report-results">Report Results</TabsTrigger>
         <TabsTrigger value="users">User Management</TabsTrigger>
-        <TabsTrigger value="ai">AI Prompts</TabsTrigger>
+        <TabsTrigger value="ai-prompts">AI Prompts</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="reports" className="space-y-6">
-        {/* Reported Posts */}
+      <TabsContent value="pending-reports" className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Flag className="h-5 w-5" />
-              <span>Reported Posts</span>
+              <span>Pending Reports</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {reportedPosts.map((post) => (
-                <div key={post.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{post.title}</h3>
-                      <p className="text-sm text-gray-600">
-                        by {post.author} • {post.reportedAt}
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="destructive">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
-                        {post.reportCount} reports
-                      </Badge>
-                      <Badge variant="outline">{post.status}</Badge>
-                    </div>
-                  </div>
-
-                  <div className="mb-3">
-                    <p className="text-sm text-gray-700 mb-2">Reported for:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {post.reasons.map((reason, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {reason}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-50 p-3 rounded mb-3">
-                    <p className="text-sm text-gray-800">{post.content}</p>
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <Button size="sm" variant="outline" onClick={() => handleReportAction(post.id, "accept", "post")}>
-                      <Check className="h-4 w-4 mr-1" />
-                      Accept Report
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleReportAction(post.id, "reject", "post")}>
-                      <X className="h-4 w-4 mr-1" />
-                      Reject Report
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Eye className="h-4 w-4 mr-1" />
-                      View Full Post
-                    </Button>
-                  </div>
-                </div>
+              {pendingReports.map((report) => (
+                <ReportCard key={report.id} report={report} showActions={true} />
               ))}
             </div>
           </CardContent>
         </Card>
+      </TabsContent>
 
-        {/* Reported Comments */}
+      <TabsContent value="report-results" className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Flag className="h-5 w-5" />
-              <span>Reported Comments</span>
+              <span>Report Results</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {reportedComments.map((comment) => (
-                <div key={comment.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">Comment on "{comment.postTitle}"</h3>
-                      <p className="text-sm text-gray-600">
-                        by {comment.author} • {comment.reportedAt}
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="destructive">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
-                        {comment.reportCount} reports
-                      </Badge>
-                      <Badge variant="outline">{comment.status}</Badge>
-                    </div>
-                  </div>
-
-                  <div className="mb-3">
-                    <p className="text-sm text-gray-700 mb-2">Reported for:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {comment.reasons.map((reason, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {reason}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-50 p-3 rounded mb-3">
-                    <p className="text-sm text-gray-800">{comment.content}</p>
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleReportAction(comment.id, "accept", "comment")}
-                    >
-                      <Check className="h-4 w-4 mr-1" />
-                      Accept Report
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleReportAction(comment.id, "reject", "comment")}
-                    >
-                      <X className="h-4 w-4 mr-1" />
-                      Reject Report
-                    </Button>
-                  </div>
-                </div>
+              {processedReports.map((report) => (
+                <ReportCard key={report.id} report={report} showActions={false} />
               ))}
             </div>
           </CardContent>
@@ -251,21 +231,9 @@ export function AdminPanel() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Badge variant={user.status === "active" ? "default" : "destructive"}>{user.status}</Badge>
-                      <div className="flex space-x-1">
-                        {user.status === "active" ? (
-                          <Button size="sm" variant="outline" onClick={() => handleUserAction(user.id, "suspend")}>
-                            Suspend
-                          </Button>
-                        ) : (
-                          <Button size="sm" variant="outline" onClick={() => handleUserAction(user.id, "activate")}>
-                            Activate
-                          </Button>
-                        )}
-                        <Button size="sm" variant="destructive" onClick={() => handleUserAction(user.id, "delete")}>
-                          Delete
-                        </Button>
-                      </div>
+                      <Button size="sm" variant="destructive" onClick={() => handleUserAction(user.id, "delete")}>
+                        Delete
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -275,28 +243,91 @@ export function AdminPanel() {
         </Card>
       </TabsContent>
 
-      <TabsContent value="ai">
+      <TabsContent value="ai-prompts" className="space-y-6">
+        {/* Add New AI Prompt */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Settings className="h-5 w-5" />
-              <span>AI Prompting Rules</span>
+              <span>Add New AI Prompt Rule</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {Object.entries(aiPrompts).map(([category, prompt]) => (
-              <div key={category} className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 capitalize">{category} Poetry Prompt</label>
-                <Textarea
-                  value={prompt}
-                  className="min-h-[100px]"
-                  placeholder={`Enter the AI prompt for ${category} style transformation...`}
-                />
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="profanity">Profanity/Inappropriate Word</Label>
+                <Input id="profanity" placeholder="Enter word to filter..." className="w-full" />
               </div>
-            ))}
-
+              <div className="space-y-2">
+                <Label htmlFor="replacement">Replacement Word</Label>
+                <Input id="replacement" placeholder="Enter replacement..." className="w-full" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="explanation">Explanation</Label>
+                <Textarea id="explanation" placeholder="Why this replacement..." className="w-full" />
+              </div>
+            </div>
             <div className="flex justify-end">
-              <Button>Save AI Prompts</Button>
+              <Button>Add AI Prompt Rule</Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Existing AI Prompts Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Registered AI Prompt Rules</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[
+                {
+                  id: 1,
+                  profanity: "damn",
+                  replacement: "darn",
+                  explanation: "Mild profanity replacement",
+                  createdAt: "2024-12-17 10:30",
+                },
+                {
+                  id: 2,
+                  profanity: "stupid",
+                  replacement: "unwise",
+                  explanation: "More literary alternative",
+                  createdAt: "2024-12-17 09:15",
+                },
+                {
+                  id: 3,
+                  profanity: "hate",
+                  replacement: "dislike",
+                  explanation: "Softer emotional expression",
+                  createdAt: "2024-12-17 08:45",
+                },
+              ].map((rule) => (
+                <div key={rule.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Profanity</p>
+                        <p className="text-gray-900">{rule.profanity}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Replacement</p>
+                        <p className="text-gray-900">{rule.replacement}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Explanation</p>
+                        <p className="text-gray-900">{rule.explanation}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2 ml-4">
+                      <p className="text-xs text-gray-500">{rule.createdAt}</p>
+                      <Button size="sm" variant="destructive">
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

@@ -107,7 +107,7 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
 
           {/* Actions */}
           <div className="flex space-x-2 pt-4">
-            <Link href={`/profile/${username}`} className="flex-1">
+            <Link href={`/profile/user/${username}`} className="flex-1">
               <Button className="w-full" onClick={onClose}>
                 View Full Profile
               </Button>
