@@ -1,35 +1,21 @@
-"use client";
+"use client"
 
-import type React from "react";
+import type React from "react"
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Upload, X, Sparkles } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/auth";
+import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Upload, X, Sparkles } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth"
 
-const categories = [
-  "Classical Poetry",
-  "Biblical",
-  "Modern Poem",
-  "Prose",
-  "Haiku",
-  "Sonnet",
-  "Free Verse",
-];
+const categories = ["Classical Poetry", "Biblical", "Modern Poem", "Prose", "Haiku", "Sonnet", "Free Verse"]
 
 const emotions = [
   "joyful",
@@ -40,7 +26,7 @@ const emotions = [
   "nostalgic",
   "peaceful",
   "passionate",
-];
+]
 
 const emotionColors = {
   joyful: "bg-yellow-100 text-yellow-800",
@@ -51,50 +37,50 @@ const emotionColors = {
   nostalgic: "bg-orange-100 text-orange-800",
   peaceful: "bg-teal-100 text-teal-800",
   passionate: "bg-red-100 text-red-800",
-};
+}
 
 export function PostCreationForm() {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [category, setCategory] = useState("");
-  const [emotion, setEmotion] = useState("");
-  const [image, setImage] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-  const router = useRouter();
-  const { user } = useAuth();
+  const [title, setTitle] = useState("")
+  const [content, setContent] = useState("")
+  const [category, setCategory] = useState("")
+  const [emotion, setEmotion] = useState("")
+  const [image, setImage] = useState<File | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { toast } = useToast()
+  const router = useRouter()
+  const { user } = useAuth()
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]
     if (file) {
-      setImage(file);
+      setImage(file)
     }
-  };
+  }
 
   const removeImage = () => {
-    setImage(null);
-  };
+    setImage(null)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!title.trim() || !content.trim() || !category) {
       toast({
         description: "Please fill in all required fields",
         variant: "destructive",
-      });
-      return;
+      })
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
 
     // Simulate AI transformation
     setTimeout(() => {
       toast({
         description: "Your post has been created and transformed!",
-      });
-      router.push("/posts/1"); // Redirect to the new post
-    }, 2000);
-  };
+      })
+      router.push("/post/1") // Redirect to the new post
+    }, 2000)
+  }
 
   return (
     <form onSubmit={handleSubmit}>
@@ -138,9 +124,7 @@ export function PostCreationForm() {
               placeholder="Enter your post title..."
               maxLength={100}
             />
-            <p className="text-sm text-gray-500">
-              {100 - title.length} characters remaining
-            </p>
+            <p className="text-sm text-gray-500">{100 - title.length} characters remaining</p>
           </div>
 
           {/* Content */}
@@ -154,17 +138,14 @@ export function PostCreationForm() {
               className="min-h-[200px]"
               maxLength={2000}
             />
-            <p className="text-sm text-gray-500">
-              {2000 - content.length} characters remaining
-            </p>
+            <p className="text-sm text-gray-500">{2000 - content.length} characters remaining</p>
           </div>
 
           {/* Emotion Selection */}
           <div className="space-y-2">
             <Label>Emotion (Optional)</Label>
             <p className="text-sm text-gray-600 mb-3">
-              Select an emotion to guide the AI transformation, or leave blank
-              for automatic detection
+              Select an emotion to guide the AI transformation, or leave blank for automatic detection
             </p>
             <div className="flex flex-wrap gap-2">
               {emotions.map((emo) => (
@@ -189,16 +170,8 @@ export function PostCreationForm() {
             {!image ? (
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                 <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-600 mb-2">
-                  Upload an image to accompany your post
-                </p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="image-upload"
-                />
+                <p className="text-sm text-gray-600 mb-2">Upload an image to accompany your post</p>
+                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" id="image-upload" />
                 <Label htmlFor="image-upload" className="cursor-pointer">
                   <Button type="button" variant="outline" size="sm">
                     Choose File
@@ -210,12 +183,7 @@ export function PostCreationForm() {
                 <div className="border rounded-lg p-4 bg-gray-50">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-700">{image.name}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={removeImage}
-                    >
+                    <Button type="button" variant="ghost" size="sm" onClick={removeImage}>
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
@@ -227,25 +195,18 @@ export function PostCreationForm() {
           {/* Warning */}
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
             <p className="text-sm text-amber-800">
-              <strong>Note:</strong> You cannot edit this post after publishing.
-              Please review your content carefully.
+              <strong>Note:</strong> You cannot edit this post after publishing. Please review your content carefully.
             </p>
           </div>
 
           {/* Submit Button */}
           <div className="flex justify-end space-x-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.back()}
-            >
+            <Button type="button" variant="outline" onClick={() => router.back()}>
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={
-                isSubmitting || !title.trim() || !content.trim() || !category
-              }
+              disabled={isSubmitting || !title.trim() || !content.trim() || !category}
               className="bg-gray-800 hover:bg-gray-900"
             >
               {isSubmitting ? (
@@ -261,5 +222,5 @@ export function PostCreationForm() {
         </CardContent>
       </Card>
     </form>
-  );
+  )
 }

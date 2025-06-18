@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Crown, TrendingUp, Heart, Bookmark, PenTool } from "lucide-react";
-import Link from "next/link";
+import { useState } from "react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Crown, TrendingUp, Heart, Bookmark, PenTool } from "lucide-react"
+import Link from "next/link"
 
 const mostBookmarkedPosts = [
   {
@@ -48,7 +48,7 @@ const mostBookmarkedPosts = [
     emotion: "contemplative",
     trend: "up",
   },
-];
+]
 
 const mostReactedPosts = [
   {
@@ -91,7 +91,7 @@ const mostReactedPosts = [
     emotion: "joyful",
     trend: "down",
   },
-];
+]
 
 const mostActiveUsers = [
   {
@@ -129,7 +129,35 @@ const mostActiveUsers = [
     totalBookmarks: 123,
     trend: "up",
   },
-];
+]
+
+const specialScoreUsers = [
+  {
+    username: "LiteraryMaster",
+    score: 2450,
+    trend: "up",
+  },
+  {
+    username: "PoetryGuru",
+    score: 2180,
+    trend: "up",
+  },
+  {
+    username: "WordSmith",
+    score: 1950,
+    trend: "same",
+  },
+  {
+    username: "VerseCrafter",
+    score: 1720,
+    trend: "down",
+  },
+  {
+    username: "RhymeKeeper",
+    score: 1580,
+    trend: "up",
+  },
+]
 
 const emotionColors = {
   romantic: "bg-pink-100 text-pink-800",
@@ -137,28 +165,29 @@ const emotionColors = {
   melancholy: "bg-blue-100 text-blue-800",
   joyful: "bg-yellow-100 text-yellow-800",
   contemplative: "bg-purple-100 text-purple-800",
-};
+}
 
 const getTrendIcon = (trend: string) => {
   switch (trend) {
     case "up":
-      return <TrendingUp className="h-4 w-4 text-green-500" />;
+      return <TrendingUp className="h-4 w-4 text-green-500" />
     case "down":
-      return <TrendingUp className="h-4 w-4 text-red-500 rotate-180" />;
+      return <TrendingUp className="h-4 w-4 text-red-500 rotate-180" />
     default:
-      return <div className="h-4 w-4 bg-gray-400 rounded-full" />;
+      return <div className="h-4 w-4 bg-gray-400 rounded-full" />
   }
-};
+}
 
 export function RankingTabs() {
-  const [activeTab, setActiveTab] = useState("bookmarks");
+  const [activeTab, setActiveTab] = useState("bookmarks")
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="bookmarks">Most Bookmarked</TabsTrigger>
         <TabsTrigger value="reactions">Most Reacted</TabsTrigger>
         <TabsTrigger value="users">Most Active Users</TabsTrigger>
+        <TabsTrigger value="special">Special Score</TabsTrigger>
       </TabsList>
 
       <TabsContent value="bookmarks">
@@ -172,45 +201,26 @@ export function RankingTabs() {
           <CardContent>
             <div className="space-y-4">
               {mostBookmarkedPosts.map((post, index) => (
-                <div
-                  key={post.id}
-                  className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
-                >
+                <div key={post.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-center w-8 h-8 bg-white rounded-full border-2 border-gray-200">
-                    {index === 0 && (
-                      <Crown className="h-4 w-4 text-yellow-500" />
-                    )}
-                    {index !== 0 && (
-                      <span className="text-sm font-bold text-gray-600">
-                        {index + 1}
-                      </span>
-                    )}
+                    {index === 0 && <Crown className="h-4 w-4 text-yellow-500" />}
+                    {index !== 0 && <span className="text-sm font-bold text-gray-600">{index + 1}</span>}
                   </div>
 
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
-                      <Badge
-                        className={
-                          emotionColors[
-                            post.emotion as keyof typeof emotionColors
-                          ]
-                        }
-                      >
+                      <Badge className={emotionColors[post.emotion as keyof typeof emotionColors]}>
                         {post.emotion}
                       </Badge>
                       {getTrendIcon(post.trend)}
                     </div>
 
-                    <Link href={`/posts/${post.id}`}>
-                      <h3 className="font-semibold text-gray-900 hover:text-gray-700 cursor-pointer">
-                        {post.title}
-                      </h3>
+                    <Link href={`/post/${post.id}`}>
+                      <h3 className="font-semibold text-gray-900 hover:text-gray-700 cursor-pointer">{post.title}</h3>
                     </Link>
 
-                    <Link href={`/profile/${post.author}`}>
-                      <p className="text-sm text-gray-600 hover:text-gray-800 cursor-pointer">
-                        by {post.author}
-                      </p>
+                    <Link href={`/profile/user/${post.author}`}>
+                      <p className="text-sm text-gray-600 hover:text-gray-800 cursor-pointer">by {post.author}</p>
                     </Link>
                   </div>
 
@@ -238,45 +248,26 @@ export function RankingTabs() {
           <CardContent>
             <div className="space-y-4">
               {mostReactedPosts.map((post, index) => (
-                <div
-                  key={post.id}
-                  className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
-                >
+                <div key={post.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-center w-8 h-8 bg-white rounded-full border-2 border-gray-200">
-                    {index === 0 && (
-                      <Crown className="h-4 w-4 text-yellow-500" />
-                    )}
-                    {index !== 0 && (
-                      <span className="text-sm font-bold text-gray-600">
-                        {index + 1}
-                      </span>
-                    )}
+                    {index === 0 && <Crown className="h-4 w-4 text-yellow-500" />}
+                    {index !== 0 && <span className="text-sm font-bold text-gray-600">{index + 1}</span>}
                   </div>
 
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
-                      <Badge
-                        className={
-                          emotionColors[
-                            post.emotion as keyof typeof emotionColors
-                          ]
-                        }
-                      >
+                      <Badge className={emotionColors[post.emotion as keyof typeof emotionColors]}>
                         {post.emotion}
                       </Badge>
                       {getTrendIcon(post.trend)}
                     </div>
 
-                    <Link href={`/posts/${post.id}`}>
-                      <h3 className="font-semibold text-gray-900 hover:text-gray-700 cursor-pointer">
-                        {post.title}
-                      </h3>
+                    <Link href={`/post/${post.id}`}>
+                      <h3 className="font-semibold text-gray-900 hover:text-gray-700 cursor-pointer">{post.title}</h3>
                     </Link>
 
-                    <Link href={`/profile/${post.author}`}>
-                      <p className="text-sm text-gray-600 hover:text-gray-800 cursor-pointer">
-                        by {post.author}
-                      </p>
+                    <Link href={`/profile/user/${post.author}`}>
+                      <p className="text-sm text-gray-600 hover:text-gray-800 cursor-pointer">by {post.author}</p>
                     </Link>
                   </div>
 
@@ -304,27 +295,16 @@ export function RankingTabs() {
           <CardContent>
             <div className="space-y-4">
               {mostActiveUsers.map((user, index) => (
-                <div
-                  key={user.username}
-                  className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
-                >
+                <div key={user.username} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-center w-8 h-8 bg-white rounded-full border-2 border-gray-200">
-                    {index === 0 && (
-                      <Crown className="h-4 w-4 text-yellow-500" />
-                    )}
-                    {index !== 0 && (
-                      <span className="text-sm font-bold text-gray-600">
-                        {index + 1}
-                      </span>
-                    )}
+                    {index === 0 && <Crown className="h-4 w-4 text-yellow-500" />}
+                    {index !== 0 && <span className="text-sm font-bold text-gray-600">{index + 1}</span>}
                   </div>
 
                   <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-1">
-                      {getTrendIcon(user.trend)}
-                    </div>
+                    <div className="flex items-center space-x-2 mb-1">{getTrendIcon(user.trend)}</div>
 
-                    <Link href={`/profile/${user.username}`}>
+                    <Link href={`/profile/user/${user.username}`}>
                       <h3 className="font-semibold text-gray-900 hover:text-gray-700 cursor-pointer">
                         {user.username}
                       </h3>
@@ -349,6 +329,45 @@ export function RankingTabs() {
           </CardContent>
         </Card>
       </TabsContent>
+      <TabsContent value="special">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Crown className="h-5 w-5" />
+              <span>Special Score Rankings</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {specialScoreUsers.map((user, index) => (
+                <div key={user.username} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-center w-8 h-8 bg-white rounded-full border-2 border-gray-200">
+                    {index === 0 && <Crown className="h-4 w-4 text-yellow-500" />}
+                    {index !== 0 && <span className="text-sm font-bold text-gray-600">{index + 1}</span>}
+                  </div>
+
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-1">{getTrendIcon(user.trend)}</div>
+
+                    <Link href={`/profile/user/${user.username}`}>
+                      <h3 className="font-semibold text-gray-900 hover:text-gray-700 cursor-pointer">
+                        {user.username}
+                      </h3>
+                    </Link>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="flex items-center space-x-1 text-lg font-bold text-gray-900">
+                      <span>{user.score}</span>
+                    </div>
+                    <p className="text-xs text-gray-500">points</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
     </Tabs>
-  );
+  )
 }

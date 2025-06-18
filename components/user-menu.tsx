@@ -11,7 +11,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
-import { User, Settings, LogOut, FileText } from "lucide-react"
+import { Settings, LogOut, FileText } from "lucide-react"
 import Link from "next/link"
 
 export function UserMenu() {
@@ -55,16 +55,9 @@ export function UserMenu() {
         <DropdownMenuSeparator />
 
         <DropdownMenuItem asChild>
-          <Link href="/my-page" className="flex items-center">
+          <Link href="/mypage" className="flex items-center">
             <FileText className="mr-2 h-4 w-4" />
             <span>My Page</span>
-          </Link>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem asChild>
-          <Link href={`/profile/${user.username}`} className="flex items-center">
-            <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
           </Link>
         </DropdownMenuItem>
 
