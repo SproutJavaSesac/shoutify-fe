@@ -9,7 +9,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 // 새로운 API와 타입 사용
-import { api } from "@/apis";
+import { postsApi } from "@/apis";
 import { usePagination } from "@/lib/hooks/useApi";
 import type { Post, PostQueryParams } from "@/types";
 import { EMOTION_COLORS } from "@/types";
@@ -43,7 +43,7 @@ export function NewPostFeed({
       }
 
       // API 호출
-      const response = await api.posts.getPosts(params);
+      const response = await postsApi.getPosts(params);
 
       return {
         data: response.posts,

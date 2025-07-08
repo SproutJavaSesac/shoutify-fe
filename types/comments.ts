@@ -32,5 +32,3 @@ export interface CommentsResponse {
   comments: Comment[];
   totalCount: number;
 }
-
-export type ReactionEmoji = "❤️" | "😊" | "😢" | "🤔" | "👏";

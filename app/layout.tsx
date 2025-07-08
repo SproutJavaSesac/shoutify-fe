@@ -1,5 +1,5 @@
 import type React from "react";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Navigation } from "@/components/navigation";
@@ -63,16 +63,17 @@ export const metadata: Metadata = {
   generator: "Next.js",
   applicationName: "Shoutify",
   referrer: "origin-when-cross-origin",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
   colorScheme: "light",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#000000" },
   ],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
 };
 
 export default function RootLayout({

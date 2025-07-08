@@ -1,175 +1,147 @@
-// API Base URL - 환경변수나 설정에서 가져오기 (v1 포함)
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+// API 클라이언트
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 
-// 공통 응답 모델 (명세서 기준)
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
+// 서버 응답 타입
+export type Response<T> = {
+  isSuccess: boolean;
+  result: T;
   message?: string;
   error?: string;
-  timestamp?: string;
-  path?: string;
-}
+};
 
-// 공통 에러 코드 (명세서 기준)
-export enum ErrorCode {
-  // 400번대 클라이언트 에러
-  BAD_REQUEST = "BAD_REQUEST",
-  UNAUTHORIZED = "UNAUTHORIZED",
-  FORBIDDEN = "FORBIDDEN",
-  NOT_FOUND = "NOT_FOUND",
-  METHOD_NOT_ALLOWED = "METHOD_NOT_ALLOWED",
-  CONFLICT = "CONFLICT",
-  VALIDATION_ERROR = "VALIDATION_ERROR",
-
-  // 500번대 서버 에러
-  INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
-  SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE",
-
-  // 도메인 특화 에러
-  PROFANITY_DETECTED = "PROFANITY_DETECTED",
-  CONTENT_MODERATION_FAILED = "CONTENT_MODERATION_FAILED",
-  AI_TRANSFORMATION_FAILED = "AI_TRANSFORMATION_FAILED",
-}
-
-// API 에러 타입 (명세서 기준)
-export class ApiError extends Error {
-  constructor(
-    public status: number,
-    public message: string,
-    public code?: ErrorCode,
-    public data?: any,
-    public timestamp?: string,
-    public path?: string,
-  ) {
+export class FetchError extends Error {
+  constructor(public status: number, message: string, public data?: any) {
     super(message);
-    this.name = "ApiError";
+    this.name = "FetchError";
   }
 }
 
-// 공통 API 클라이언트
-export class ApiClient {
-  private baseURL: string;
-  private defaultHeaders: Record<string, string>;
+class SimpleClient {
+  private token?: string;
 
-  constructor(baseURL: string = API_BASE_URL) {
-    this.baseURL = baseURL;
-    this.defaultHeaders = {
+  setToken(token: string) {
+    this.token = token;
+  }
+
+  clearToken() {
+    this.token = undefined;
+  }
+
+  // 기본 요청 함수
+  private async request<T>(url: string, options: RequestInit = {}): Promise<T> {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
+      ...(options.headers as Record<string, string>),
     };
-  }
 
-  // 인증 토큰 설정
-  setAuthToken(token: string) {
-    this.defaultHeaders["Authorization"] = `Bearer ${token}`;
-  }
+    // 토큰이 있으면 추가
+    if (this.token) {
+      headers["Authorization"] = `Bearer ${this.token}`;
+    }
 
-  // 인증 토큰 제거
-  removeAuthToken() {
-    delete this.defaultHeaders["Authorization"];
-  }
-
-  // 공통 요청 메서드
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {},
-  ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
-
-    const config: RequestInit = {
-      ...options,
-      headers: {
-        ...this.defaultHeaders,
-        ...options.headers,
-      },
-    };
+    // 디버깅: 쿠키 정보 출력
+    if (
+      typeof window !== "undefined" &&
+      process.env.NODE_ENV === "development"
+    ) {
+      const cookies = document.cookie;
+      const hasJSessionId = cookies.includes("JSESSIONID");
+      console.log("🍪 현재 쿠키:", cookies);
+      console.log("🔑 JSESSIONID 존재:", hasJSessionId);
+    }
 
     try {
-      const response = await fetch(url, config);
+      const response = await fetch(`${BASE_URL}${url}`, {
+        ...options,
+        headers,
+        credentials: "include", // 쿠키 포함
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new ApiError(
+
+        // 500 에러 특별 처리 (백엔드 NullPointerException)
+        if (response.status === 500) {
+          console.warn(
+            "🚨 백엔드 500 에러: userPrincipal null (로그인되지 않은 상태)",
+          );
+          // 로그인되지 않은 상태로 간주
+          throw new FetchError(401, "로그인이 필요합니다");
+        }
+
+        throw new FetchError(
           response.status,
           errorData.message || response.statusText,
-          errorData.code as ErrorCode,
           errorData,
-          errorData.timestamp,
-          errorData.path,
         );
       }
 
-      const result: ApiResponse<T> = await response.json();
+      const result: Response<T> = await response.json();
 
-      if (!result.success) {
-        throw new ApiError(
-          400,
-          result.error || "API request failed",
-          undefined,
-          result,
-          result.timestamp,
-          result.path,
-        );
+      if (!result.isSuccess) {
+        throw new FetchError(400, result.error || "요청이 실패했습니다");
       }
 
-      return result.data;
+      return result.result;
     } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
+      if (error instanceof FetchError) throw error;
+
+      // 네트워크 에러
+      if (error instanceof TypeError) {
+        throw new FetchError(500, "서버에 연결할 수 없습니다");
       }
-      throw new ApiError(500, "Network error or unexpected response");
+
+      throw new FetchError(500, "알 수 없는 오류가 발생했습니다");
     }
   }
 
-  // HTTP 메서드들
-  async get<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
-    const url = params
-      ? `${endpoint}?${new URLSearchParams(params)}`
-      : endpoint;
-    return this.request<T>(url, { method: "GET" });
+  async get<T>(url: string, params?: Record<string, any>): Promise<T> {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<T>(`${url}${queryString}`, { method: "GET" });
   }
 
-  async post<T>(endpoint: string, data?: any): Promise<T> {
-    const body = data instanceof FormData ? data : JSON.stringify(data);
-    const headers =
-      data instanceof FormData
-        ? {} // FormData는 브라우저가 자동으로 Content-Type 설정
-        : { "Content-Type": "application/json" };
-
-    return this.request<T>(endpoint, {
+  async post<T>(url: string, data?: any): Promise<T> {
+    return this.request<T>(url, {
       method: "POST",
-      body,
-      headers,
+      body: JSON.stringify(data),
     });
   }
 
-  async put<T>(endpoint: string, data?: any): Promise<T> {
-    return this.request<T>(endpoint, {
+  async put<T>(url: string, data?: any): Promise<T> {
+    return this.request<T>(url, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
-  async patch<T>(endpoint: string, data?: any): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: "PATCH",
-      body: JSON.stringify(data),
-    });
+  async delete<T>(url: string): Promise<T> {
+    return this.request<T>(url, { method: "DELETE" });
   }
 
-  async delete<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: "DELETE" });
-  }
-}
+  // 인증 없이 요청 (공개 API용)
+  async getPublic<T>(url: string, params?: Record<string, any>): Promise<T> {
+    const originalToken = this.token;
+    this.token = undefined;
 
-// 기본 API 클라이언트 인스턴스
-export const apiClient = new ApiClient();
-
-// 로컬 스토리지에서 토큰 가져와서 설정 (브라우저에서만)
-if (typeof window !== "undefined") {
-  const token = localStorage.getItem("auth_token");
-  if (token) {
-    apiClient.setAuthToken(token);
+    try {
+      return await this.get<T>(url, params);
+    } finally {
+      this.token = originalToken;
+    }
   }
 }
+
+export const client = new SimpleClient();
+
+export const api = {
+  get: <T>(url: string, params?: Record<string, any>) =>
+    client.get<T>(url, params),
+  post: <T>(url: string, data?: any) => client.post<T>(url, data),
+  put: <T>(url: string, data?: any) => client.put<T>(url, data),
+  delete: <T>(url: string) => client.delete<T>(url),
+  getPublic: <T>(url: string, params?: Record<string, any>) =>
+    client.getPublic<T>(url, params),
+  setToken: (token: string) => client.setToken(token),
+  clearToken: () => client.clearToken(),
+};

@@ -1,74 +1,50 @@
+export type PostSortType = "latest" | "reactions" | "comments";
+
+export type ConceptType =
+  | "all"
+  | "classical_poetry"
+  | "poetry"
+  | "novel"
+  | "drama"
+  | "essay";
+
 export interface Post {
-  id: number;
-  title: string;
-  author: string;
-  authorId?: string;
-  time: string;
-  emotion: string;
-  category: string;
-  preview: string;
-  content?: string;
-  originalContent?: string;
-  transformedContent?: string;
-  totalReactions: number;
-  comments: number;
-  bookmarks?: number;
-  hasImage: boolean;
-  imageUrl?: string;
-  isHidden?: boolean;
+  postId: number;
+  nickname: string;
+  afterTitle: string;
+  afterContent: string;
   createdAt: string;
-  updatedAt?: string;
+  reactionCount: number;
+  commentCount: number;
+  conceptType: ConceptType;
+  imageUrl: string;
 }
 
-export interface CreatePostRequest {
-  title: string;
-  content: string;
-  category: string;
-  emotion?: string;
-  image?: File;
-}
-
-export interface UpdatePostRequest {
-  id: number;
-  title?: string;
-  content?: string;
-  category?: string;
-  emotion?: string;
-  isHidden?: boolean;
-}
-
-export interface PostsResponse {
-  posts: Post[];
-  totalCount: number;
+export interface Pagination {
   currentPage: number;
   totalPages: number;
+  totalCount: number;
+  pageSize: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface PostsResult {
+  nextCursor?: number;
+  pagination: Pagination;
+  posts: Post[];
+}
+
+export interface PostsApiResponse {
+  isSuccess: boolean;
+  result: PostsResult;
 }
 
 export interface PostQueryParams {
+  sort?: PostSortType;
+  concept?: ConceptType;
+  cursor?: number;
   page?: number;
   limit?: number;
-  category?: string;
-  emotion?: string;
-  search?: string;
-  author?: string;
-  sortBy?: "latest" | "reactions" | "bookmarks" | "comments";
+  keyword?: string;
 }
-
-export type PostCategory =
-  | "Classical Poetry"
-  | "Biblical"
-  | "Modern Poem"
-  | "Prose"
-  | "Haiku"
-  | "Sonnet"
-  | "Free Verse";
-
-export type PostEmotion =
-  | "joyful"
-  | "melancholy"
-  | "romantic"
-  | "contemplative"
-  | "inspiring"
-  | "nostalgic"
-  | "peaceful"
-  | "passionate";
