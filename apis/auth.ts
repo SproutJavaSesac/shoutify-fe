@@ -1,5 +1,5 @@
 import { api } from "./client";
-import type { LoginStatusResponse, OAuth2Provider } from "@/types";
+import type { LoginStatusResponse, OAuth2Provider } from "@/types/auth";
 
 // OAuth2 로그인 시작
 export function loginWithGoogle(): void {

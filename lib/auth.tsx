@@ -12,7 +12,8 @@ import {
   loginWithGoogle,
   logout as authLogout,
 } from "@/apis/auth";
-import type { AuthState, AuthUser, OAuth2Provider } from "@/types";
+import type { AuthState, AuthUser, OAuth2Provider } from "@/types/auth";
+import { useRouter } from "next/navigation";
 
 interface AuthContextValue extends AuthState {
   login: (provider: OAuth2Provider) => void;
@@ -62,6 +63,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             id: 1,
             email: "sesac1@gmail.com",
             nickname: "행복한 코알라",
+            provider: "google",
           };
 
           setState({
@@ -121,36 +123,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // 로그아웃
   const logout = async () => {
     try {
-      // 개발 환경에서 하드코딩된 인증을 사용 중인 경우
-      if (
-        process.env.NODE_ENV === "development" &&
-        state.isAuthenticated &&
-        state.user?.id === 1
-      ) {
-        console.log("🔧 개발 모드: 하드코딩된 인증 로그아웃");
-
-        // JSESSIONID 쿠키 삭제
+      // 백엔드 세션 무효화를 위해 실제 API 호출
+      await authLogout();
+    } catch (error) {
+      console.error("API 로그아웃 호출에 실패했습니다:", error);
+      // API 호출이 실패하더라도 클라이언트 측에서는 로그아웃을 계속 진행합니다.
+    } finally {
+      // JSESSIONID 쿠키를 확실히 삭제합니다.
+      if (typeof window !== "undefined") {
+        console.log("클라이언트에서 JSESSIONID 쿠키를 삭제합니다.");
         document.cookie =
-          "JSESSIONID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-
-        setState({
-          isAuthenticated: false,
-          user: null,
-          loading: false,
-        });
-        return;
+          "JSESSIONID=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       }
 
-      // 실제 API 호출
-      await authLogout();
-      setState({
-        isAuthenticated: false,
-        user: null,
-        loading: false,
-      });
-    } catch (error) {
-      console.error("로그아웃 실패:", error);
-      // 로그아웃 실패해도 클라이언트 상태는 초기화
+      // 클라이언트 상태를 초기화합니다.
       setState({
         isAuthenticated: false,
         user: null,

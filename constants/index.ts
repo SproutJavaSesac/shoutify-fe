@@ -1,17 +1,3 @@
-// 모든 도메인 타입 re-export
-export * from "./posts";
-export * from "./comments";
-export * from "./users";
-export * from "./reactions";
-export * from "./rankings";
-export * from "./reports";
-export * from "./profanities";
-export * from "./auth";
-export * from "./members";
-
-// API 클라이언트 타입 re-export (명세서 기준)
-export type { ApiResponse, ApiError, ErrorCode } from "../apis/client";
-
 // 공통 상수들
 export const POST_CATEGORIES = [
   "Classical Poetry",

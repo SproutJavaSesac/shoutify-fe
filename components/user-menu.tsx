@@ -39,10 +39,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
-            <AvatarImage
-              src={user.avatar || "/placeholder.svg"}
-              alt={user.nickname}
-            />
+            <AvatarImage src={"/placeholder.svg"} alt={user.nickname} />
             <AvatarFallback>
               {user.nickname?.charAt(0).toUpperCase()}
             </AvatarFallback>
@@ -53,9 +50,6 @@ export function UserMenu() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{user.nickname}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              @{user.username}
-            </p>
             <p className="text-xs leading-none text-muted-foreground">
               {user.email}
             </p>

@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
-import { useAuth } from "@/lib/auth"
-import { useToast } from "@/hooks/use-toast"
-import { useRouter } from "next/navigation"
-import { User, Upload, Trash2, AlertTriangle } from "lucide-react"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { User, Upload, Trash2, AlertTriangle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,65 +21,65 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 
 export function ProfileEditForm() {
-  const { user, updateProfile, logout } = useAuth()
-  const { toast } = useToast()
-  const router = useRouter()
+  const { user, logout } = useAuth();
+  const { toast } = useToast();
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
-    name: user?.name || "",
-    username: user?.username || "",
+    nickname: user?.nickname || "",
     email: user?.email || "",
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSaveProfile = async () => {
-    if (!user) return
+    if (!user) return;
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await updateProfile(formData)
+      // await updateProfile(formData) // TODO: updateProfile 구현 필요
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       toast({
         description: "Profile updated successfully!",
-      })
+      });
     } catch (error) {
       toast({
         description: "Failed to update profile. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleDeleteAccount = async () => {
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
       // Simulate account deletion
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      await logout()
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await logout();
       toast({
         description: "Account deleted successfully",
-      })
-      router.push("/")
+      });
+      router.push("/");
     } catch (error) {
       toast({
         description: "Failed to delete account. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
+  };
 
-  if (!user) return null
+  if (!user) return null;
 
   return (
     <div className="space-y-6">
@@ -95,15 +95,22 @@ export function ProfileEditForm() {
           {/* Avatar Section */}
           <div className="flex items-center space-x-4">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-              <AvatarFallback className="text-lg">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarImage
+                src={(user as any).avatar || "/placeholder.svg"}
+                alt={user.nickname}
+              />
+              <AvatarFallback className="text-lg">
+                {user.nickname.charAt(0).toUpperCase()}
+              </AvatarFallback>
             </Avatar>
             <div className="space-y-2">
               <Button variant="outline" size="sm">
                 <Upload className="h-4 w-4 mr-2" />
                 Change Avatar
               </Button>
-              <p className="text-xs text-gray-500">JPG, PNG or GIF. Max size 2MB.</p>
+              <p className="text-xs text-gray-500">
+                JPG, PNG or GIF. Max size 2MB.
+              </p>
             </div>
           </div>
 
@@ -112,24 +119,13 @@ export function ProfileEditForm() {
           {/* Form Fields */}
           <div className="grid gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Display Name</Label>
+              <Label htmlFor="nickname">Display Name</Label>
               <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
+                id="nickname"
+                value={formData.nickname}
+                onChange={(e) => handleInputChange("nickname", e.target.value)}
                 placeholder="Enter your display name"
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                value={formData.username}
-                onChange={(e) => handleInputChange("username", e.target.value)}
-                placeholder="Enter your username"
-              />
-              <p className="text-xs text-gray-500">This will be shown on your posts and profile.</p>
             </div>
 
             <div className="space-y-2">
@@ -141,7 +137,9 @@ export function ProfileEditForm() {
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 placeholder="Enter your email"
               />
-              <p className="text-xs text-gray-500">Used for notifications and account recovery.</p>
+              <p className="text-xs text-gray-500">
+                Used for notifications and account recovery.
+              </p>
             </div>
           </div>
 
@@ -168,8 +166,9 @@ export function ProfileEditForm() {
               <div className="flex-1">
                 <h3 className="font-medium text-red-900">Delete Account</h3>
                 <p className="text-sm text-red-700 mt-1">
-                  Once you delete your account, there is no going back. This will permanently delete your account,
-                  posts, comments, and all associated data.
+                  Once you delete your account, there is no going back. This
+                  will permanently delete your account, posts, comments, and all
+                  associated data.
                 </p>
               </div>
             </div>
@@ -185,8 +184,9 @@ export function ProfileEditForm() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete your account and remove all your data
-                    from our servers, including:
+                    This action cannot be undone. This will permanently delete
+                    your account and remove all your data from our servers,
+                    including:
                     <ul className="list-disc list-inside mt-2 space-y-1">
                       <li>All your posts and their AI transformations</li>
                       <li>All your comments and replies</li>
@@ -197,7 +197,10 @@ export function ProfileEditForm() {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteAccount} className="bg-red-600 hover:bg-red-700">
+                  <AlertDialogAction
+                    onClick={handleDeleteAccount}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
                     Yes, delete my account
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -216,7 +219,7 @@ export function ProfileEditForm() {
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <div className="flex items-center space-x-3">
-                {user.provider === "google" ? (
+                {(user as any).provider === "google" ? (
                   <svg className="h-6 w-6" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
@@ -237,23 +240,33 @@ export function ProfileEditForm() {
                   </svg>
                 ) : (
                   <div className="h-6 w-6 bg-yellow-400 rounded flex items-center justify-center">
-                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                    <svg
+                      className="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
                       <path d="M12 3C7.03 3 3 6.14 3 10.1c0 2.52 1.65 4.74 4.1 6.1l-.9 3.3c-.1.36.26.66.6.5l4.06-2.65c.38.04.76.06 1.14.06 4.97 0 9-3.14 9-7.1S16.97 3 12 3z" />
                     </svg>
                   </div>
                 )}
                 <div>
-                  <p className="font-medium">{user.provider === "google" ? "Google" : "KakaoTalk"}</p>
-                  <p className="text-sm text-gray-500">Connected • {user.email}</p>
+                  <p className="font-medium">
+                    {(user as any).provider === "google"
+                      ? "Google"
+                      : "KakaoTalk"}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Connected • {user.email}
+                  </p>
                 </div>
               </div>
               <Button variant="outline" size="sm" disabled>
-                Connected
+                Disconnect
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

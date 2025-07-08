@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MembersAPI } from "@/apis";
+import { MembersAPI } from "@/apis/members";
 import type {
   MyInfoGetResponse,
   MyInfoEditRequest,
@@ -7,7 +7,7 @@ import type {
   MyPostListResponse,
   MyCommentListResponse,
   PaginationParams,
-} from "@/types";
+} from "@/types/members";
 
 // 내 정보 조회 훅
 export function useMyInfo() {
@@ -15,35 +15,28 @@ export function useMyInfo() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchMyInfo = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await MembersAPI.getMyInfo();
-      setData(response);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error("내 정보 조회 실패"));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    async function fetchMyInfo() {
+      try {
+        const response = await MembersAPI.getMyInfo();
+        setData(response);
+      } catch (err: any) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    }
     fetchMyInfo();
   }, []);
 
-  return {
-    data,
-    loading,
-    error,
-    refetch: fetchMyInfo,
-  };
+  return { data, loading, error };
 }
 
 // 내 정보 수정 훅
 export function useUpdateMyInfo() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [data, setData] = useState<MyInfoEditResponse | null>(null);
 
   const updateMyInfo = async (
     data: MyInfoEditRequest,
@@ -52,21 +45,17 @@ export function useUpdateMyInfo() {
       setLoading(true);
       setError(null);
       const response = await MembersAPI.updateMyInfo(data);
+      setData(response);
       return response;
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error("내 정보 수정 실패");
-      setError(error);
-      throw error;
+    } catch (err: any) {
+      setError(err);
+      return null;
     } finally {
       setLoading(false);
     }
   };
 
-  return {
-    updateMyInfo,
-    loading,
-    error,
-  };
+  return { updateMyInfo, data, loading, error };
 }
 
 // 내 게시글 목록 조회 훅
@@ -75,35 +64,21 @@ export function useMyPosts(params: PaginationParams = {}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchMyPosts = async (newParams?: PaginationParams) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await MembersAPI.getMyPosts(newParams || params);
-      setData(response);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error("내 게시글 조회 실패"));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    async function fetchMyPosts() {
+      try {
+        const response = await MembersAPI.getMyPosts(params);
+        setData(response);
+      } catch (err: any) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    }
     fetchMyPosts();
   }, [params.page, params.size]);
 
-  // 페이지 변경
-  const changePage = (page: number) => {
-    fetchMyPosts({ ...params, page });
-  };
-
-  return {
-    data,
-    loading,
-    error,
-    refetch: () => fetchMyPosts(),
-    changePage,
-  };
+  return { data, loading, error };
 }
 
 // 내 댓글 목록 조회 훅
@@ -112,54 +87,19 @@ export function useMyComments(params: PaginationParams = {}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchMyComments = async (newParams?: PaginationParams) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await MembersAPI.getMyComments(newParams || params);
-      setData(response);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error("내 댓글 조회 실패"));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    async function fetchMyComments() {
+      try {
+        const response = await MembersAPI.getMyComments(params);
+        setData(response);
+      } catch (err: any) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    }
     fetchMyComments();
   }, [params.page, params.size]);
 
-  // 페이지 변경
-  const changePage = (page: number) => {
-    fetchMyComments({ ...params, page });
-  };
-
-  return {
-    data,
-    loading,
-    error,
-    refetch: () => fetchMyComments(),
-    changePage,
-  };
-}
-
-// 통합 마이페이지 데이터 훅
-export function useMyPageData() {
-  const myInfo = useMyInfo();
-  const myPosts = useMyPosts({ page: 0, size: 5 }); // 최신 5개만
-  const myComments = useMyComments({ page: 0, size: 5 }); // 최신 5개만
-
-  const refetchAll = () => {
-    myInfo.refetch();
-    myPosts.refetch();
-    myComments.refetch();
-  };
-
-  return {
-    myInfo,
-    myPosts,
-    myComments,
-    refetchAll,
-    loading: myInfo.loading || myPosts.loading || myComments.loading,
-  };
+  return { data, loading, error };
 }
