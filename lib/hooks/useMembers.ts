@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { MembersAPI } from "@/apis/members";
+import {
+  getMyInfo,
+  updateMyInfo,
+  getMyPosts,
+  getMyComments,
+} from "@/apis/members";
 import type {
   MyInfoGetResponse,
   MyInfoEditRequest,
@@ -18,7 +23,7 @@ export function useMyInfo() {
   useEffect(() => {
     async function fetchMyInfo() {
       try {
-        const response = await MembersAPI.getMyInfo();
+        const response = await getMyInfo();
         setData(response);
       } catch (err: any) {
         setError(err);
@@ -38,13 +43,13 @@ export function useUpdateMyInfo() {
   const [error, setError] = useState<Error | null>(null);
   const [data, setData] = useState<MyInfoEditResponse | null>(null);
 
-  const updateMyInfo = async (
+  const updateMyInfoHook = async (
     data: MyInfoEditRequest,
   ): Promise<MyInfoEditResponse | null> => {
     try {
       setLoading(true);
       setError(null);
-      const response = await MembersAPI.updateMyInfo(data);
+      const response = await updateMyInfo(data);
       setData(response);
       return response;
     } catch (err: any) {
@@ -55,7 +60,7 @@ export function useUpdateMyInfo() {
     }
   };
 
-  return { updateMyInfo, data, loading, error };
+  return { updateMyInfo: updateMyInfoHook, data, loading, error };
 }
 
 // 내 게시글 목록 조회 훅
@@ -67,7 +72,7 @@ export function useMyPosts(params: PaginationParams = {}) {
   useEffect(() => {
     async function fetchMyPosts() {
       try {
-        const response = await MembersAPI.getMyPosts(params);
+        const response = await getMyPosts(params);
         setData(response);
       } catch (err: any) {
         setError(err);
@@ -90,7 +95,7 @@ export function useMyComments(params: PaginationParams = {}) {
   useEffect(() => {
     async function fetchMyComments() {
       try {
-        const response = await MembersAPI.getMyComments(params);
+        const response = await getMyComments(params);
         setData(response);
       } catch (err: any) {
         setError(err);
