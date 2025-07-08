@@ -20,6 +20,8 @@ import { Upload, X, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
+import { createPost } from "@/apis/posts";
+import { FetchError } from "@/apis/client";
 
 const categories = [
   "Classical Poetry",
@@ -53,6 +55,30 @@ const emotionColors = {
   passionate: "bg-red-100 text-red-800",
 };
 
+const categoryToConceptType = (category: string): string => {
+  const lowerCaseCategory = category.toLowerCase();
+  if (
+    lowerCaseCategory.includes("poem") ||
+    lowerCaseCategory.includes("poetry") ||
+    lowerCaseCategory.includes("sonnet") ||
+    lowerCaseCategory.includes("haiku") ||
+    lowerCaseCategory.includes("verse")
+  ) {
+    return "POETRY";
+  }
+  if (lowerCaseCategory.includes("prose")) {
+    return "NOVEL";
+  }
+  // 기본적으로 대문자화하여 반환 (예: "Biblical" -> "BIBLICAL")
+  return category.toUpperCase().replace(" ", "_");
+};
+
+const emotionToEmotionType = (emotion: string): string => {
+  if (emotion === "joyful") return "HAPPY";
+  if (!emotion) return ""; // 감정 선택 안 한 경우 빈 문자열
+  return emotion.toUpperCase();
+};
+
 export function PostCreationForm() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -79,7 +105,7 @@ export function PostCreationForm() {
     e.preventDefault();
     if (!title.trim() || !content.trim() || !category) {
       toast({
-        description: "Please fill in all required fields",
+        description: "카테고리, 제목, 내용은 필수 입력 항목입니다.",
         variant: "destructive",
       });
       return;
@@ -87,13 +113,47 @@ export function PostCreationForm() {
 
     setIsSubmitting(true);
 
-    // Simulate AI transformation
-    setTimeout(() => {
+    const postData = {
+      title,
+      content,
+      conceptType: categoryToConceptType(category),
+      emotionType: emotionToEmotionType(emotion),
+    };
+
+    console.log("🚀 API 요청 데이터:", postData);
+
+    try {
+      const response = await createPost(postData);
+
       toast({
-        description: "Your post has been created and transformed!",
+        title: "게시글 작성 성공!",
+        description: `"${response.title}" 게시글이 성공적으로 생성되었습니다.`,
       });
-      router.push("/post/1"); // Redirect to the new post
-    }, 2000);
+      router.push(`/post/${response.postId}`);
+    } catch (error) {
+      let errorMessage =
+        "게시글 작성 중 오류가 발생했습니다. 다시 시도해주세요.";
+      if (error instanceof FetchError) {
+        // FetchError인 경우, 서버에서 보낸 에러 메시지를 사용합니다.
+        errorMessage = error.message;
+        console.error(
+          "게시글 작성 실패 (API Error):",
+          error.message,
+          error.data,
+        );
+      } else {
+        // 그 외의 에러 (네트워크 문제 등)
+        console.error("게시글 작성 실패 (Unknown Error):", error);
+      }
+
+      toast({
+        title: "오류",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

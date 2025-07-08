@@ -20,25 +20,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
-import { useMyInfo, useMyPosts } from "@/lib/hooks/useMembers";
-
-const myComments = [
-  {
-    id: 1,
-    postTitle: "Love's Gentle Refrain",
-    content: "Your words paint such vivid imagery of autumn's melancholy.",
-    reactions: 8,
-    createdAt: "1 hour ago",
-  },
-  {
-    id: 2,
-    postTitle: "The Solitude of Stars",
-    content:
-      "The transformation is remarkable. The AI truly captured the essence.",
-    reactions: 12,
-    createdAt: "3 hours ago",
-  },
-];
+import { useMyInfo, useMyPosts, useMyComments } from "@/lib/hooks/useMembers";
+import type { PaginationDto } from "@/types/members";
 
 const bookmarkedPosts = [
   {
@@ -155,9 +138,45 @@ const emotionTypeColors: { [key: string]: string } = {
   PROUD: "bg-green-100 text-green-800",
 };
 
+interface PaginationProps {
+  pagination: PaginationDto | undefined;
+  onPageChange: (page: number) => void;
+}
+
+function Pagination({ pagination, onPageChange }: PaginationProps) {
+  if (!pagination || pagination.totalPages <= 1) return null;
+
+  const { totalPages, currentPage, hasPrevious, hasNext } = pagination;
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i);
+
+  return (
+    <div className="flex justify-center items-center space-x-2 mt-6">
+      <Button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={!hasPrevious}
+      >
+        Previous
+      </Button>
+      {pageNumbers.map((page) => (
+        <Button
+          key={page}
+          onClick={() => onPageChange(page)}
+          variant={currentPage === page ? "default" : "outline"}
+        >
+          {page + 1}
+        </Button>
+      ))}
+      <Button onClick={() => onPageChange(currentPage + 1)} disabled={!hasNext}>
+        Next
+      </Button>
+    </div>
+  );
+}
+
 export function MyPageTabs() {
   const [activeTab, setActiveTab] = useState("posts");
   const [postsPage, setPostsPage] = useState(0);
+  const [commentsPage, setCommentsPage] = useState(0);
 
   const { user } = useAuth();
   const { data: myInfo, loading: infoLoading, error: infoError } = useMyInfo();
@@ -166,6 +185,11 @@ export function MyPageTabs() {
     loading: postsLoading,
     error: postsError,
   } = useMyPosts({ page: postsPage, size: 5 });
+  const {
+    data: commentsData,
+    loading: commentsLoading,
+    error: commentsError,
+  } = useMyComments({ page: commentsPage, size: 10 });
 
   if (infoLoading) {
     return (
@@ -185,33 +209,6 @@ export function MyPageTabs() {
   }
 
   if (!user || !myInfo) return null;
-
-  const renderPagination = () => {
-    if (!postsData?.pagination) return null;
-
-    const { totalPages, page, hasPrevious, hasNext } = postsData.pagination;
-    const pageNumbers = Array.from({ length: totalPages }, (_, i) => i);
-
-    return (
-      <div className="flex justify-center items-center space-x-2 mt-6">
-        <Button onClick={() => setPostsPage(page - 1)} disabled={!hasPrevious}>
-          Previous
-        </Button>
-        {pageNumbers.map((pageNumber) => (
-          <Button
-            key={pageNumber}
-            onClick={() => setPostsPage(pageNumber)}
-            variant={page === pageNumber ? "default" : "outline"}
-          >
-            {pageNumber + 1}
-          </Button>
-        ))}
-        <Button onClick={() => setPostsPage(page + 1)} disabled={!hasNext}>
-          Next
-        </Button>
-      </div>
-    );
-  };
 
   return (
     <div className="space-y-6">
@@ -378,44 +375,60 @@ export function MyPageTabs() {
                 </CardContent>
               </Card>
             ))}
-          {renderPagination()}
+          <Pagination
+            pagination={postsData?.pagination}
+            onPageChange={setPostsPage}
+          />
         </TabsContent>
 
         <TabsContent value="comments" className="space-y-4">
-          {myComments.map((comment) => (
-            <Card key={comment.id}>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <span className="text-sm text-gray-500">on</span>
-                      <Link
-                        href={`/post/${comment.id}`}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-800"
-                      >
-                        {comment.postTitle}
-                      </Link>
-                      <span className="text-sm text-gray-500">
-                        {comment.createdAt}
-                      </span>
-                    </div>
-
-                    <p className="text-gray-800 mb-3">{comment.content}</p>
-
-                    <div className="flex items-center space-x-1 text-sm text-gray-500">
-                      <Heart className="h-4 w-4" />
-                      <span>{comment.reactions} reactions</span>
+          {commentsLoading && (
+            <div className="flex justify-center items-center h-40">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          )}
+          {commentsError && (
+            <div className="text-center py-10 text-red-500">
+              Failed to load comments.
+            </div>
+          )}
+          {!commentsLoading &&
+            !commentsError &&
+            commentsData?.comments.map((comment) => (
+              <Card key={comment.commentId}>
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="text-sm text-gray-500">on</span>
+                        <Link
+                          href={`/post/${comment.postId}`}
+                          className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                        >
+                          {comment.postTitle}
+                        </Link>
+                        <span className="text-sm text-gray-500">
+                          {formatDistanceToNow(new Date(comment.createdAt), {
+                            addSuffix: true,
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-gray-800 mb-3">
+                        {comment.afterContent}
+                      </p>
+                      <div className="flex items-center space-x-1 text-sm text-gray-500">
+                        <Heart className="h-4 w-4" />
+                        <span>{comment.reactionCount} reactions</span>
+                      </div>
                     </div>
                   </div>
-
-                  <Button variant="outline" size="sm">
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))}
+          <Pagination
+            pagination={commentsData?.pagination}
+            onPageChange={setCommentsPage}
+          />
         </TabsContent>
 
         <TabsContent value="bookmarks" className="space-y-4">

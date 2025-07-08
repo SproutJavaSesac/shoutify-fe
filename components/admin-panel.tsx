@@ -1,15 +1,23 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Flag, Users, Settings, Eye, Check, X, AlertTriangle } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Flag,
+  Users,
+  Settings,
+  Eye,
+  Check,
+  X,
+  AlertTriangle,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const pendingReports = [
   {
@@ -42,7 +50,7 @@ const pendingReports = [
     content: "This comment contains inappropriate language...",
     reportedAt: "1 hour ago",
   },
-]
+];
 
 const processedReports = [
   {
@@ -69,7 +77,7 @@ const processedReports = [
     reportedAt: "2 days ago",
     processedAt: "2 days ago",
   },
-]
+];
 
 const users = [
   {
@@ -88,30 +96,42 @@ const users = [
     joinDate: "December 2024",
     reports: 8,
   },
-]
+];
 
 export function AdminPanel() {
-  const [activeTab, setActiveTab] = useState("pending-reports")
-  const { toast } = useToast()
+  const [activeTab, setActiveTab] = useState("pending-reports");
+  const { toast } = useToast();
 
-  const handleReportAction = (id: number, action: "accept" | "reject", type: "post" | "comment") => {
+  const handleReportAction = (
+    id: number,
+    action: "accept" | "reject",
+    type: "post" | "comment",
+  ) => {
     toast({
       description: `${type} report ${action}ed successfully`,
-    })
-  }
+    });
+  };
 
   const handleUserAction = (id: number, action: "delete") => {
     toast({
       description: `User ${action}d successfully`,
-    })
-  }
+    });
+  };
 
-  const ReportCard = ({ report, showActions = true }: { report: any; showActions?: boolean }) => (
+  const ReportCard = ({
+    report,
+    showActions = true,
+  }: {
+    report: any;
+    showActions?: boolean;
+  }) => (
     <div className="border border-gray-200 rounded-lg p-4">
       <div className="flex items-start justify-between mb-3">
         <div>
           <h3 className="font-semibold text-gray-900">
-            {report.type === "post" ? report.title : `Comment on "${report.postTitle}"`}
+            {report.type === "post"
+              ? report.title
+              : `Comment on "${report.postTitle}"`}
           </h3>
           <p className="text-sm text-gray-600">
             by {report.author} • {report.reportedAt}
@@ -124,7 +144,11 @@ export function AdminPanel() {
             {report.reportCount} reports
           </Badge>
           {report.status && (
-            <Badge variant={report.status === "accepted" ? "destructive" : "default"}>{report.status}</Badge>
+            <Badge
+              variant={report.status === "accepted" ? "destructive" : "default"}
+            >
+              {report.status}
+            </Badge>
           )}
         </div>
       </div>
@@ -146,11 +170,19 @@ export function AdminPanel() {
 
       {showActions && (
         <div className="flex space-x-2">
-          <Button size="sm" variant="outline" onClick={() => handleReportAction(report.id, "accept", report.type)}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleReportAction(report.id, "accept", report.type)}
+          >
             <Check className="h-4 w-4 mr-1" />
             Accept Report
           </Button>
-          <Button size="sm" variant="outline" onClick={() => handleReportAction(report.id, "reject", report.type)}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleReportAction(report.id, "reject", report.type)}
+          >
             <X className="h-4 w-4 mr-1" />
             Reject Report
           </Button>
@@ -161,7 +193,7 @@ export function AdminPanel() {
         </div>
       )}
     </div>
-  )
+  );
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -169,7 +201,7 @@ export function AdminPanel() {
         <TabsTrigger value="pending-reports">Pending Reports</TabsTrigger>
         <TabsTrigger value="report-results">Report Results</TabsTrigger>
         <TabsTrigger value="users">User Management</TabsTrigger>
-        <TabsTrigger value="ai-prompts">AI Prompts</TabsTrigger>
+        <TabsTrigger value="profanity-management">비속어 관리</TabsTrigger>
       </TabsList>
 
       <TabsContent value="pending-reports" className="space-y-6">
@@ -183,7 +215,11 @@ export function AdminPanel() {
           <CardContent>
             <div className="space-y-4">
               {pendingReports.map((report) => (
-                <ReportCard key={report.id} report={report} showActions={true} />
+                <ReportCard
+                  key={report.id}
+                  report={report}
+                  showActions={true}
+                />
               ))}
             </div>
           </CardContent>
@@ -201,7 +237,11 @@ export function AdminPanel() {
           <CardContent>
             <div className="space-y-4">
               {processedReports.map((report) => (
-                <ReportCard key={report.id} report={report} showActions={false} />
+                <ReportCard
+                  key={report.id}
+                  report={report}
+                  showActions={false}
+                />
               ))}
             </div>
           </CardContent>
@@ -219,10 +259,15 @@ export function AdminPanel() {
           <CardContent>
             <div className="space-y-4">
               {users.map((user) => (
-                <div key={user.id} className="border border-gray-200 rounded-lg p-4">
+                <div
+                  key={user.id}
+                  className="border border-gray-200 rounded-lg p-4"
+                >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-gray-900">{user.username}</h3>
+                      <h3 className="font-semibold text-gray-900">
+                        {user.username}
+                      </h3>
                       <p className="text-sm text-gray-600">{user.email}</p>
                       <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
                         <span>{user.posts} posts</span>
@@ -231,7 +276,11 @@ export function AdminPanel() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Button size="sm" variant="destructive" onClick={() => handleUserAction(user.id, "delete")}>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleUserAction(user.id, "delete")}
+                      >
                         Delete
                       </Button>
                     </div>
@@ -243,95 +292,23 @@ export function AdminPanel() {
         </Card>
       </TabsContent>
 
-      <TabsContent value="ai-prompts" className="space-y-6">
-        {/* Add New AI Prompt */}
+      <TabsContent value="profanity-management" className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Settings className="h-5 w-5" />
-              <span>Add New AI Prompt Rule</span>
+              <span>비속어 관리</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="profanity">Profanity/Inappropriate Word</Label>
-                <Input id="profanity" placeholder="Enter word to filter..." className="w-full" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="replacement">Replacement Word</Label>
-                <Input id="replacement" placeholder="Enter replacement..." className="w-full" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="explanation">Explanation</Label>
-                <Textarea id="explanation" placeholder="Why this replacement..." className="w-full" />
-              </div>
-            </div>
-            <div className="flex justify-end">
-              <Button>Add AI Prompt Rule</Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Existing AI Prompts Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Registered AI Prompt Rules</CardTitle>
-          </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {[
-                {
-                  id: 1,
-                  profanity: "damn",
-                  replacement: "darn",
-                  explanation: "Mild profanity replacement",
-                  createdAt: "2024-12-17 10:30",
-                },
-                {
-                  id: 2,
-                  profanity: "stupid",
-                  replacement: "unwise",
-                  explanation: "More literary alternative",
-                  createdAt: "2024-12-17 09:15",
-                },
-                {
-                  id: 3,
-                  profanity: "hate",
-                  replacement: "dislike",
-                  explanation: "Softer emotional expression",
-                  createdAt: "2024-12-17 08:45",
-                },
-              ].map((rule) => (
-                <div key={rule.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
-                      <div>
-                        <p className="text-sm font-medium text-gray-700">Profanity</p>
-                        <p className="text-gray-900">{rule.profanity}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-700">Replacement</p>
-                        <p className="text-gray-900">{rule.replacement}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-700">Explanation</p>
-                        <p className="text-gray-900">{rule.explanation}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2 ml-4">
-                      <p className="text-xs text-gray-500">{rule.createdAt}</p>
-                      <Button size="sm" variant="destructive">
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="flex w-full max-w-sm items-center space-x-2">
+              <Input type="text" placeholder="검색할 비속어를 입력하세요." />
+              <Button type="submit">검색</Button>
             </div>
+            {/* 검색 결과가 여기에 표시됩니다. */}
           </CardContent>
         </Card>
       </TabsContent>
     </Tabs>
-  )
+  );
 }

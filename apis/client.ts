@@ -40,17 +40,6 @@ class SimpleClient {
       headers["Authorization"] = `Bearer ${this.token}`;
     }
 
-    // 디버깅: 쿠키 정보 출력
-    if (
-      typeof window !== "undefined" &&
-      process.env.NODE_ENV === "development"
-    ) {
-      const cookies = document.cookie;
-      const hasJSessionId = cookies.includes("JSESSIONID");
-      console.log("🍪 현재 쿠키:", cookies);
-      console.log("🔑 JSESSIONID 존재:", hasJSessionId);
-    }
-
     try {
       const response = await fetch(`${BASE_URL}${url}`, {
         ...options,
@@ -58,41 +47,39 @@ class SimpleClient {
         credentials: "include", // 쿠키 포함
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-
-        // 500 에러 특별 처리 (백엔드 NullPointerException)
-        if (response.status === 500) {
-          console.warn(
-            "🚨 백엔드 500 에러: userPrincipal null (로그인되지 않은 상태)",
-          );
-          // 로그인되지 않은 상태로 간주
-          throw new FetchError(401, "로그인이 필요합니다");
-        }
-
+      // 500 에러 특별 처리 (백엔드 NullPointerException 등)
+      if (response.status === 500) {
+        console.error(
+          "🚨 백엔드 500 에러: 서버 내부 오류가 발생했습니다. userPrincipal이 null일 수 있습니다.",
+        );
         throw new FetchError(
-          response.status,
-          errorData.message || response.statusText,
-          errorData,
+          500,
+          "서버에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
         );
       }
 
       const result: Response<T> = await response.json();
 
-      if (!result.isSuccess) {
-        throw new FetchError(400, result.error || "요청이 실패했습니다");
+      if (!response.ok || !result.isSuccess) {
+        const errorMessage =
+          result.error || result.message || "알 수 없는 에러";
+        console.error(
+          `API Error: ${response.status} - ${errorMessage}`,
+          result,
+        );
+        throw new FetchError(response.status, errorMessage, result);
       }
 
       return result.result;
     } catch (error) {
-      if (error instanceof FetchError) throw error;
-
-      // 네트워크 에러
-      if (error instanceof TypeError) {
-        throw new FetchError(500, "서버에 연결할 수 없습니다");
+      if (error instanceof FetchError) {
+        throw error;
       }
-
-      throw new FetchError(500, "알 수 없는 오류가 발생했습니다");
+      console.error("네트워크 또는 예상치 못한 에러:", error);
+      throw new FetchError(
+        503,
+        "서버에 연결할 수 없거나 응답을 처리할 수 없습니다.",
+      );
     }
   }
 

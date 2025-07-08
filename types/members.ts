@@ -2,10 +2,10 @@
 
 // 페이지네이션 공통 타입
 export interface PaginationDto {
-  page: number;
+  currentPage: number;
   totalPages: number;
   totalCount: number;
-  size: number;
+  pageSize: number;
   hasNext: boolean;
   hasPrevious: boolean;
 }
