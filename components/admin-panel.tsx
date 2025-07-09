@@ -9,6 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Flag,
   Users,
   Settings,
@@ -98,8 +105,43 @@ const users = [
   },
 ];
 
+const profanityCategories = [
+  "GENERAL_SWEAR",
+  "SEXUAL_DEGRADATION",
+  "DISCRIMINATION_HATE",
+  "MODIFIED_SWEAR",
+] as const;
+
+const initialRules = [
+  {
+    id: 1,
+    profanity: "damn",
+    replacement: "darn",
+    explanation: "Mild profanity replacement",
+    category: "GENERAL_SWEAR",
+    createdAt: "2024-12-17 10:30",
+  },
+  {
+    id: 2,
+    profanity: "stupid",
+    replacement: "unwise",
+    explanation: "More literary alternative",
+    category: "GENERAL_SWEAR",
+    createdAt: "2024-12-17 09:15",
+  },
+  {
+    id: 3,
+    profanity: "hate",
+    replacement: "dislike",
+    explanation: "Softer emotional expression",
+    category: "DISCRIMINATION_HATE",
+    createdAt: "2024-12-17 08:45",
+  },
+];
+
 export function AdminPanel() {
   const [activeTab, setActiveTab] = useState("pending-reports");
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
   const handleReportAction = (
@@ -117,6 +159,14 @@ export function AdminPanel() {
       description: `User ${action}d successfully`,
     });
   };
+
+  const filteredRules = initialRules.filter(
+    (rule) =>
+      rule.profanity.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      rule.replacement.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      rule.explanation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      rule.category.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   const ReportCard = ({
     report,
@@ -293,7 +343,7 @@ export function AdminPanel() {
       </TabsContent>
 
       <TabsContent value="profanity-management" className="space-y-6">
-         <Card>
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Settings className="h-5 w-5" />
@@ -301,18 +351,45 @@ export function AdminPanel() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="profanity">Profanity/Inappropriate Word</Label>
-                <Input id="profanity" placeholder="Enter word to filter..." className="w-full" />
+                <Input
+                  id="profanity"
+                  placeholder="Enter word to filter..."
+                  className="w-full"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="replacement">Replacement Word</Label>
-                <Input id="replacement" placeholder="Enter replacement..." className="w-full" />
+                <Input
+                  id="replacement"
+                  placeholder="Enter replacement..."
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {profanityCategories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="explanation">Explanation</Label>
-                <Textarea id="explanation" placeholder="Why this replacement..." className="w-full" />
+                <Textarea
+                  id="explanation"
+                  placeholder="Why this replacement..."
+                  className="w-full"
+                />
               </div>
             </div>
             <div className="flex justify-end">
@@ -328,42 +405,43 @@ export function AdminPanel() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                {
-                  id: 1,
-                  profanity: "damn",
-                  replacement: "darn",
-                  explanation: "Mild profanity replacement",
-                  createdAt: "2024-12-17 10:30",
-                },
-                {
-                  id: 2,
-                  profanity: "stupid",
-                  replacement: "unwise",
-                  explanation: "More literary alternative",
-                  createdAt: "2024-12-17 09:15",
-                },
-                {
-                  id: 3,
-                  profanity: "hate",
-                  replacement: "dislike",
-                  explanation: "Softer emotional expression",
-                  createdAt: "2024-12-17 08:45",
-                },
-              ].map((rule) => (
-                <div key={rule.id} className="border border-gray-200 rounded-lg p-4">
+              <div className="mb-4">
+                <Input
+                  placeholder="Search rules..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              {filteredRules.map((rule) => (
+                <div
+                  key={rule.id}
+                  className="border border-gray-200 rounded-lg p-4"
+                >
                   <div className="flex items-start justify-between">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1">
                       <div>
-                        <p className="text-sm font-medium text-gray-700">Profanity</p>
+                        <p className="text-sm font-medium text-gray-700">
+                          Profanity
+                        </p>
                         <p className="text-gray-900">{rule.profanity}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-700">Replacement</p>
+                        <p className="text-sm font-medium text-gray-700">
+                          Replacement
+                        </p>
                         <p className="text-gray-900">{rule.replacement}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-700">Explanation</p>
+                        <p className="text-sm font-medium text-gray-700">
+                          Category
+                        </p>
+                        <p className="text-gray-900">{rule.category}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">
+                          Explanation
+                        </p>
                         <p className="text-gray-900">{rule.explanation}</p>
                       </div>
                     </div>
