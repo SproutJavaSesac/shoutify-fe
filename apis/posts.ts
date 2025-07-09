@@ -1,4 +1,4 @@
-import { client } from "./client";
+import { api } from "./client";
 import type { PostsApiResponse, PostQueryParams } from "@/types/posts";
 
 export type CreatePostRequest = {
@@ -19,7 +19,7 @@ export async function getPosts(
   params?: PostQueryParams,
 ): Promise<PostsApiResponse> {
   try {
-    return await client.getPublic<PostsApiResponse>("/posts", params);
+    return await api.public.get<PostsApiResponse>("/posts", params);
   } catch (error) {
     console.warn("게시글 목록 조회 실패:", error);
     throw error;
@@ -29,7 +29,7 @@ export async function getPosts(
 // 게시글 상세 조회
 export async function getPost(postId: number) {
   try {
-    return await client.getPublic(`/posts/${postId}`);
+    return await api.public.get(`/posts/${postId}`);
   } catch (error) {
     console.warn("게시글 상세 조회 실패:", error);
     throw error;
@@ -39,7 +39,7 @@ export async function getPost(postId: number) {
 export const createPost = async (
   data: CreatePostRequest,
 ): Promise<CreatePostResponse> => {
-  return client.post<CreatePostResponse>("/api/v1/posts", data);
+  return api.post<CreatePostResponse>("/posts", data);
 };
 
 // 게시글 수정
@@ -52,10 +52,10 @@ export async function updatePost(
     imageFile?: File;
   },
 ) {
-  return client.put(`/posts/${postId}`, data);
+  return api.put(`/posts/${postId}`, data);
 }
 
 // 게시글 삭제
 export async function deletePost(postId: number) {
-  return client.delete(`/posts/${postId}`);
+  return api.delete(`/posts/${postId}`);
 }

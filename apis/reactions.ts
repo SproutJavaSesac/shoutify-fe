@@ -1,4 +1,4 @@
-import { apiClient } from "./client";
+import { api } from "./client";
 import type {
   Reaction,
   ReactionRequest,
@@ -16,14 +16,14 @@ export class ReactionsApi {
     targetId: number,
     targetType: ReactionTarget,
   ): Promise<ReactionsResponse> {
-    return apiClient.get<ReactionsResponse>(
+    return api.public.get<ReactionsResponse>(
       `${this.basePath}/${targetType}/${targetId}`,
     );
   }
 
   // 반응 추가/수정
   async addReaction(data: ReactionRequest): Promise<void> {
-    return apiClient.post<void>(this.basePath, data);
+    return api.post<void>(this.basePath, data);
   }
 
   // 반응 제거
@@ -31,7 +31,7 @@ export class ReactionsApi {
     targetId: number,
     targetType: ReactionTarget,
   ): Promise<void> {
-    return apiClient.delete<void>(`${this.basePath}/${targetType}/${targetId}`);
+    return api.delete<void>(`${this.basePath}/${targetType}/${targetId}`);
   }
 
   // 사용자의 반응 목록 조회
@@ -42,7 +42,10 @@ export class ReactionsApi {
     limit?: number,
   ): Promise<Reaction[]> {
     const params = { targetType, page, limit };
-    return apiClient.get<Reaction[]>(`${this.basePath}/user/${userId}`, params);
+    return api.public.get<Reaction[]>(
+      `${this.basePath}/user/${userId}`,
+      params,
+    );
   }
 
   // 반응 통계 조회
@@ -50,7 +53,7 @@ export class ReactionsApi {
     targetId: number,
     targetType: ReactionTarget,
   ): Promise<ReactionStats> {
-    return apiClient.get<ReactionStats>(
+    return api.public.get<ReactionStats>(
       `${this.basePath}/${targetType}/${targetId}/stats`,
     );
   }
@@ -67,7 +70,7 @@ export class ReactionsApi {
       reactionCount: number;
     }>;
   }> {
-    return apiClient.get(`${this.basePath}/stats/global`, { period });
+    return api.public.get(`${this.basePath}/stats/global`, { period });
   }
 
   // 가장 많은 반응을 받은 컨텐츠 조회
@@ -85,7 +88,10 @@ export class ReactionsApi {
     }>
   > {
     const params = { period, limit };
-    return apiClient.get(`${this.basePath}/most-reacted/${targetType}`, params);
+    return api.public.get(
+      `${this.basePath}/most-reacted/${targetType}`,
+      params,
+    );
   }
 
   // 특정 이모지로 반응한 사용자 목록 조회
@@ -101,7 +107,7 @@ export class ReactionsApi {
       reactedAt: string;
     }>
   > {
-    return apiClient.get(
+    return api.public.get(
       `${this.basePath}/${targetType}/${targetId}/users/${emoji}`,
     );
   }
@@ -112,7 +118,7 @@ export class ReactionsApi {
     targetType: ReactionTarget,
   ): Promise<{ emoji: string } | null> {
     try {
-      return await apiClient.get<{ emoji: string }>(
+      return await api.get<{ emoji: string }>(
         `${this.basePath}/${targetType}/${targetId}/my-reaction`,
       );
     } catch (error) {
@@ -130,19 +136,19 @@ export class ReactionsApi {
       order: number;
     }>
   > {
-    return apiClient.get(`${this.basePath}/emojis`);
+    return api.public.get(`${this.basePath}/emojis`);
   }
 
   // 벌크 반응 추가 (여러 컨텐츠에 한번에 반응)
   async addBulkReactions(reactions: ReactionRequest[]): Promise<void> {
-    return apiClient.post<void>(`${this.basePath}/bulk`, { reactions });
+    return api.post<void>(`${this.basePath}/bulk`, { reactions });
   }
 
   // 벌크 반응 제거
   async removeBulkReactions(
     targets: Array<{ targetId: number; targetType: ReactionTarget }>,
   ): Promise<void> {
-    return apiClient.post<void>(`${this.basePath}/bulk/remove`, { targets });
+    return api.post<void>(`${this.basePath}/bulk/remove`, { targets });
   }
 }
 

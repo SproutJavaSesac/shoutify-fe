@@ -8,7 +8,7 @@ import type {
 
 // 게시글의 댓글 목록 조회
 export async function getComments(postId: number): Promise<CommentsResponse> {
-  return api.getPublic<CommentsResponse>(`/posts/${postId}/comments`);
+  return api.public.get<CommentsResponse>(`/posts/${postId}/comments`);
 }
 
 // 댓글 작성

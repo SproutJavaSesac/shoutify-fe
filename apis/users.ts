@@ -1,4 +1,4 @@
-import { apiClient } from "./client";
+import { api } from "./client";
 import type {
   User,
   UserProfile,
@@ -15,15 +15,14 @@ export class UsersApi {
 
   // 로그인
   async login(data: LoginRequest): Promise<{ user: User; token: string }> {
-    const result = await apiClient.post<{ user: User; token: string }>(
+    const result = await api.post<{ user: User; token: string }>(
       `${this.authPath}/login`,
       data,
     );
 
-    // 토큰을 로컬 스토리지에 저장하고 API 클라이언트에 설정
-    if (typeof window !== "undefined") {
-      localStorage.setItem("auth_token", result.token);
-      apiClient.setAuthToken(result.token);
+    // 토큰을 API 클라이언트에 설정
+    if (result.token) {
+      api.setToken(result.token);
     }
 
     return result;
@@ -32,29 +31,26 @@ export class UsersApi {
   // 로그아웃
   async logout(): Promise<void> {
     try {
-      await apiClient.post<void>(`${this.authPath}/logout`);
+      await api.post<void>(`${this.authPath}/logout`);
     } finally {
       // 로그아웃 API 호출 실패해도 로컬에서는 정리
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("auth_token");
-        apiClient.removeAuthToken();
-      }
+      api.clearToken();
     }
   }
 
   // 현재 사용자 정보 조회
   async getCurrentUser(): Promise<User> {
-    return apiClient.get<User>(`${this.authPath}/me`);
+    return api.get<User>(`${this.authPath}/me`);
   }
 
   // 사용자 프로필 조회
   async getUserProfile(userId: string): Promise<UserProfile> {
-    return apiClient.get<UserProfile>(`${this.basePath}/${userId}/profile`);
+    return api.public.get<UserProfile>(`${this.basePath}/${userId}/profile`);
   }
 
   // 사용자명으로 프로필 조회
   async getUserProfileByUsername(username: string): Promise<UserProfile> {
-    return apiClient.get<UserProfile>(
+    return api.public.get<UserProfile>(
       `${this.basePath}/username/${username}/profile`,
     );
   }
@@ -68,12 +64,15 @@ export class UsersApi {
     if (data.bio) formData.append("bio", data.bio);
     if (data.avatar) formData.append("avatar", data.avatar);
 
-    return apiClient.put<User>(`${this.basePath}/profile`, formData);
+    // FormData를 사용하는 경우 Content-Type 헤더를 지정하지 않아야 브라우저가 자동으로 설정합니다.
+    // 현재 api.put은 JSON을 기본으로 하므로, 별도 처리가 필요할 수 있습니다.
+    // 우선 그대로 두지만, 추후 파일 업로드용 API 메소드를 클라이언트에 추가해야 할 수 있습니다.
+    return api.put<User>(`${this.basePath}/profile`, formData);
   }
 
   // 사용자 통계 조회
   async getUserStats(userId: string): Promise<UserStats> {
-    return apiClient.get<UserStats>(`${this.basePath}/${userId}/stats`);
+    return api.public.get<UserStats>(`${this.basePath}/${userId}/stats`);
   }
 
   // 사용자 활동 기록 조회
@@ -83,7 +82,7 @@ export class UsersApi {
     limit?: number,
   ): Promise<UserActivity[]> {
     const params = { page, limit };
-    return apiClient.get<UserActivity[]>(
+    return api.public.get<UserActivity[]>(
       `${this.basePath}/${userId}/activity`,
       params,
     );
@@ -91,7 +90,7 @@ export class UsersApi {
 
   // 사용자 뱃지 조회
   async getUserBadges(userId: string): Promise<Badge[]> {
-    return apiClient.get<Badge[]>(`${this.basePath}/${userId}/badges`);
+    return api.public.get<Badge[]>(`${this.basePath}/${userId}/badges`);
   }
 
   // 사용자 검색
@@ -101,7 +100,7 @@ export class UsersApi {
     limit?: number,
   ): Promise<UserProfile[]> {
     const params = { search: query, page, limit };
-    return apiClient.get<UserProfile[]>(`${this.basePath}/search`, params);
+    return api.public.get<UserProfile[]>(`${this.basePath}/search`, params);
   }
 
   // 활성 사용자 목록 조회
@@ -110,59 +109,63 @@ export class UsersApi {
     limit?: number,
   ): Promise<UserProfile[]> {
     const params = { period, limit };
-    return apiClient.get<UserProfile[]>(`${this.basePath}/active`, params);
+    return api.public.get<UserProfile[]>(`${this.basePath}/active`, params);
   }
 
   // 신규 사용자 목록 조회
   async getNewUsers(limit?: number): Promise<UserProfile[]> {
-    return apiClient.get<UserProfile[]>(`${this.basePath}/new`, { limit });
+    return api.public.get<UserProfile[]>(`${this.basePath}/new`, { limit });
   }
 
   // 사용자 차단
   async blockUser(userId: string): Promise<void> {
-    return apiClient.post<void>(`${this.basePath}/${userId}/block`);
+    return api.post<void>(`${this.basePath}/${userId}/block`);
   }
 
   // 사용자 차단 해제
   async unblockUser(userId: string): Promise<void> {
-    return apiClient.delete<void>(`${this.basePath}/${userId}/block`);
+    return api.delete<void>(`${this.basePath}/${userId}/block`);
   }
 
   // 차단된 사용자 목록 조회
   async getBlockedUsers(): Promise<UserProfile[]> {
-    return apiClient.get<UserProfile[]>(`${this.basePath}/blocked`);
+    return api.get<UserProfile[]>(`${this.basePath}/blocked`);
   }
 
   // 사용자 팔로우
   async followUser(userId: string): Promise<void> {
-    return apiClient.post<void>(`${this.basePath}/${userId}/follow`);
+    return api.post<void>(`${this.basePath}/${userId}/follow`);
   }
 
   // 사용자 언팔로우
   async unfollowUser(userId: string): Promise<void> {
-    return apiClient.delete<void>(`${this.basePath}/${userId}/follow`);
+    return api.delete<void>(`${this.basePath}/${userId}/follow`);
   }
 
   // 팔로워 목록 조회
   async getFollowers(userId: string): Promise<UserProfile[]> {
-    return apiClient.get<UserProfile[]>(`${this.basePath}/${userId}/followers`);
+    return api.public.get<UserProfile[]>(
+      `${this.basePath}/${userId}/followers`,
+    );
   }
 
   // 팔로잉 목록 조회
   async getFollowing(userId: string): Promise<UserProfile[]> {
-    return apiClient.get<UserProfile[]>(`${this.basePath}/${userId}/following`);
+    return api.public.get<UserProfile[]>(
+      `${this.basePath}/${userId}/following`,
+    );
   }
 
   // 계정 삭제
   async deleteAccount(): Promise<void> {
-    return apiClient.delete<void>(`${this.basePath}/account`);
+    return api.delete<void>(`${this.basePath}/account`);
   }
 
   // 사용자명 중복 확인
   async checkUsernameAvailability(
     username: string,
   ): Promise<{ available: boolean }> {
-    return apiClient.get<{ available: boolean }>(
+    return api.public.get<{ available: boolean }>(
       `${this.basePath}/check-username`,
       { username },
     );

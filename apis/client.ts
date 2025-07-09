@@ -17,7 +17,7 @@ export class FetchError extends Error {
   }
 }
 
-class SimpleClient {
+class ApiClient {
   private token?: string;
 
   setToken(token: string) {
@@ -29,20 +29,25 @@ class SimpleClient {
   }
 
   // 기본 요청 함수
-  private async request<T>(url: string, options: RequestInit = {}): Promise<T> {
+  private async request<T>(
+    url: string,
+    options: RequestInit & { auth?: boolean },
+  ): Promise<T> {
+    const { auth = true, ...fetchOptions } = options; // 기본적으로 인증 필요한 요청으로 설정
+
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...(options.headers as Record<string, string>),
+      ...(fetchOptions.headers as Record<string, string>),
     };
 
-    // 토큰이 있으면 추가
-    if (this.token) {
+    // 인증이 필요하고 토큰이 있는 경우에만 헤더 추가
+    if (auth && this.token) {
       headers["Authorization"] = `Bearer ${this.token}`;
     }
 
     try {
       const response = await fetch(`${BASE_URL}${url}`, {
-        ...options,
+        ...fetchOptions,
         headers,
         credentials: "include", // 쿠키 포함
       });
@@ -83,52 +88,59 @@ class SimpleClient {
     }
   }
 
-  async get<T>(url: string, params?: Record<string, any>): Promise<T> {
+  async get<T>(
+    url: string,
+    params?: Record<string, any>,
+    authenticated = true,
+  ): Promise<T> {
     const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request<T>(`${url}${queryString}`, { method: "GET" });
+    return this.request<T>(`${url}${queryString}`, {
+      method: "GET",
+      auth: authenticated,
+    });
   }
 
-  async post<T>(url: string, data?: any): Promise<T> {
+  async post<T>(url: string, data?: any, authenticated = true): Promise<T> {
     return this.request<T>(url, {
       method: "POST",
       body: JSON.stringify(data),
+      auth: authenticated,
     });
   }
 
-  async put<T>(url: string, data?: any): Promise<T> {
+  async put<T>(url: string, data?: any, authenticated = true): Promise<T> {
     return this.request<T>(url, {
       method: "PUT",
       body: JSON.stringify(data),
+      auth: authenticated,
     });
   }
 
-  async delete<T>(url: string): Promise<T> {
-    return this.request<T>(url, { method: "DELETE" });
-  }
-
-  // 인증 없이 요청 (공개 API용)
-  async getPublic<T>(url: string, params?: Record<string, any>): Promise<T> {
-    const originalToken = this.token;
-    this.token = undefined;
-
-    try {
-      return await this.get<T>(url, params);
-    } finally {
-      this.token = originalToken;
-    }
+  async delete<T>(url: string, authenticated = true): Promise<T> {
+    return this.request<T>(url, { method: "DELETE", auth: authenticated });
   }
 }
 
-export const client = new SimpleClient();
+// ApiClient 인스턴스는 내부적으로만 사용합니다.
+const client = new ApiClient();
 
+// 외부에는 이 api 객체만 노출하여 일관된 사용법을 제공합니다.
 export const api = {
+  // 인증이 필요한 API 호출
   get: <T>(url: string, params?: Record<string, any>) =>
-    client.get<T>(url, params),
-  post: <T>(url: string, data?: any) => client.post<T>(url, data),
-  put: <T>(url: string, data?: any) => client.put<T>(url, data),
-  delete: <T>(url: string) => client.delete<T>(url),
-  getPublic: <T>(url: string, params?: Record<string, any>) =>
-    client.getPublic<T>(url, params),
+    client.get<T>(url, params, true),
+  post: <T>(url: string, data?: any) => client.post<T>(url, data, true),
+  put: <T>(url: string, data?: any) => client.put<T>(url, data, true),
+  delete: <T>(url: string) => client.delete<T>(url, true),
+
+  // 인증이 필요 없는 공개 API 호출
+  public: {
+    get: <T>(url: string, params?: Record<string, any>) =>
+      client.get<T>(url, params, false),
+    // 필요하다면 public.post 등 다른 메소드도 추가할 수 있습니다.
+  },
+
+  // 토큰 관리
   setToken: (token: string) => client.setToken(token),
   clearToken: () => client.clearToken(),
 };

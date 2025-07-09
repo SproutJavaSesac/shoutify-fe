@@ -1,4 +1,4 @@
-import { apiClient } from "./client";
+import { api } from "./client";
 import type {
   RankedPost,
   RankedUser,
@@ -13,14 +13,14 @@ export class RankingsApi {
 
   // 전체 랭킹 데이터 조회
   async getRankings(params?: RankingQueryParams): Promise<RankingsResponse> {
-    return apiClient.get<RankingsResponse>(this.basePath, params);
+    return api.public.get<RankingsResponse>(this.basePath, params);
   }
 
   // 가장 북마크가 많은 게시글 랭킹
   async getMostBookmarkedPosts(
     params?: RankingQueryParams,
   ): Promise<RankedPost[]> {
-    return apiClient.get<RankedPost[]>(
+    return api.public.get<RankedPost[]>(
       `${this.basePath}/posts/bookmarks`,
       params,
     );
@@ -30,7 +30,7 @@ export class RankingsApi {
   async getMostReactedPosts(
     params?: RankingQueryParams,
   ): Promise<RankedPost[]> {
-    return apiClient.get<RankedPost[]>(
+    return api.public.get<RankedPost[]>(
       `${this.basePath}/posts/reactions`,
       params,
     );
@@ -38,14 +38,17 @@ export class RankingsApi {
 
   // 가장 활발한 사용자 랭킹
   async getMostActiveUsers(params?: RankingQueryParams): Promise<RankedUser[]> {
-    return apiClient.get<RankedUser[]>(`${this.basePath}/users/active`, params);
+    return api.public.get<RankedUser[]>(
+      `${this.basePath}/users/active`,
+      params,
+    );
   }
 
   // 특별 점수 사용자 랭킹
   async getSpecialScoreUsers(
     params?: RankingQueryParams,
   ): Promise<RankedUser[]> {
-    return apiClient.get<RankedUser[]>(
+    return api.public.get<RankedUser[]>(
       `${this.basePath}/users/special-score`,
       params,
     );
@@ -56,7 +59,7 @@ export class RankingsApi {
     type: RankingType,
     params?: RankingQueryParams,
   ): Promise<RankedPost[] | RankedUser[]> {
-    return apiClient.get(`${this.basePath}/${type}`, params);
+    return api.public.get(`${this.basePath}/${type}`, params);
   }
 
   // 카테고리별 게시글 랭킹
@@ -64,7 +67,7 @@ export class RankingsApi {
     category: string,
     params?: Omit<RankingQueryParams, "category">,
   ): Promise<RankedPost[]> {
-    return apiClient.get<RankedPost[]>(
+    return api.public.get<RankedPost[]>(
       `${this.basePath}/posts/category/${category}`,
       params,
     );
@@ -75,7 +78,7 @@ export class RankingsApi {
     emotion: string,
     params?: RankingQueryParams,
   ): Promise<RankedPost[]> {
-    return apiClient.get<RankedPost[]>(
+    return api.public.get<RankedPost[]>(
       `${this.basePath}/posts/emotion/${emotion}`,
       params,
     );
@@ -85,7 +88,7 @@ export class RankingsApi {
   async getNewWriterRankings(
     params?: RankingQueryParams,
   ): Promise<RankedUser[]> {
-    return apiClient.get<RankedUser[]>(
+    return api.public.get<RankedUser[]>(
       `${this.basePath}/users/new-writers`,
       params,
     );
@@ -93,7 +96,7 @@ export class RankingsApi {
 
   // 급상승 게시글 랭킹 (최근 반응이 크게 늘어난 게시글)
   async getTrendingPosts(params?: RankingQueryParams): Promise<RankedPost[]> {
-    return apiClient.get<RankedPost[]>(
+    return api.public.get<RankedPost[]>(
       `${this.basePath}/posts/trending`,
       params,
     );
@@ -109,7 +112,7 @@ export class RankingsApi {
     percentile: number;
     totalUsers: number;
   }> {
-    return apiClient.get(`${this.basePath}/users/${userId}/rank/${type}`);
+    return api.public.get(`${this.basePath}/users/${userId}/rank/${type}`);
   }
 
   // 게시글의 랭킹 위치 조회
@@ -122,7 +125,7 @@ export class RankingsApi {
     percentile: number;
     totalPosts: number;
   }> {
-    return apiClient.get(`${this.basePath}/posts/${postId}/rank/${type}`);
+    return api.public.get(`${this.basePath}/posts/${postId}/rank/${type}`);
   }
 
   // 랭킹 히스토리 조회 (시간에 따른 랭킹 변화)
@@ -138,7 +141,7 @@ export class RankingsApi {
       score: number;
     }>
   > {
-    return apiClient.get(
+    return api.public.get(
       `${this.basePath}/history/${type}/${id}/${rankingType}`,
       { period },
     );
@@ -150,7 +153,7 @@ export class RankingsApi {
     id: string | number,
     enabled: boolean,
   ): Promise<void> {
-    return apiClient.post<void>(`${this.basePath}/notifications`, {
+    return api.post<void>(`${this.basePath}/notifications`, {
       type,
       id,
       enabled,
@@ -166,7 +169,7 @@ export class RankingsApi {
     averageReactionsPerPost: number;
     averageBookmarksPerPost: number;
   }> {
-    return apiClient.get(`${this.basePath}/stats`);
+    return api.public.get(`${this.basePath}/stats`);
   }
 }
 

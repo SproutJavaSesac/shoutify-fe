@@ -1,4 +1,4 @@
-import { apiClient } from "./client";
+import { api } from "./client";
 import type {
   ProfanityWord,
   ProfanityFilter,
@@ -24,14 +24,14 @@ export class ProfanitiesApi {
     totalCount: number;
   }> {
     const params = { page, limit, severity };
-    return apiClient.get(`${this.basePath}/words`, params);
+    return api.get(`${this.basePath}/words`, params);
   }
 
   // 비속어 단어 추가
   async createProfanityWord(
     data: CreateProfanityWordRequest,
   ): Promise<ProfanityWord> {
-    return apiClient.post<ProfanityWord>(`${this.basePath}/words`, data);
+    return api.post<ProfanityWord>(`${this.basePath}/words`, data);
   }
 
   // 비속어 단어 수정
@@ -39,15 +39,12 @@ export class ProfanitiesApi {
     data: UpdateProfanityWordRequest,
   ): Promise<ProfanityWord> {
     const { id, ...updateData } = data;
-    return apiClient.put<ProfanityWord>(
-      `${this.basePath}/words/${id}`,
-      updateData,
-    );
+    return api.put<ProfanityWord>(`${this.basePath}/words/${id}`, updateData);
   }
 
   // 비속어 단어 삭제
   async deleteProfanityWord(id: number): Promise<void> {
-    return apiClient.delete<void>(`${this.basePath}/words/${id}`);
+    return api.delete<void>(`${this.basePath}/words/${id}`);
   }
 
   // 비속어 단어 활성화/비활성화
@@ -55,22 +52,22 @@ export class ProfanitiesApi {
     id: number,
     isActive: boolean,
   ): Promise<ProfanityWord> {
-    return apiClient.patch<ProfanityWord>(
-      `${this.basePath}/words/${id}/toggle`,
-      { isActive },
-    );
+    // NOTE: apiClient에 patch가 없어 put으로 임시 대체합니다.
+    return api.put<ProfanityWord>(`${this.basePath}/words/${id}/toggle`, {
+      isActive,
+    });
   }
 
   // 비속어 필터 목록 조회
   async getProfanityFilters(): Promise<ProfanityFilter[]> {
-    return apiClient.get<ProfanityFilter[]>(`${this.basePath}/filters`);
+    return api.get<ProfanityFilter[]>(`${this.basePath}/filters`);
   }
 
   // 비속어 필터 생성
   async createProfanityFilter(
     data: CreateProfanityFilterRequest,
   ): Promise<ProfanityFilter> {
-    return apiClient.post<ProfanityFilter>(`${this.basePath}/filters`, data);
+    return api.post<ProfanityFilter>(`${this.basePath}/filters`, data);
   }
 
   // 비속어 필터 수정
@@ -78,25 +75,19 @@ export class ProfanitiesApi {
     id: number,
     data: Partial<CreateProfanityFilterRequest>,
   ): Promise<ProfanityFilter> {
-    return apiClient.put<ProfanityFilter>(
-      `${this.basePath}/filters/${id}`,
-      data,
-    );
+    return api.put<ProfanityFilter>(`${this.basePath}/filters/${id}`, data);
   }
 
   // 비속어 필터 삭제
   async deleteProfanityFilter(id: number): Promise<void> {
-    return apiClient.delete<void>(`${this.basePath}/filters/${id}`);
+    return api.delete<void>(`${this.basePath}/filters/${id}`);
   }
 
   // 텍스트 비속어 검사
   async checkProfanity(
     data: ProfanityCheckRequest,
   ): Promise<ProfanityCheckResponse> {
-    return apiClient.post<ProfanityCheckResponse>(
-      `${this.basePath}/check`,
-      data,
-    );
+    return api.post<ProfanityCheckResponse>(`${this.basePath}/check`, data);
   }
 
   // 비속어 제거 및 대체
@@ -104,7 +95,7 @@ export class ProfanitiesApi {
     text: string,
     replaceWith?: string,
   ): Promise<{ cleanedText: string; violations: string[] }> {
-    return apiClient.post(`${this.basePath}/clean`, { text, replaceWith });
+    return api.post(`${this.basePath}/clean`, { text, replaceWith });
   }
 
   // 벌크 비속어 단어 추가
@@ -115,26 +106,28 @@ export class ProfanitiesApi {
       replacement?: string;
     }>,
   ): Promise<{ added: number; skipped: number; errors: string[] }> {
-    return apiClient.post(`${this.basePath}/words/bulk`, { words });
+    return api.post(`${this.basePath}/words/bulk`, { words });
   }
 
   // 비속어 단어 가져오기 (외부 소스에서)
   async importProfanityWords(
     source: string,
   ): Promise<{ imported: number; errors: string[] }> {
-    return apiClient.post(`${this.basePath}/words/import`, { source });
+    return api.post(`${this.basePath}/words/import`, { source });
   }
 
+  /*
   // 비속어 단어 내보내기
   async exportProfanityWords(format: "json" | "csv" | "txt"): Promise<Blob> {
     const response = await fetch(
-      `${apiClient["baseURL"]}${this.basePath}/words/export?format=${format}`,
+      `${api["baseURL"]}${this.basePath}/words/export?format=${format}`,
       {
-        headers: apiClient["defaultHeaders"],
+        headers: api["defaultHeaders"],
       },
     );
     return response.blob();
   }
+  */
 
   // 비속어 통계 조회
   async getProfanityStats(): Promise<{
@@ -149,7 +142,7 @@ export class ProfanitiesApi {
       count: number;
     }>;
   }> {
-    return apiClient.get(`${this.basePath}/stats`);
+    return api.get(`${this.basePath}/stats`);
   }
 
   // 비속어 검출 설정 조회
@@ -160,7 +153,7 @@ export class ProfanitiesApi {
     defaultReplacement: string;
     strictMode: boolean;
   }> {
-    return apiClient.get(`${this.basePath}/settings`);
+    return api.get(`${this.basePath}/settings`);
   }
 
   // 비속어 검출 설정 업데이트
@@ -171,7 +164,7 @@ export class ProfanitiesApi {
     defaultReplacement?: string;
     strictMode?: boolean;
   }): Promise<void> {
-    return apiClient.put<void>(`${this.basePath}/settings`, settings);
+    return api.put<void>(`${this.basePath}/settings`, settings);
   }
 
   // 최근 비속어 위반 사례 조회
@@ -187,22 +180,22 @@ export class ProfanitiesApi {
       detectedAt: string;
     }>
   > {
-    return apiClient.get(`${this.basePath}/violations/recent`, { limit });
+    return api.get(`${this.basePath}/violations/recent`, { limit });
   }
 
   // 비속어 화이트리스트 조회
   async getWhitelist(): Promise<string[]> {
-    return apiClient.get(`${this.basePath}/whitelist`);
+    return api.get(`${this.basePath}/whitelist`);
   }
 
   // 비속어 화이트리스트 단어 추가
   async addToWhitelist(word: string): Promise<void> {
-    return apiClient.post<void>(`${this.basePath}/whitelist`, { word });
+    return api.post<void>(`${this.basePath}/whitelist`, { word });
   }
 
   // 비속어 화이트리스트 단어 제거
   async removeFromWhitelist(word: string): Promise<void> {
-    return apiClient.delete<void>(`${this.basePath}/whitelist/${word}`);
+    return api.delete<void>(`${this.basePath}/whitelist/${word}`);
   }
 }
 
