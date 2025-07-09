@@ -293,19 +293,90 @@ export function AdminPanel() {
       </TabsContent>
 
       <TabsContent value="profanity-management" className="space-y-6">
-        <Card>
+         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Settings className="h-5 w-5" />
-              <span>비속어 관리</span>
+              <span>Add New AI Prompt Rule</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex w-full max-w-sm items-center space-x-2">
-              <Input type="text" placeholder="검색할 비속어를 입력하세요." />
-              <Button type="submit">검색</Button>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="profanity">Profanity/Inappropriate Word</Label>
+                <Input id="profanity" placeholder="Enter word to filter..." className="w-full" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="replacement">Replacement Word</Label>
+                <Input id="replacement" placeholder="Enter replacement..." className="w-full" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="explanation">Explanation</Label>
+                <Textarea id="explanation" placeholder="Why this replacement..." className="w-full" />
+              </div>
             </div>
-            {/* 검색 결과가 여기에 표시됩니다. */}
+            <div className="flex justify-end">
+              <Button>Add AI Prompt Rule</Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Existing AI Prompts Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Registered AI Prompt Rules</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[
+                {
+                  id: 1,
+                  profanity: "damn",
+                  replacement: "darn",
+                  explanation: "Mild profanity replacement",
+                  createdAt: "2024-12-17 10:30",
+                },
+                {
+                  id: 2,
+                  profanity: "stupid",
+                  replacement: "unwise",
+                  explanation: "More literary alternative",
+                  createdAt: "2024-12-17 09:15",
+                },
+                {
+                  id: 3,
+                  profanity: "hate",
+                  replacement: "dislike",
+                  explanation: "Softer emotional expression",
+                  createdAt: "2024-12-17 08:45",
+                },
+              ].map((rule) => (
+                <div key={rule.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Profanity</p>
+                        <p className="text-gray-900">{rule.profanity}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Replacement</p>
+                        <p className="text-gray-900">{rule.replacement}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Explanation</p>
+                        <p className="text-gray-900">{rule.explanation}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2 ml-4">
+                      <p className="text-xs text-gray-500">{rule.createdAt}</p>
+                      <Button size="sm" variant="destructive">
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </TabsContent>
