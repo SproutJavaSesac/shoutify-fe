@@ -22,7 +22,7 @@ export interface Post {
   nickname: string;
   afterTitle: string;
   afterContent: string;
-  createdAt: string;
+  createdAt: Date;
   reactionCount: number;
   commentCount: number;
   conceptType: ConceptType;
