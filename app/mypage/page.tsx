@@ -1,5 +1,5 @@
-import { MyPageTabs } from "@/components/mypage-tabs"
-import { ProtectedRoute } from "@/components/protected-route"
+import { MyPageTabs } from "@/components/mypage-tabs";
+import { ProtectedRoute } from "@/components/protected-route";
 
 export default function MyPage() {
   return (
@@ -8,5 +8,5 @@ export default function MyPage() {
         <MyPageTabs />
       </div>
     </ProtectedRoute>
-  )
+  );
 }

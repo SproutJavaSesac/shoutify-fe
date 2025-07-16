@@ -1,15 +1,22 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { MessageCircle, Bookmark, Flag, Eye, Trash2, Share2 } from "lucide-react"
-import Image from "next/image"
-import { useToast } from "@/hooks/use-toast"
-import { ReportModal } from "@/components/report-modal"
-import { ShareModal } from "@/components/share-modal"
-import { UserProfileModal } from "@/components/user-profile-modal"
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Bookmark,
+  Eye,
+  Flag,
+  MessageCircle,
+  Share2,
+  Trash2,
+} from "lucide-react";
+import Image from "next/image";
+import { useToast } from "@/hooks/use-toast";
+import { ReportModal } from "@/components/report-modal";
+import { ShareModal } from "@/components/share-modal";
+import { UserProfileModal } from "@/components/user-profile-modal";
 
 const postData = {
   id: 1,
@@ -32,62 +39,66 @@ In this season of letting go, I find solace in the understanding that all things
   hasImage: true,
   imageUrl: "/placeholder.svg?height=300&width=500",
   isAuthor: true,
-}
+};
 
 const emotionColors = {
   melancholy: "bg-blue-100 text-blue-800",
-}
+};
 
-const reactionEmojis = ["❤️", "😊", "😢", "🤔", "👏"]
+const reactionEmojis = ["❤️", "😊", "😢", "🤔", "👏"];
 
 export function PostDetail({ postId }: { postId: string }) {
-  const [reactions, setReactions] = useState<string | null>(null)
-  const [isBookmarked, setIsBookmarked] = useState(false)
-  const [isHidden, setIsHidden] = useState(false)
-  const [reportModal, setReportModal] = useState(false)
-  const [shareModal, setShareModal] = useState(false)
-  const [userProfileModal, setUserProfileModal] = useState(false)
-  const { toast } = useToast()
+  const [reactions, setReactions] = useState<string | null>(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
+  const [reportModal, setReportModal] = useState(false);
+  const [shareModal, setShareModal] = useState(false);
+  const [userProfileModal, setUserProfileModal] = useState(false);
+  const { toast } = useToast();
 
   const handleReaction = (emoji: string) => {
-    setReactions((prev) => (prev === emoji ? null : emoji))
-  }
+    setReactions((prev) => (prev === emoji ? null : emoji));
+  };
 
   const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked)
+    setIsBookmarked(!isBookmarked);
     toast({
-      description: isBookmarked ? "Removed from bookmarks" : "Added to bookmarks",
-    })
-  }
+      description: isBookmarked
+        ? "Removed from bookmarks"
+        : "Added to bookmarks",
+    });
+  };
 
   const handleHide = () => {
-    setIsHidden(true)
+    setIsHidden(true);
     toast({
       description: "Post has been hidden",
-    })
-  }
+    });
+  };
 
   const handleReport = () => {
-    setReportModal(true)
-  }
+    setReportModal(true);
+  };
 
   const handleShare = () => {
-    setShareModal(true)
-  }
+    setShareModal(true);
+  };
 
   const handleUserClick = () => {
-    setUserProfileModal(true)
-  }
+    setUserProfileModal(true);
+  };
 
   if (isHidden) {
     return (
       <Card className="mb-8">
         <CardContent className="p-8 text-center">
           <Eye className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">This post has been hidden by the author.</p>
+          <p className="text-gray-600">
+            This post has been hidden by the author.
+          </p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -98,14 +109,22 @@ export function PostDetail({ postId }: { postId: string }) {
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
               <div className="flex items-center space-x-2 mb-2">
-                <Badge className={emotionColors[postData.emotion as keyof typeof emotionColors]}>
+                <Badge
+                  className={
+                    emotionColors[
+                      postData.emotion as keyof typeof emotionColors
+                    ]
+                  }
+                >
                   {postData.emotion}
                 </Badge>
               </div>
 
               {/* Title with Bookmark and Share icons */}
               <div className="flex items-start justify-between mb-2">
-                <h1 className="text-2xl font-bold text-gray-900 flex-1">{postData.title}</h1>
+                <h1 className="text-2xl font-bold text-gray-900 flex-1">
+                  {postData.title}
+                </h1>
                 <div className="flex items-center space-x-1 ml-4">
                   <Button
                     variant="ghost"
@@ -113,9 +132,16 @@ export function PostDetail({ postId }: { postId: string }) {
                     className={`h-8 w-8 p-0 ${isBookmarked ? "text-blue-600" : ""}`}
                     onClick={handleBookmark}
                   >
-                    <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
+                    <Bookmark
+                      className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`}
+                    />
                   </Button>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleShare}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={handleShare}
+                  >
                     <Share2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -137,17 +163,31 @@ export function PostDetail({ postId }: { postId: string }) {
                 <div className="flex items-center space-x-2">
                   {postData.isAuthor && (
                     <>
-                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleHide}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={handleHide}
+                      >
                         <Eye className="h-3 w-3 mr-1" />
                         Hide
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                      >
                         <Trash2 className="h-3 w-3 mr-1" />
                         Delete
                       </Button>
                     </>
                   )}
-                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleReport}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={handleReport}
+                  >
                     <Flag className="h-3 w-3 mr-1" />
                     Report
                   </Button>
@@ -171,7 +211,9 @@ export function PostDetail({ postId }: { postId: string }) {
 
           {/* Content */}
           <div className="prose prose-gray max-w-none mb-6">
-            <div className="whitespace-pre-line text-gray-800 leading-relaxed">{postData.transformedContent}</div>
+            <div className="whitespace-pre-line text-gray-800 leading-relaxed">
+              {postData.transformedContent}
+            </div>
           </div>
 
           {/* Actions */}
@@ -190,13 +232,21 @@ export function PostDetail({ postId }: { postId: string }) {
                       {emoji}
                     </Button>
                     <span className="text-sm text-gray-500 ml-1">
-                      {postData.reactions[emoji as keyof typeof postData.reactions]}
+                      {
+                        postData.reactions[
+                          emoji as keyof typeof postData.reactions
+                        ]
+                      }
                     </span>
                   </div>
                 ))}
               </div>
 
-              <Button variant="ghost" size="sm" className="flex items-center space-x-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center space-x-1"
+              >
                 <MessageCircle className="h-4 w-4" />
                 <span>{postData.comments}</span>
               </Button>
@@ -224,5 +274,5 @@ export function PostDetail({ postId }: { postId: string }) {
         username={postData.author}
       />
     </article>
-  )
+  );
 }

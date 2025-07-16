@@ -1,42 +1,51 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { useAuth } from "@/lib/auth"
-import { useToast } from "@/hooks/use-toast"
-import { Loader2 } from "lucide-react"
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface AuthModalProps {
-  isOpen: boolean
-  onClose: () => void
-  defaultMode?: "login" | "register"
+  isOpen: boolean;
+  onClose: () => void;
+  defaultMode?: "login" | "register";
 }
 
-export function AuthModal({ isOpen, onClose, defaultMode = "login" }: AuthModalProps) {
-  const [mode, setMode] = useState<"login" | "register">(defaultMode)
-  const [isLoading, setIsLoading] = useState<string | null>(null)
-  const { login } = useAuth()
-  const { toast } = useToast()
+export function AuthModal({
+  isOpen,
+  onClose,
+  defaultMode = "login",
+}: AuthModalProps) {
+  const [mode, setMode] = useState<"login" | "register">(defaultMode);
+  const [isLoading, setIsLoading] = useState<string | null>(null);
+  const { login } = useAuth();
+  const { toast } = useToast();
 
   const handleSocialLogin = async (provider: "google" | "kakao") => {
-    setIsLoading(provider)
+    setIsLoading(provider);
     try {
-      await login(provider)
+      await login(provider);
       toast({
         description: `Successfully ${mode === "login" ? "logged in" : "registered"} with ${provider === "google" ? "Google" : "KakaoTalk"}!`,
-      })
-      onClose()
+      });
+      onClose();
     } catch (error) {
       toast({
         description: `Failed to ${mode} with ${provider === "google" ? "Google" : "KakaoTalk"}. Please try again.`,
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(null)
+      setIsLoading(null);
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -112,7 +121,9 @@ export function AuthModal({ isOpen, onClose, defaultMode = "login" }: AuthModalP
           {/* Mode Toggle */}
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              {mode === "login" ? "Don't have an account?" : "Already have an account?"}
+              {mode === "login"
+                ? "Don't have an account?"
+                : "Already have an account?"}
             </p>
             <Button
               variant="link"
@@ -136,5 +147,5 @@ export function AuthModal({ isOpen, onClose, defaultMode = "login" }: AuthModalP
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

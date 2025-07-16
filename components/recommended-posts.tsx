@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Heart, MessageCircle } from "lucide-react"
-import Link from "next/link"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Heart, MessageCircle } from "lucide-react";
+import Link from "next/link";
 
 const recommendedPosts = [
   {
@@ -28,13 +28,13 @@ const recommendedPosts = [
     reactions: 67,
     comments: 22,
   },
-]
+];
 
 const emotionColors = {
   happy: "bg-yellow-100 text-yellow-800",
   sad: "bg-blue-100 text-blue-800",
   angry: "bg-red-100 text-red-800",
-}
+};
 
 export function RecommendedPosts() {
   return (
@@ -51,8 +51,12 @@ export function RecommendedPosts() {
                   <CardContent className="px-4 py-2">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center space-x-2 flex-1 min-w-0">
-                        <h3 className="font-medium text-gray-900 truncate">{post.title}</h3>
-                        <span className="text-sm text-gray-600 whitespace-nowrap">{post.author}</span>
+                        <h3 className="font-medium text-gray-900 truncate">
+                          {post.title}
+                        </h3>
+                        <span className="text-sm text-gray-600 whitespace-nowrap">
+                          {post.author}
+                        </span>
                         <Badge
                           className={`${emotionColors[post.emotion as keyof typeof emotionColors]} whitespace-nowrap`}
                         >
@@ -78,5 +82,5 @@ export function RecommendedPosts() {
         </CardContent>
       </Card>
     </section>
-  )
+  );
 }
