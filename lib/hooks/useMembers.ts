@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import {
-  getMyInfo,
+  getMemberInfo,
   updateMyInfo,
   getMyPosts,
   getMyComments,
@@ -23,7 +23,7 @@ export function useMyInfo() {
   useEffect(() => {
     async function fetchMyInfo() {
       try {
-        const response = await getMyInfo();
+        const response = await getMemberInfo();
         setData(response);
       } catch (err: any) {
         setError(err);
