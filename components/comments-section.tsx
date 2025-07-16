@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { MessageCircle, Flag, Trash2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { useAuth } from "@/lib/auth"
-import { AuthModal } from "@/components/auth-modal"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Flag, MessageCircle, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
+import { AuthModal } from "@/components/auth-modal";
 
 const commentsData = [
   {
@@ -22,7 +22,8 @@ const commentsData = [
         id: 11,
         author: "LiteraryMuse",
         time: "45 minutes ago",
-        content: "Thank you for your kind words. Autumn has always spoken to my soul in whispers of change and beauty.",
+        content:
+          "Thank you for your kind words. Autumn has always spoken to my soul in whispers of change and beauty.",
         reactions: { "❤️": 2, "😊": 1, "😢": 0, "🤔": 0, "👏": 0 },
         replies: [],
       },
@@ -37,56 +38,66 @@ const commentsData = [
     reactions: { "❤️": 5, "😊": 3, "😢": 2, "🤔": 1, "👏": 1 },
     replies: [],
   },
-]
+];
 
-const reactionEmojis = ["❤️", "😊", "😢", "🤔", "👏"]
+const reactionEmojis = ["❤️", "😊", "😢", "🤔", "👏"];
 
 export function CommentsSection({ postId }: { postId: string }) {
-  const [newComment, setNewComment] = useState("")
-  const [replyingTo, setReplyingTo] = useState<number | null>(null)
-  const [replyText, setReplyText] = useState("")
-  const [commentReactions, setCommentReactions] = useState<{ [key: number]: string | null }>({})
-  const { toast } = useToast()
-  const { user } = useAuth()
-  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [newComment, setNewComment] = useState("");
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [commentReactions, setCommentReactions] = useState<{
+    [key: number]: string | null;
+  }>({});
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const handleSubmitComment = () => {
     if (!user) {
-      setShowAuthModal(true)
-      return
+      setShowAuthModal(true);
+      return;
     }
     if (newComment.trim()) {
       toast({
         description: "Comment posted successfully",
-      })
-      setNewComment("")
+      });
+      setNewComment("");
     }
-  }
+  };
 
   const handleSubmitReply = (commentId: number) => {
     if (replyText.trim()) {
       toast({
         description: "Reply posted successfully",
-      })
-      setReplyText("")
-      setReplyingTo(null)
+      });
+      setReplyText("");
+      setReplyingTo(null);
     }
-  }
+  };
 
   const handleCommentReaction = (commentId: number, emoji: string) => {
     setCommentReactions((prev) => ({
       ...prev,
       [commentId]: prev[commentId] === emoji ? null : emoji,
-    }))
-  }
+    }));
+  };
 
-  const CommentComponent = ({ comment, level = 0 }: { comment: any; level?: number }) => (
+  const CommentComponent = ({
+    comment,
+    level = 0,
+  }: {
+    comment: any;
+    level?: number;
+  }) => (
     <div className={`${level > 0 ? "ml-8 mt-4" : ""}`}>
       <Card className="mb-4">
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-2">
             <div>
-              <span className="font-medium text-gray-900">{comment.author}</span>
+              <span className="font-medium text-gray-900">
+                {comment.author}
+              </span>
               <span className="text-sm text-gray-500 ml-2">{comment.time}</span>
             </div>
             <div className="flex items-center space-x-1">
@@ -109,7 +120,9 @@ export function CommentsSection({ postId }: { postId: string }) {
                     variant="ghost"
                     size="sm"
                     className={`h-6 w-6 p-0 text-xs ${
-                      commentReactions[comment.id] === emoji ? "bg-gray-100 ring-2 ring-blue-300" : ""
+                      commentReactions[comment.id] === emoji
+                        ? "bg-gray-100 ring-2 ring-blue-300"
+                        : ""
                     }`}
                     onClick={() => handleCommentReaction(comment.id, emoji)}
                   >
@@ -126,7 +139,9 @@ export function CommentsSection({ postId }: { postId: string }) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                onClick={() =>
+                  setReplyingTo(replyingTo === comment.id ? null : comment.id)
+                }
               >
                 <MessageCircle className="h-3 w-3 mr-1" />
                 Reply
@@ -146,7 +161,11 @@ export function CommentsSection({ postId }: { postId: string }) {
                 <Button size="sm" onClick={() => handleSubmitReply(comment.id)}>
                   Reply
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setReplyingTo(null)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setReplyingTo(null)}
+                >
                   Cancel
                 </Button>
               </div>
@@ -159,7 +178,7 @@ export function CommentsSection({ postId }: { postId: string }) {
         <CommentComponent key={reply.id} comment={reply} level={level + 1} />
       ))}
     </div>
-  )
+  );
 
   return (
     <section id="comments" className="mt-8">
@@ -184,16 +203,25 @@ export function CommentsSection({ postId }: { postId: string }) {
                 className="min-h-[100px]"
               />
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500">{1000 - newComment.length} characters remaining</span>
-                <Button onClick={handleSubmitComment} disabled={!newComment.trim()}>
+                <span className="text-sm text-gray-500">
+                  {1000 - newComment.length} characters remaining
+                </span>
+                <Button
+                  onClick={handleSubmitComment}
+                  disabled={!newComment.trim()}
+                >
                   Post Comment
                 </Button>
               </div>
             </div>
           ) : (
             <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
-              <p className="text-gray-600 mb-3">Sign in to join the literary discussion</p>
-              <Button onClick={() => setShowAuthModal(true)}>Sign In to Comment</Button>
+              <p className="text-gray-600 mb-3">
+                Sign in to join the literary discussion
+              </p>
+              <Button onClick={() => setShowAuthModal(true)}>
+                Sign In to Comment
+              </Button>
             </div>
           )}
 
@@ -205,7 +233,10 @@ export function CommentsSection({ postId }: { postId: string }) {
           </div>
         </CardContent>
       </Card>
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </section>
-  )
+  );
 }

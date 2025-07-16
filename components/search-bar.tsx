@@ -1,36 +1,38 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Search, X } from "lucide-react"
+import type React from "react";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, X } from "lucide-react";
 
 interface SearchBarProps {
-  onSearch: (query: string) => void
-  placeholder?: string
+  onSearch: (query: string) => void;
+  placeholder?: string;
 }
 
-export function SearchBar({ onSearch, placeholder = "Search posts..." }: SearchBarProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isExpanded, setIsExpanded] = useState(false)
+export function SearchBar({
+  onSearch,
+  placeholder = "Search posts...",
+}: SearchBarProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleSearch = () => {
-    onSearch(searchQuery)
-  }
+    onSearch(searchQuery);
+  };
 
   const handleClear = () => {
-    setSearchQuery("")
-    onSearch("")
-    setIsExpanded(false)
-  }
+    setSearchQuery("");
+    onSearch("");
+    setIsExpanded(false);
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      handleSearch()
+      handleSearch();
     }
-  }
+  };
 
   return (
     <div className="flex items-center space-x-2">
@@ -58,5 +60,5 @@ export function SearchBar({ onSearch, placeholder = "Search posts..." }: SearchB
         </Button>
       )}
     </div>
-  )
+  );
 }

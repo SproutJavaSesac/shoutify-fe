@@ -8,19 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Heart,
-  MessageCircle,
-  Bookmark,
-  Eye,
-  Trash2,
   Award,
-  Settings,
   ExternalLink,
+  Eye,
+  Heart,
   Loader2,
+  MessageCircle,
+  Settings,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
-import { useMyInfo, useMyPosts, useMyComments } from "@/lib/hooks/useMembers";
+import { useMyComments, useMyInfo, useMyPosts } from "@/lib/hooks/useMembers";
 import type { PaginationDto } from "@/types/members";
 
 const bookmarkedPosts = [

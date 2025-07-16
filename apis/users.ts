@@ -1,12 +1,12 @@
 import { api } from "./client";
 import type {
-  User,
-  UserProfile,
+  Badge,
   LoginRequest,
   UpdateProfileRequest,
-  UserStats,
+  User,
   UserActivity,
-  Badge,
+  UserProfile,
+  UserStats,
 } from "@/types/users";
 
 export class UsersApi {

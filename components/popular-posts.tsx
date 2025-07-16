@@ -1,14 +1,15 @@
-"use client"
+"use client";
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Heart, MessageCircle, Bookmark } from "lucide-react"
-import Link from "next/link"
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Bookmark, Heart, MessageCircle } from "lucide-react";
+import Link from "next/link";
 
 const popularPosts = [
   {
     id: 1,
-    title: "The Whispered Secrets of Autumn's Embrace and the Melancholy of Changing Seasons",
+    title:
+      "The Whispered Secrets of Autumn's Embrace and the Melancholy of Changing Seasons",
     author: "LiteraryMuse",
     time: "2024-12-17 14:23",
     emotion: "melancholy",
@@ -66,7 +67,7 @@ const popularPosts = [
     comments: 18,
     bookmarks: 27,
   },
-]
+];
 
 const emotionColors = {
   melancholy: "bg-blue-100 text-blue-800",
@@ -74,7 +75,7 @@ const emotionColors = {
   contemplative: "bg-purple-100 text-purple-800",
   romantic: "bg-pink-100 text-pink-800",
   inspiring: "bg-green-100 text-green-800",
-}
+};
 
 export function PopularPosts() {
   return (
@@ -84,18 +85,32 @@ export function PopularPosts() {
           <Card className="min-w-[300px] w-[300px] h-[200px] hover:shadow-md transition-shadow cursor-pointer flex-shrink-0">
             <CardContent className="p-4 h-full flex flex-col">
               <div className="flex items-start justify-between mb-2 flex-shrink-0">
-                <Badge className={emotionColors[post.emotion as keyof typeof emotionColors]}>{post.emotion}</Badge>
-                <span className="text-xs text-gray-500 whitespace-nowrap ml-2">{post.time}</span>
+                <Badge
+                  className={
+                    emotionColors[post.emotion as keyof typeof emotionColors]
+                  }
+                >
+                  {post.emotion}
+                </Badge>
+                <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                  {post.time}
+                </span>
               </div>
 
               {/* Title - single line with ellipsis */}
-              <h3 className="font-semibold text-gray-900 mb-1 truncate flex-shrink-0">{post.title}</h3>
+              <h3 className="font-semibold text-gray-900 mb-1 truncate flex-shrink-0">
+                {post.title}
+              </h3>
 
-              <p className="text-sm text-gray-600 mb-2 flex-shrink-0">by {post.author}</p>
+              <p className="text-sm text-gray-600 mb-2 flex-shrink-0">
+                by {post.author}
+              </p>
 
               {/* Preview - exactly 2 lines with overflow hidden */}
               <div className="flex-1 mb-3 overflow-hidden">
-                <p className="text-sm text-gray-700 line-clamp-2 leading-5 h-10">{post.preview}</p>
+                <p className="text-sm text-gray-700 line-clamp-2 leading-5 h-10">
+                  {post.preview}
+                </p>
               </div>
 
               <div className="flex items-center justify-between text-xs text-gray-500 flex-shrink-0">
@@ -119,5 +134,5 @@ export function PopularPosts() {
         </Link>
       ))}
     </div>
-  )
+  );
 }

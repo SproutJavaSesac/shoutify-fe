@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { User, Upload, Trash2, AlertTriangle } from "lucide-react";
+import { AlertTriangle, Trash2, Upload, User } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
