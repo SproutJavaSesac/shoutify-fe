@@ -11,7 +11,11 @@ export type Response<T> = {
 };
 
 export class FetchError extends Error {
-  constructor(public status: number, message: string, public data?: any) {
+  constructor(
+    public status: number,
+    message: string,
+    public data?: any,
+  ) {
     super(message);
     this.name = "FetchError";
   }
@@ -26,6 +30,38 @@ class ApiClient {
 
   clearToken() {
     this.token = undefined;
+  }
+
+  async get<T>(
+    url: string,
+    params?: Record<string, any>,
+    authenticated = true,
+  ): Promise<T> {
+    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    return this.request<T>(`${url}${queryString}`, {
+      method: "GET",
+      auth: authenticated,
+    });
+  }
+
+  async post<T>(url: string, data?: any, authenticated = true): Promise<T> {
+    return this.request<T>(url, {
+      method: "POST",
+      body: JSON.stringify(data),
+      auth: authenticated,
+    });
+  }
+
+  async put<T>(url: string, data?: any, authenticated = true): Promise<T> {
+    return this.request<T>(url, {
+      method: "PUT",
+      body: JSON.stringify(data),
+      auth: authenticated,
+    });
+  }
+
+  async delete<T>(url: string, authenticated = true): Promise<T> {
+    return this.request<T>(url, { method: "DELETE", auth: authenticated });
   }
 
   // 기본 요청 함수
@@ -86,38 +122,6 @@ class ApiClient {
         "서버에 연결할 수 없거나 응답을 처리할 수 없습니다.",
       );
     }
-  }
-
-  async get<T>(
-    url: string,
-    params?: Record<string, any>,
-    authenticated = true,
-  ): Promise<T> {
-    const queryString = params ? `?${new URLSearchParams(params)}` : "";
-    return this.request<T>(`${url}${queryString}`, {
-      method: "GET",
-      auth: authenticated,
-    });
-  }
-
-  async post<T>(url: string, data?: any, authenticated = true): Promise<T> {
-    return this.request<T>(url, {
-      method: "POST",
-      body: JSON.stringify(data),
-      auth: authenticated,
-    });
-  }
-
-  async put<T>(url: string, data?: any, authenticated = true): Promise<T> {
-    return this.request<T>(url, {
-      method: "PUT",
-      body: JSON.stringify(data),
-      auth: authenticated,
-    });
-  }
-
-  async delete<T>(url: string, authenticated = true): Promise<T> {
-    return this.request<T>(url, { method: "DELETE", auth: authenticated });
   }
 }
 

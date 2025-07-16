@@ -1,14 +1,13 @@
 import { api } from "./client";
 import type {
-  ProfanityWord,
-  ProfanityFilter,
-  CreateProfanityWordRequest,
-  UpdateProfanityWordRequest,
   CreateProfanityFilterRequest,
+  CreateProfanityWordRequest,
   ProfanityCheckRequest,
   ProfanityCheckResponse,
-  ProfanitiesResponse,
+  ProfanityFilter,
   ProfanitySeverity,
+  ProfanityWord,
+  UpdateProfanityWordRequest,
 } from "@/types/profanities";
 
 export class ProfanitiesApi {

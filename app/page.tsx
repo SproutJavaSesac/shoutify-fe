@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  MessageCircle,
   Loader2,
-  TrendingUp,
-  Users,
+  MessageCircle,
   PenTool,
   Star,
+  TrendingUp,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";

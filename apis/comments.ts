@@ -1,9 +1,8 @@
 import { api } from "./client";
 import type {
   Comment,
-  CreateCommentRequest,
-  UpdateCommentRequest,
   CommentsResponse,
+  CreateCommentRequest,
 } from "@/types/comments";
 
 // 게시글의 댓글 목록 조회
