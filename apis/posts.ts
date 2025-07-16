@@ -1,5 +1,5 @@
 import { api } from "./client";
-import { PostQueryParams, PostsResult } from "@/types/posts";
+import { Post, PostQueryParams, PostsResult } from "@/types/posts";
 
 export type CreatePostRequest = {
   title: string;
@@ -25,7 +25,7 @@ export async function getPosts(params?: PostQueryParams): Promise<PostsResult> {
 }
 
 // 게시글 상세 조회
-export async function getPost(postId: number) {
+export async function getPost(postId: number): Promise<Post> {
   try {
     return await api.public.get(`/posts/${postId}`);
   } catch (error) {

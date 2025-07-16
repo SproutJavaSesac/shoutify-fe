@@ -116,10 +116,10 @@ export default function PostsList({
               {post.afterContent}
             </p>
 
-            {post.imageUrl && (
+            {post.imgUrl && (
               <div className="mb-3">
                 <img
-                  src={post.imageUrl}
+                  src={post.imgUrl}
                   alt="게시글 이미지"
                   className="w-full h-48 object-cover rounded"
                 />
