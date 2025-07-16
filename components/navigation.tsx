@@ -20,7 +20,7 @@ export function Navigation() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <PenTool className="h-8 w-8 text-gray-800" />
-            <span className="text-xl font-bold text-gray-900">Shoutify</span>
+            <span className="text-xl font-bold text-gray-900">구절구절</span>
           </Link>
 
           {/* Desktop Navigation */}

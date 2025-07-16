@@ -114,21 +114,21 @@ export const createPost = async (data: CreatePostRequest) => {
 ```typescript
 // apis/products.ts
 
-import { api } from "./client";
+import {api} from "./client";
 
 type Product = {
-  id: number;
-  name: string;
+    id: number;
+    name: string;
 };
 
 // 모든 상품 조회 (인증 필요)
 export const getProducts = async (): Promise<Product[]> => {
-  return api.get<Product[]>("/products");
+    return api.get<Product[]>("/products");
 };
 
 // 특정 상품 조회 (인증 불필요)
 export const getProductById = async (id: number): Promise<Product> => {
-  return api.public.get<Product>(`/products/${id}`);
+    return api.public.get<Product>(`/products/${id}`);
 };
 ```
 
@@ -150,7 +150,7 @@ export const getProductById = async (id: number): Promise<Product> => {
 #### 예시: 메인 페이지 제목 수정하기
 
 1. `app/page.tsx` 파일을 엽니다.
-2. 파일 내용에서 수정하고 싶은 텍스트를 찾습니다. (예: "Welcome to Shoutify")
+2. 파일 내용에서 수정하고 싶은 텍스트를 찾습니다. (예: "Welcome to Verse by Verse")
 3. 해당 부분을 원하는 텍스트로 수정하고 저장합니다.
 
 ```tsx
@@ -158,11 +158,11 @@ export const getProductById = async (id: number): Promise<Product> => {
 
 // ...
 <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-  Welcome to <span className="text-yellow-400">Shoutify</span>
+    Welcome to <span className="text-yellow-400">Verse by Verse</span>
 </h1>
 // 이 부분을 아래와 같이 수정
 <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-  수정된 <span className="text-yellow-400">타이틀</span> 입니다
+    수정된 <span className="text-yellow-400">타이틀</span> 입니다
 </h1>
 // ...
 ```
