@@ -19,6 +19,7 @@ import { ShareModal } from "@/components/share-modal";
 import { UserProfileModal } from "@/components/user-profile-modal";
 import { getPost } from "@/apis/posts";
 import { Post } from "@/types/posts";
+import { utcToLocaleDateString } from "@/lib/utils";
 
 const postMockData = {
   author: "LiteraryMuse",
@@ -213,7 +214,7 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
                     {postData.nickname}
                   </button>
                   <span className="text-sm text-gray-500">
-                    {postData.createdAt}
+                    {utcToLocaleDateString(postData.createdAt)}
                   </span>
                 </div>
 
