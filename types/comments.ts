@@ -1,15 +1,18 @@
 export interface Comment {
-  id: number;
-  postId: number;
-  author: string;
-  authorId?: string;
-  time: string;
+  commentId: number;
+  commenterId: number | null;
+  commenterNickname: string;
+  parentId: number | null;
+  order: number;
+  level: number;
   content: string;
+  reactionCount: number;
   reactions: Record<string, number>;
-  replies?: Comment[];
-  parentId?: number;
-  createdAt: string;
-  updatedAt?: string;
+  isDeleted: boolean;
+  isReported: boolean;
+  isMine: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CreateCommentRequest {
