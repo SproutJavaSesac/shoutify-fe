@@ -10,33 +10,33 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "Shoutify",
-    template: "%s | Shoutify",
+    default: "구절구절 제목",
+    template: "%s | 구절구절",
   },
   description:
     "일상의 감정을 문학적 표현으로 변환해주는 AI 기반 소셜 플랫폼. 당신의 이야기를 아름다운 문학 작품으로 만들어보세요.",
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    url: "https://shoutify.com",
-    siteName: "Shoutify",
-    title: "Shoutify",
+    url: "https://verseByverse.com",
+    siteName: "구절구절",
+    title: "제목입니다.",
     description: "일상의 감정을 문학적 표현으로 변환해주는 AI 기반 소셜 플랫폼",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Shoutify",
+        alt: "verse-by-verse",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Shoutify",
+    title: "제목입니다.",
     description: "일상의 감정을 문학적 표현으로 변환해주는 AI 기반 소셜 플랫폼",
     images: ["/og-image.png"],
-    creator: "@shoutify",
+    creator: "@verse-by-verse",
   },
   robots: {
     index: true,
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
   },
   manifest: "/site.webmanifest",
   generator: "Next.js",
-  applicationName: "Shoutify",
+  applicationName: "VerseByVerse",
   referrer: "origin-when-cross-origin",
 };
 

@@ -2,10 +2,10 @@
 
 import {
   createContext,
+  type ReactNode,
   useContext,
   useEffect,
   useState,
-  type ReactNode,
 } from "react";
 import {
   checkLoginStatus,
@@ -13,7 +13,6 @@ import {
   logout as authLogout,
 } from "@/apis/auth";
 import type { AuthState, AuthUser, OAuth2Provider } from "@/types/auth";
-import { useRouter } from "next/navigation";
 
 interface AuthContextValue extends AuthState {
   login: (provider: OAuth2Provider) => void;

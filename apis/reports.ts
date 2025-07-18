@@ -1,11 +1,11 @@
 import { api } from "./client";
 import type {
-  Report,
   CreateReportRequest,
   ProcessReportRequest,
-  ReportsResponse,
+  Report,
   ReportQueryParams,
   ReportReason,
+  ReportsResponse,
   ReportStatus,
   ReportType,
 } from "@/types/reports";

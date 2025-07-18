@@ -1,11 +1,11 @@
 import { api } from "./client";
 import type {
   Reaction,
+  ReactionEmoji,
   ReactionRequest,
   ReactionsResponse,
   ReactionStats,
   ReactionTarget,
-  ReactionEmoji,
 } from "@/types/reactions";
 
 export class ReactionsApi {

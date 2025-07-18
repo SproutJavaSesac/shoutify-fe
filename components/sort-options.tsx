@@ -1,10 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function SortOptions() {
-  const [sortBy, setSortBy] = useState("latest")
+  const [sortBy, setSortBy] = useState("latest");
 
   return (
     <Select value={sortBy} onValueChange={setSortBy}>
@@ -17,5 +23,5 @@ export function SortOptions() {
         <SelectItem value="most-comments">Most Comments</SelectItem>
       </SelectContent>
     </Select>
-  )
+  );
 }

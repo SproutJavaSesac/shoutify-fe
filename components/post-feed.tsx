@@ -1,13 +1,12 @@
-"use client"
+"use client";
 
-import { useState, useMemo } from "react"
-import React from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { MessageCircle } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
+import React, { useMemo, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { MessageCircle } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
 
 const allPosts = [
   {
@@ -31,7 +30,8 @@ const allPosts = [
     time: "2024-12-17 12:15",
     emotion: "joyful",
     category: "Modern Poem",
-    preview: "As dawn breaks through the veil of night, hope springs eternal in hearts that dare to dream...",
+    preview:
+      "As dawn breaks through the veil of night, hope springs eternal in hearts that dare to dream...",
     totalReactions: 38,
     comments: 8,
     hasImage: false,
@@ -57,7 +57,8 @@ const allPosts = [
     time: "2024-12-17 08:30",
     emotion: "romantic",
     category: "Sonnet",
-    preview: "In the tender moments between heartbeats, love writes its sweetest verses upon the soul...",
+    preview:
+      "In the tender moments between heartbeats, love writes its sweetest verses upon the soul...",
     totalReactions: 67,
     comments: 22,
     hasImage: false,
@@ -69,7 +70,8 @@ const allPosts = [
     time: "2024-12-17 06:12",
     emotion: "inspiring",
     category: "Prose",
-    preview: "When shadows loom and doubt whispers its cruel song, the spirit rises like phoenix from ashes...",
+    preview:
+      "When shadows loom and doubt whispers its cruel song, the spirit rises like phoenix from ashes...",
     totalReactions: 43,
     comments: 18,
     hasImage: true,
@@ -82,7 +84,8 @@ const allPosts = [
     time: "2024-12-17 05:45",
     emotion: "peaceful",
     category: "Biblical",
-    preview: "In the beginning was the Word, and through His grace we find our path illuminated...",
+    preview:
+      "In the beginning was the Word, and through His grace we find our path illuminated...",
     totalReactions: 29,
     comments: 11,
     hasImage: false,
@@ -94,7 +97,8 @@ const allPosts = [
     time: "2024-12-17 04:30",
     emotion: "contemplative",
     category: "Haiku",
-    preview: "Petals drift softly / On the gentle spring breeze / Life's fleeting beauty",
+    preview:
+      "Petals drift softly / On the gentle spring breeze / Life's fleeting beauty",
     totalReactions: 34,
     comments: 7,
     hasImage: true,
@@ -107,7 +111,8 @@ const allPosts = [
     time: "2024-12-17 03:15",
     emotion: "joyful",
     category: "Classical Poetry",
-    preview: "O radiant orb that breaks the night's embrace, thy golden rays do chase away despair...",
+    preview:
+      "O radiant orb that breaks the night's embrace, thy golden rays do chase away despair...",
     totalReactions: 41,
     comments: 13,
     hasImage: false,
@@ -119,7 +124,8 @@ const allPosts = [
     time: "2024-12-17 02:00",
     emotion: "nostalgic",
     category: "Modern Poem",
-    preview: "In pixels and code we find our souls, connected yet apart in this digital age...",
+    preview:
+      "In pixels and code we find our souls, connected yet apart in this digital age...",
     totalReactions: 26,
     comments: 9,
     hasImage: true,
@@ -132,7 +138,8 @@ const allPosts = [
     time: "2024-12-17 01:30",
     emotion: "contemplative",
     category: "Prose",
-    preview: "Each word carries the weight of intention, the burden of meaning, the power to heal or harm...",
+    preview:
+      "Each word carries the weight of intention, the burden of meaning, the power to heal or harm...",
     totalReactions: 37,
     comments: 14,
     hasImage: false,
@@ -144,7 +151,8 @@ const allPosts = [
     time: "2024-12-17 00:45",
     emotion: "melancholy",
     category: "Sonnet",
-    preview: "When silver moonbeams dance upon the lake, and silence speaks in whispers soft and low...",
+    preview:
+      "When silver moonbeams dance upon the lake, and silence speaks in whispers soft and low...",
     totalReactions: 48,
     comments: 16,
     hasImage: true,
@@ -157,12 +165,13 @@ const allPosts = [
     time: "2024-12-16 23:30",
     emotion: "inspiring",
     category: "Free Verse",
-    preview: "Break the chains that bind your spirit, let your voice ring clear and true across the valleys...",
+    preview:
+      "Break the chains that bind your spirit, let your voice ring clear and true across the valleys...",
     totalReactions: 55,
     comments: 20,
     hasImage: false,
   },
-]
+];
 
 const emotionColors = {
   melancholy: "bg-blue-100 text-blue-800",
@@ -172,75 +181,83 @@ const emotionColors = {
   inspiring: "bg-green-100 text-green-800",
   peaceful: "bg-teal-100 text-teal-800",
   nostalgic: "bg-orange-100 text-orange-800",
-}
+};
 
-const POSTS_PER_PAGE = 10
+const POSTS_PER_PAGE = 10;
 
 interface PostFeedProps {
-  selectedCategory: string
-  searchQuery?: string
+  selectedCategory: string;
+  searchQuery?: string;
 }
 
-export function PostFeed({ selectedCategory, searchQuery = "" }: PostFeedProps) {
-  const [currentPage, setCurrentPage] = useState(1)
+export function PostFeed({
+  selectedCategory,
+  searchQuery = "",
+}: PostFeedProps) {
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Filter posts by category and search query
   const filteredPosts = useMemo(() => {
-    let filtered = allPosts
+    let filtered = allPosts;
 
     // Filter by category
     if (selectedCategory !== "All") {
-      filtered = filtered.filter((post) => post.category === selectedCategory)
+      filtered = filtered.filter((post) => post.category === selectedCategory);
     }
 
     // Filter by search query
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
+      const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (post) =>
           post.title.toLowerCase().includes(query) ||
           post.author.toLowerCase().includes(query) ||
           post.preview.toLowerCase().includes(query),
-      )
+      );
     }
 
-    return filtered
-  }, [selectedCategory, searchQuery])
+    return filtered;
+  }, [selectedCategory, searchQuery]);
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE)
-  const startIndex = (currentPage - 1) * POSTS_PER_PAGE
-  const endIndex = startIndex + POSTS_PER_PAGE
-  const currentPosts = filteredPosts.slice(startIndex, endIndex)
+  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+  const endIndex = startIndex + POSTS_PER_PAGE;
+  const currentPosts = filteredPosts.slice(startIndex, endIndex);
 
   // Reset to page 1 when category or search changes
   React.useEffect(() => {
-    setCurrentPage(1)
-  }, [selectedCategory, searchQuery])
+    setCurrentPage(1);
+  }, [selectedCategory, searchQuery]);
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const renderPageNumbers = () => {
-    const pages = []
-    const maxVisiblePages = 5
+    const pages = [];
+    const maxVisiblePages = 5;
 
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
-    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
     if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1)
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
 
     // Previous button
     if (currentPage > 1) {
       pages.push(
-        <Button key="prev" variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)}>
+        <Button
+          key="prev"
+          variant="outline"
+          size="sm"
+          onClick={() => handlePageChange(currentPage - 1)}
+        >
           Previous
         </Button>,
-      )
+      );
     }
 
     // First page
@@ -254,13 +271,13 @@ export function PostFeed({ selectedCategory, searchQuery = "" }: PostFeedProps) 
         >
           1
         </Button>,
-      )
+      );
       if (startPage > 2) {
         pages.push(
           <span key="ellipsis1" className="px-2">
             ...
           </span>,
-        )
+        );
       }
     }
 
@@ -276,7 +293,7 @@ export function PostFeed({ selectedCategory, searchQuery = "" }: PostFeedProps) 
         >
           {i}
         </Button>,
-      )
+      );
     }
 
     // Last page
@@ -286,7 +303,7 @@ export function PostFeed({ selectedCategory, searchQuery = "" }: PostFeedProps) 
           <span key="ellipsis2" className="px-2">
             ...
           </span>,
-        )
+        );
       }
       pages.push(
         <Button
@@ -297,27 +314,33 @@ export function PostFeed({ selectedCategory, searchQuery = "" }: PostFeedProps) 
         >
           {totalPages}
         </Button>,
-      )
+      );
     }
 
     // Next button
     if (currentPage < totalPages) {
       pages.push(
-        <Button key="next" variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)}>
+        <Button
+          key="next"
+          variant="outline"
+          size="sm"
+          onClick={() => handlePageChange(currentPage + 1)}
+        >
           Next
         </Button>,
-      )
+      );
     }
 
-    return pages
-  }
+    return pages;
+  };
 
   return (
     <div className="space-y-6">
       {/* Search results info */}
       {searchQuery.trim() && (
         <div className="text-sm text-gray-600">
-          {filteredPosts.length} result{filteredPosts.length !== 1 ? "s" : ""} found for "{searchQuery}"
+          {filteredPosts.length} result{filteredPosts.length !== 1 ? "s" : ""}{" "}
+          found for "{searchQuery}"
         </div>
       )}
 
@@ -327,7 +350,13 @@ export function PostFeed({ selectedCategory, searchQuery = "" }: PostFeedProps) 
             <div className="flex items-start gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center space-x-2 mb-2">
-                  <Badge className={emotionColors[post.emotion as keyof typeof emotionColors]}>{post.emotion}</Badge>
+                  <Badge
+                    className={
+                      emotionColors[post.emotion as keyof typeof emotionColors]
+                    }
+                  >
+                    {post.emotion}
+                  </Badge>
                 </div>
 
                 <Link href={`/post/${post.id}`}>
@@ -348,11 +377,17 @@ export function PostFeed({ selectedCategory, searchQuery = "" }: PostFeedProps) 
                 <div className="flex items-center space-x-4">
                   {/* Total reactions count only */}
                   <div className="flex items-center space-x-1">
-                    <span className="text-sm text-gray-500">❤️ {post.totalReactions}</span>
+                    <span className="text-sm text-gray-500">
+                      ❤️ {post.totalReactions}
+                    </span>
                   </div>
 
                   <Link href={`/post/${post.id}#comments`}>
-                    <Button variant="ghost" size="sm" className="flex items-center space-x-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex items-center space-x-1"
+                    >
                       <MessageCircle className="h-4 w-4" />
                       <span>{post.comments}</span>
                     </Button>
@@ -377,16 +412,22 @@ export function PostFeed({ selectedCategory, searchQuery = "" }: PostFeedProps) 
       ))}
 
       {/* Pagination */}
-      {totalPages > 1 && <div className="flex justify-center items-center space-x-2 mt-8">{renderPageNumbers()}</div>}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center space-x-2 mt-8">
+          {renderPageNumbers()}
+        </div>
+      )}
 
       {/* No posts message */}
       {filteredPosts.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500">
-            {searchQuery.trim() ? `No posts found matching "${searchQuery}"` : "No posts found in this category."}
+            {searchQuery.trim()
+              ? `No posts found matching "${searchQuery}"`
+              : "No posts found in this category."}
           </p>
         </div>
       )}
     </div>
-  )
+  );
 }

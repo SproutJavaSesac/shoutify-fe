@@ -2,10 +2,10 @@ import { api } from "./client";
 import type {
   RankedPost,
   RankedUser,
-  RankingsResponse,
-  RankingQueryParams,
-  RankingType,
   RankingPeriod,
+  RankingQueryParams,
+  RankingsResponse,
+  RankingType,
 } from "@/types/rankings";
 
 export class RankingsApi {

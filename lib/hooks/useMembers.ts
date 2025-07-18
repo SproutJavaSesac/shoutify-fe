@@ -1,16 +1,16 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   getMemberInfo,
   updateMyInfo,
-  getMyPosts,
   getMyComments,
+  getMyPosts,
 } from "@/apis/members";
 import type {
-  MyInfoGetResponse,
+  MyCommentListResponse,
   MyInfoEditRequest,
   MyInfoEditResponse,
+  MyInfoGetResponse,
   MyPostListResponse,
-  MyCommentListResponse,
   PaginationParams,
 } from "@/types/members";
 
@@ -31,6 +31,7 @@ export function useMyInfo() {
         setLoading(false);
       }
     }
+
     fetchMyInfo();
   }, []);
 
@@ -80,6 +81,7 @@ export function useMyPosts(params: PaginationParams = {}) {
         setLoading(false);
       }
     }
+
     fetchMyPosts();
   }, [params.page, params.size]);
 
@@ -103,6 +105,7 @@ export function useMyComments(params: PaginationParams = {}) {
         setLoading(false);
       }
     }
+
     fetchMyComments();
   }, [params.page, params.size]);
 

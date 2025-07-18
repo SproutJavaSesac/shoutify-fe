@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Menu, PenTool } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { useAuth } from "@/lib/auth"
-import { AuthModal } from "@/components/auth-modal"
-import { UserMenu } from "@/components/user-menu"
+import { useState } from "react";
+import Link from "next/link";
+import { Menu, PenTool } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useAuth } from "@/lib/auth";
+import { AuthModal } from "@/components/auth-modal";
+import { UserMenu } from "@/components/user-menu";
 
 export function Navigation() {
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
-  const { user, loading } = useAuth()
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { user, loading } = useAuth();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
@@ -20,18 +20,27 @@ export function Navigation() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <PenTool className="h-8 w-8 text-gray-800" />
-            <span className="text-xl font-bold text-gray-900">Shoutify</span>
+            <span className="text-xl font-bold text-gray-900">구절구절</span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/posts" className="text-gray-700 hover:text-gray-900 transition-colors">
+            <Link
+              href="/posts"
+              className="text-gray-700 hover:text-gray-900 transition-colors"
+            >
               Posts
             </Link>
-            <Link href="/ranking" className="text-gray-700 hover:text-gray-900 transition-colors">
+            <Link
+              href="/ranking"
+              className="text-gray-700 hover:text-gray-900 transition-colors"
+            >
               Ranking
             </Link>
-            <Link href="/mypage" className="text-gray-700 hover:text-gray-900 transition-colors">
+            <Link
+              href="/mypage"
+              className="text-gray-700 hover:text-gray-900 transition-colors"
+            >
               My Page
             </Link>
           </nav>
@@ -43,12 +52,17 @@ export function Navigation() {
             ) : user ? (
               <>
                 <Link href="/write">
-                  <Button className="bg-gray-800 hover:bg-gray-900">Write</Button>
+                  <Button className="bg-gray-800 hover:bg-gray-900">
+                    Write
+                  </Button>
                 </Link>
                 <UserMenu />
               </>
             ) : (
-              <Button onClick={() => setIsAuthModalOpen(true)} className="bg-gray-800 hover:bg-gray-900">
+              <Button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="bg-gray-800 hover:bg-gray-900"
+              >
                 Sign In
               </Button>
             )}
@@ -78,7 +92,11 @@ export function Navigation() {
                       </Link>
                     </>
                   ) : (
-                    <Button onClick={() => setIsAuthModalOpen(true)} variant="outline" className="justify-start">
+                    <Button
+                      onClick={() => setIsAuthModalOpen(true)}
+                      variant="outline"
+                      className="justify-start"
+                    >
                       Sign In
                     </Button>
                   )}
@@ -88,7 +106,10 @@ export function Navigation() {
           </div>
         </div>
       </div>
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </header>
-  )
+  );
 }

@@ -8,9 +8,32 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Award, UserCheck, BarChart } from "lucide-react";
+import { Award, BarChart } from "lucide-react";
 
-export function UserProfileModal({ isOpen, onClose, userData }) {
+interface UserProfileModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  userData: UserData;
+}
+
+interface UserData {
+  name: string;
+  avatar?: string;
+  joinedDate: string;
+  stats: {
+    followers: number;
+    following: number;
+    posts: number;
+  };
+  badges: string[];
+  recentActivity: string[];
+}
+
+export function UserProfileModal({
+  isOpen,
+  onClose,
+  userData,
+}: UserProfileModalProps) {
   if (!userData) return null;
 
   return (

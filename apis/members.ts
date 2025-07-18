@@ -1,10 +1,9 @@
 import { api } from "./client";
 import type {
-  MyInfoGetResponse,
+  MyCommentListResponse,
   MyInfoEditRequest,
   MyInfoEditResponse,
   MyPostListResponse,
-  MyCommentListResponse,
   PaginationParams,
 } from "@/types/members";
 

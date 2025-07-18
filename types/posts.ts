@@ -8,16 +8,28 @@ export type ConceptType =
   | "drama"
   | "essay";
 
+interface ReactionDetailCountMap {
+  happy: number;
+  sad: number;
+  angry: number;
+  excited: number;
+  confused: number;
+  proud: number;
+}
+
 export interface Post {
   postId: number;
   nickname: string;
   afterTitle: string;
   afterContent: string;
-  createdAt: string;
+  createdAt: Date;
   reactionCount: number;
   commentCount: number;
   conceptType: ConceptType;
-  imageUrl: string;
+  imgUrl: string;
+  isHidden?: boolean;
+  isMine: boolean;
+  reactionDetailCount: ReactionDetailCountMap;
 }
 
 export interface Pagination {
