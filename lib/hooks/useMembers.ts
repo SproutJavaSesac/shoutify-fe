@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import {
-  getMyComments,
-  getMyInfo,
-  getMyPosts,
+  getMemberInfo,
   updateMyInfo,
+  getMyComments,
+  getMyPosts,
 } from "@/apis/members";
 import type {
   MyCommentListResponse,
@@ -23,7 +23,7 @@ export function useMyInfo() {
   useEffect(() => {
     async function fetchMyInfo() {
       try {
-        const response = await getMyInfo();
+        const response = await getMemberInfo();
         setData(response);
       } catch (err: any) {
         setError(err);
