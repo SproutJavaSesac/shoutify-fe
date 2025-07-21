@@ -100,7 +100,7 @@ export function CommentsSection({ postId }: Readonly<{ postId: string }>) {
     }
     if (newComment.trim()) {
       toast({
-        description: "Comment posted successfully",
+        description: "댓글을 작성했습니다.",
       });
       setNewComment("");
     }
@@ -109,7 +109,7 @@ export function CommentsSection({ postId }: Readonly<{ postId: string }>) {
   const handleSubmitReply = (parentCommentId: number) => {
     if (replyText.trim()) {
       toast({
-        description: "Reply posted successfully",
+        description: "답글을 작성했습니다.",
       });
       setReplyText("");
       setReplyingTo(null);
@@ -206,7 +206,7 @@ export function CommentsSection({ postId }: Readonly<{ postId: string }>) {
                 }
               >
                 <MessageCircle className="h-3 w-3 mr-1" />
-                Reply
+                답글 작성
               </Button>
             )}
           </div>
@@ -214,7 +214,7 @@ export function CommentsSection({ postId }: Readonly<{ postId: string }>) {
           {replyingTo === comment.commentId && (
             <div className="mt-4 space-y-2">
               <Textarea
-                placeholder="Write a reply..."
+                placeholder="답글을 입력하세요."
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 className="min-h-[80px]"
@@ -224,14 +224,14 @@ export function CommentsSection({ postId }: Readonly<{ postId: string }>) {
                   size="sm"
                   onClick={() => handleSubmitReply(comment.commentId)}
                 >
-                  Reply
+                  작성
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setReplyingTo(null)}
                 >
-                  Cancel
+                  취소
                 </Button>
               </div>
             </div>
@@ -247,42 +247,40 @@ export function CommentsSection({ postId }: Readonly<{ postId: string }>) {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <MessageCircle className="h-5 w-5" />
-            <span>Comments ({commentsData.length})</span>
+            <span>댓글 ({commentsData.length})</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           {user ? (
             <div className="mb-6 space-y-4">
               <div className="flex items-center space-x-2 mb-2">
-                <span className="text-sm text-gray-600">Commenting as</span>
+                <span className="text-sm text-gray-600">현재 작성자: </span>
                 <span className="text-sm font-medium">@{user.nickname}</span>
               </div>
               <Textarea
-                placeholder="Share your thoughts on this literary piece..."
+                placeholder="문학 작품을 인용해 생각을 나눠보세요!"
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 className="min-h-[100px]"
               />
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-500">
-                  {1000 - newComment.length} characters remaining
+                  {1000 - newComment.length} 남은 글자수
                 </span>
                 <Button
                   onClick={handleSubmitComment}
                   disabled={!newComment.trim()}
                 >
-                  Post Comment
+                  댓글 작성
                 </Button>
               </div>
             </div>
           ) : (
             <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
               <p className="text-gray-600 mb-3">
-                Sign in to join the literary discussion
+                댓글을 작성하려면 먼저 로그인해 주세요.
               </p>
-              <Button onClick={() => setShowAuthModal(true)}>
-                Sign In to Comment
-              </Button>
+              <Button onClick={() => setShowAuthModal(true)}>로그인하기</Button>
             </div>
           )}
 
