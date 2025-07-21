@@ -6,6 +6,7 @@ export type CreatePostRequest = {
   content: string;
   conceptType: string;
   emotionType: string;
+  imageUrl?: string;
 };
 
 export type CreatePostResponse = {

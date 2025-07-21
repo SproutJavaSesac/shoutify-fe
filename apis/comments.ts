@@ -1,13 +1,23 @@
 import { api } from "./client";
 import type {
   Comment,
+  CommentQueryParams,
   CommentsResponse,
   CreateCommentRequest,
 } from "@/types/comments";
 
 // 게시글의 댓글 목록 조회
-export async function getComments(postId: number): Promise<CommentsResponse> {
-  return api.public.get<CommentsResponse>(`/posts/${postId}/comments`);
+export async function getComments({
+  postId,
+  queryParams,
+}: {
+  postId: number;
+  queryParams: CommentQueryParams;
+}): Promise<CommentsResponse> {
+  return api.public.get<CommentsResponse>(
+    `/posts/${postId}/comments`,
+    queryParams,
+  );
 }
 
 // 댓글 작성
