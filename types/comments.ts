@@ -1,15 +1,26 @@
+import { Pagination } from "@/types/commons";
+
 export interface Comment {
-  id: number;
-  postId: number;
-  author: string;
-  authorId?: string;
-  time: string;
+  commentId: number;
+  commenterId: number | null;
+  commenterNickname: string;
+  parentId: number | null;
+  order: number;
+  level: number;
   content: string;
+  reactionCount: number;
   reactions: Record<string, number>;
-  replies?: Comment[];
-  parentId?: number;
-  createdAt: string;
-  updatedAt?: string;
+  isDeleted: boolean;
+  isReported: boolean;
+  isMine?: boolean; // TODO isMine 추가 시 ? 제거하기
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CommentQueryParams {
+  postId: number;
+  page?: number;
+  size?: number;
 }
 
 export interface CreateCommentRequest {
@@ -29,6 +40,7 @@ export interface CommentReactionRequest {
 }
 
 export interface CommentsResponse {
+  postId: number;
+  pagination: Pagination;
   comments: Comment[];
-  totalCount: number;
 }

@@ -1,5 +1,5 @@
 import { PostDetail } from "@/components/post-detail";
-import { CommentsSection } from "@/components/comments-section";
+import { CommentsSection } from "@/components/comments/comments-section";
 import { RecommendedPosts } from "@/components/recommended-posts";
 
 export default function PostDetailPage({ params }: { params: { id: string } }) {
