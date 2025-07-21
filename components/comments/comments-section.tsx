@@ -195,7 +195,7 @@ export function CommentsSection({ postId }: Readonly<{ postId: string }>) {
               )}
             </div>
 
-            {level < 2 && (
+            {level < 2 && !comment.isDeleted && !comment.isReported && (
               <Button
                 variant="ghost"
                 size="sm"
