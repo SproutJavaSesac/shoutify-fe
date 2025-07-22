@@ -21,8 +21,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { createPost } from "@/apis/posts";
 import { FetchError } from "@/apis/client";
-import { ConceptType, EmotionType } from "@/types/post-creation";
-import { CATEGORY_OPTIONS, EMOTION_OPTIONS } from "@/constants/post-creation";
+import { ConceptType, EmotionType } from "@/types/posts";
+import { CATEGORY_OPTIONS, EMOTION_OPTIONS } from "@/constants/posts";
 
 export function PostCreationForm() {
   const [title, setTitle] = useState("");

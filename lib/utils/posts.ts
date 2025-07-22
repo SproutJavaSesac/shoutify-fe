@@ -1,6 +1,6 @@
 // 게시글 작성 관련 유틸리티 함수들
-import { ConceptType, EmotionType } from "@/types/post-creation";
-import { CATEGORY_OPTIONS, EMOTION_OPTIONS } from "@/constants/post-creation";
+import { ConceptType, EmotionType } from "@/types/posts";
+import { CATEGORY_OPTIONS, EMOTION_OPTIONS } from "@/constants/posts";
 
 // 카테고리 값으로 한국어 라벨 찾기
 export const getCategoryLabel = (value: ConceptType): string => {

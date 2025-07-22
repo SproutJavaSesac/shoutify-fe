@@ -1,24 +1,17 @@
 import { api } from "./client";
-import { Post, PostQueryParams, PostsResult } from "@/types/posts";
-
-export type CreatePostRequest = {
-  title: string;
-  content: string;
-  conceptType: string;
-  emotionType: string | null;
-  imageUrl?: string;
-};
-
-export type CreatePostResponse = {
-  postId: number;
-  afterTitle: string;
-  afterContent: string;
-};
+import {
+  CreatePostRequest,
+  CreatePostResponse,
+  Post,
+  PostQueryParams,
+  PostsResult,
+} from "@/types/posts";
+import { API_ENDPOINTS } from "@/constants/posts";
 
 // 게시글 목록 조회
 export async function getPosts(params?: PostQueryParams): Promise<PostsResult> {
   try {
-    return await api.public.get<PostsResult>("/posts", params);
+    return await api.public.get<PostsResult>(API_ENDPOINTS.POSTS, params);
   } catch (error) {
     console.warn("게시글 목록 조회 실패:", error);
     throw error;
@@ -38,21 +31,8 @@ export async function getPost(postId: number): Promise<Post> {
 export const createPost = async (
   data: CreatePostRequest,
 ): Promise<CreatePostResponse> => {
-  return api.post<CreatePostResponse>("/posts", data);
+  return api.post<CreatePostResponse>(API_ENDPOINTS.POSTS_CREATE, data);
 };
-
-// 게시글 수정
-export async function updatePost(
-  postId: number,
-  data: {
-    beforeTitle?: string;
-    beforeContent?: string;
-    conceptType?: string;
-    imageFile?: File;
-  },
-) {
-  return api.put(`/posts/${postId}`, data);
-}
 
 // 게시글 삭제
 export async function deletePost(postId: number) {
