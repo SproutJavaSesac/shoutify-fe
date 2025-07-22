@@ -11,7 +11,7 @@ export type CreatePostRequest = {
 
 export type CreatePostResponse = {
   postId: number;
-  title: string;
+  afterTitle: string;
   afterContent: string;
 };
 

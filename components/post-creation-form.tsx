@@ -47,7 +47,7 @@ export function PostCreationForm() {
   };
 
   const handleCategoryChange = (value: string) => {
-    setCategory(value as ConceptType | "");
+    setCategory(value as ConceptType);
   };
 
   const handleEmotionClick = (emotionValue: EmotionType) => {
@@ -108,7 +108,7 @@ export function PostCreationForm() {
       // 성공 알림
       toast({
         title: "게시글 작성 완료! 🎉",
-        description: `"${response.title}" 게시글이 AI의 마법으로 탄생했습니다.`,
+        description: `"${response.afterTitle}" 게시글이 AI의 마법으로 탄생했습니다.`,
       });
 
       // 생성된 게시글로 이동
