@@ -28,7 +28,7 @@ export function PostCreationForm() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState<ConceptType | "">("");
-  const [emotion, setEmotion] = useState<EmotionType | "">("");
+  const [emotion, setEmotion] = useState<EmotionType | null>(null);
   const [image, setImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -51,7 +51,7 @@ export function PostCreationForm() {
   };
 
   const handleEmotionClick = (emotionValue: EmotionType) => {
-    setEmotion(emotion === emotionValue ? "" : emotionValue);
+    setEmotion(emotion === emotionValue ? null : emotionValue);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
