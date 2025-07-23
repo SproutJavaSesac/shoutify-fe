@@ -8,8 +8,9 @@ import {
 
 // 카테고리 옵션 (화면 표시용 한국어 → API 통신용 영어)
 export const CONCEPT_OPTIONS: CategoryOption[] = [
-  { label: "고전 시", value: "CLASSICAL_POETRY" },
-  { label: "현대 시", value: "POETRY" },
+  { label: "전체", value: "ALL" },
+  { label: "고전 시가", value: "CLASSICAL_POETRY" },
+  { label: "시", value: "POETRY" },
   { label: "소설", value: "NOVEL" },
   { label: "희곡", value: "DRAMA" },
   { label: "에세이", value: "ESSAY" },

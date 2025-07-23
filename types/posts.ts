@@ -2,6 +2,7 @@ export type PostSortType = "latest" | "reactions" | "comments";
 // 게시글 작성 관련 타입 정의만 포함
 
 export type ConceptType =
+  | "ALL"
   | "CLASSICAL_POETRY"
   | "POETRY"
   | "NOVEL"
