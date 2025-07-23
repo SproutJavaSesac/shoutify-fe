@@ -1,17 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import PostsList from "./PostsList";
 import type { ConceptType, PostSortType } from "@/types/posts";
-
-const CONCEPT_OPTIONS: { value: ConceptType; label: string }[] = [
-  { value: "all", label: "전체" },
-  { value: "classical_poetry", label: "고전시가" },
-  { value: "poetry", label: "시" },
-  { value: "novel", label: "소설" },
-  { value: "drama", label: "희곡" },
-  { value: "essay", label: "수필" },
-];
+import { CONCEPT_OPTIONS } from "@/constants";
 
 const SORT_OPTIONS: { value: PostSortType; label: string }[] = [
   { value: "latest", label: "최신순" },
@@ -20,7 +12,7 @@ const SORT_OPTIONS: { value: PostSortType; label: string }[] = [
 ];
 
 export default function PostsBoard() {
-  const [selectedConcept, setSelectedConcept] = useState<ConceptType>("all");
+  const [selectedConcept, setSelectedConcept] = useState<ConceptType>("ALL");
   const [selectedSort, setSelectedSort] = useState<PostSortType>("latest");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -52,10 +44,14 @@ export default function PostsBoard() {
       <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor={"concept"}
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               컨셉
             </label>
             <select
+              id="concept"
               value={selectedConcept}
               onChange={(e) =>
                 setSelectedConcept(e.target.value as ConceptType)
@@ -71,10 +67,14 @@ export default function PostsBoard() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor={"sort"}
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               정렬
             </label>
             <select
+              id="sort"
               value={selectedSort}
               onChange={(e) => setSelectedSort(e.target.value as PostSortType)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -88,15 +88,19 @@ export default function PostsBoard() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor={"search"}
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               검색
             </label>
             <div className="flex">
               <input
+                id="search"
                 type="text"
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyUp={handleKeyPress}
                 placeholder="게시글 검색..."
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -139,7 +143,7 @@ export default function PostsBoard() {
       <PostsList
         key={`${selectedConcept}-${selectedSort}-${searchQuery}`}
         initialSort={selectedSort}
-        concept={selectedConcept === "all" ? undefined : selectedConcept}
+        concept={selectedConcept === "ALL" ? undefined : selectedConcept}
         limit={10}
       />
     </div>
