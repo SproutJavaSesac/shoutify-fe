@@ -1,0 +1,106 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+    <!-- 배경 그라데이션 -->
+    <defs>
+        <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#f9fafb;stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:#e5e7eb;stop-opacity:1"/>
+        </linearGradient>
+        <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#1f2937;stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:#374151;stop-opacity:1"/>
+        </linearGradient>
+    </defs>
+
+    <rect width="1200" height="630" fill="url(#bgGradient)"/>
+
+    <!-- 장식적 소리치는 요소들 (배경) -->
+    <path d="M50 80 L70 60 L90 80" stroke="#fbbf24" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.3"/>
+    <path d="M1110 80 L1130 60 L1150 80" stroke="#fbbf24" stroke-width="4" fill="none" stroke-linecap="round"
+          opacity="0.3"/>
+    <path d="M50 550 L70 570 L90 550" stroke="#fbbf24" stroke-width="4" fill="none" stroke-linecap="round"
+          opacity="0.3"/>
+    <path d="M1110 550 L1130 570 L1150 550" stroke="#fbbf24" stroke-width="4" fill="none" stroke-linecap="round"
+          opacity="0.3"/>
+
+    <!-- 말풍선 원들 (재잘재잘 표현) -->
+    <circle cx="120" cy="150" r="20" fill="#fbbf24" opacity="0.2"/>
+    <circle cx="100" cy="200" r="15" fill="#fbbf24" opacity="0.3"/>
+    <circle cx="80" cy="250" r="10" fill="#fbbf24" opacity="0.4"/>
+    <circle cx="1080" cy="380" r="25" fill="#3b82f6" opacity="0.2"/>
+    <circle cx="1100" cy="430" r="18" fill="#3b82f6" opacity="0.3"/>
+    <circle cx="1120" cy="480" r="12" fill="#3b82f6" opacity="0.4"/>
+
+    <!-- 메인 로고 (새로운 디자인 적용) -->
+    <g transform="translate(200, 235)">
+        <!-- 로고 배경 원 (더 크게) -->
+        <circle cx="0" cy="0" r="80" fill="#1f2937"/>
+
+        <!-- 소리치는 표현들 -->
+        <path d="M-50 -50 L-40 -60 L-30 -50" stroke="#fbbf24" stroke-width="3" fill="none" stroke-linecap="round"
+              opacity="0.8"/>
+        <path d="M30 -50 L40 -60 L50 -50" stroke="#fbbf24" stroke-width="3" fill="none" stroke-linecap="round"
+              opacity="0.8"/>
+        <path d="M-50 50 L-40 60 L-30 50" stroke="#fbbf24" stroke-width="3" fill="none" stroke-linecap="round"
+              opacity="0.8"/>
+        <path d="M30 50 L40 60 L50 50" stroke="#fbbf24" stroke-width="3" fill="none" stroke-linecap="round"
+              opacity="0.8"/>
+
+        <!-- 중간 소리치는 표현 -->
+        <path d="M-70 -10 L-60 0 L-70 10" stroke="#fbbf24" stroke-width="2" fill="none" stroke-linecap="round"
+              opacity="0.6"/>
+        <path d="M70 -10 L60 0 L70 10" stroke="#fbbf24" stroke-width="2" fill="none" stroke-linecap="round"
+              opacity="0.6"/>
+
+        <!-- 책 페이지 -->
+        <rect x="-35" y="-35" width="70" height="70" rx="8" fill="#ffffff" opacity="0.95"/>
+        <rect x="-30" y="-30" width="60" height="60" rx="6" fill="#f8fafc"/>
+
+        <!-- 펜 모양 -->
+        <path d="M-15 -15 L25 25" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="-15" cy="-15" r="6" fill="#fbbf24"/>
+        <path d="M20 20 L30 30" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
+
+        <!-- 반짝이 효과 -->
+        <path d="M-25 -25 L-20 -30 L-15 -25 L-20 -20 Z" fill="#fbbf24" opacity="0.8"/>
+        <path d="M35 -10 L40 -15 L45 -10 L40 -5 Z" fill="#fbbf24" opacity="0.6"/>
+        <path d="M-10 35 L-5 30 L0 35 L-5 40 Z" fill="#fbbf24" opacity="0.7"/>
+        <circle cx="25 " cy="-5" r="2" fill="#fbbf24" opacity="0.9"/>
+        <circle cx="-5" cy="30" r="2" fill="#fbbf24" opacity="0.8"/>
+
+        <!-- 텍스트 라인들 -->
+        <rect x="-20" y="5" width="15" height="3" fill="#94a3b8" opacity="0.5"/>
+        <rect x="-20" y="10" width="12" height="3" fill="#94a3b8" opacity="0.5"/>
+        <rect x="8" y="5" width="15" height="3" fill="#94a3b8" opacity="0.5"/>
+        <rect x="10" y="10" width="12" height="3" fill="#94a3b8" opacity="0.5"/>
+
+        <!-- 따옴표 -->
+        <text x="-18" y="25" font-family="serif" font-size="12" fill="#fbbf24" font-weight="bold">"</text>
+        <text x="15" y="25" font-family="serif" font-size="12" fill="#fbbf24" font-weight="bold">"</text>
+
+        <!-- 말풍선 원들 -->
+        <circle cx="-55" cy="-20" r="6" fill="#fbbf24" opacity="0.4"/>
+        <circle cx="-65" cy="-5" r="4" fill="#fbbf24" opacity="0.6"/>
+        <circle cx="55" cy="-20" r="6" fill="#fbbf24" opacity="0.4"/>
+        <circle cx="65" cy="-5" r="4" fill="#fbbf24" opacity="0.6"/>
+    </g>
+
+    <!-- 메인 텍스트 -->
+    <text x="350" y="280" font-family="Arial, sans-serif" font-size="64" font-weight="bold" fill="url(#textGradient)">
+        구절구절
+    </text>
+    <text x="350" y="340" font-family="Arial, sans-serif" font-size="36" fill="#6b7280">당신의 이야기가 문학이 되는 곳</text>
+
+    <!-- 서브 텍스트 -->
+    <text x="350" y="420" font-family="Arial, sans-serif" font-size="28" fill="#9ca3af">일상의 감정을 아름다운 문학으로</text>
+    <text x="350" y="460" font-family="Arial, sans-serif" font-size="28" fill="#9ca3af">AI와 함께 만드는 창작 플랫폼</text>
+
+    <!-- 장식적 텍스트 요소들 -->
+    <text x="850" y="200" font-family="serif" font-size="20" fill="#d1d5db" opacity="0.7">"마음속 한 줄이</text>
+    <text x="850" y="230" font-family="serif" font-size="20" fill="#d1d5db" opacity="0.7">시가 되고"</text>
+
+    <text x="850" y="450" font-family="serif" font-size="20" fill="#d1d5db" opacity="0.7">"평범한 순간이</text>
+    <text x="850" y="480" font-family="serif" font-size="20" fill="#d1d5db" opacity="0.7">특별한 이야기로"</text>
+
+    <!-- 배경 장식 웨이브 -->
+    <path d="M200 500 Q400 450 600 500 T1000 500" stroke="#fbbf24" stroke-width="3" fill="none" opacity="0.3"/>
+</svg>
