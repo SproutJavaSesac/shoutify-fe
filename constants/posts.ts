@@ -52,3 +52,9 @@ export const API_ENDPOINTS = {
     return `/posts/search?${params.toString()}`;
   },
 } as const;
+
+// 게시글 관련 프론트 url 경로
+export const POST_ROUTES = {
+  CREATE: "/posts/write",
+  DETAIL: (postId: number | string) => `/posts/${postId}`,
+} as const;

@@ -22,7 +22,11 @@ import { useAuth } from "@/lib/auth";
 import { createPost } from "@/apis/posts";
 import { FetchError } from "@/apis/client";
 import { ConceptType, EmotionType } from "@/types/posts";
-import { CONCEPT_OPTIONS, EMOTION_OPTIONS } from "@/constants/posts";
+import {
+  CONCEPT_OPTIONS,
+  EMOTION_OPTIONS,
+  POST_ROUTES,
+} from "@/constants/posts";
 
 export function PostCreationForm() {
   const [title, setTitle] = useState("");
@@ -51,14 +55,18 @@ export function PostCreationForm() {
   };
 
   const handleEmotionClick = (emotionValue: EmotionType) => {
-    setEmotion(emotion === emotionValue ? null : emotionValue);
+    setEmotion(emotionValue);
+  };
+
+  const validateNecessaries = () => {
+    return !title.trim() || !content.trim() || !concept;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // 필수 입력값 검증
-    if (!title.trim() || !content.trim() || !concept) {
+    if (validateNecessaries()) {
       toast({
         title: "입력 오류",
         description: "컨셉 카테고리, 제목, 내용은 필수 입력 항목입니다.",
@@ -108,7 +116,8 @@ export function PostCreationForm() {
       });
 
       // 생성된 게시글로 이동
-      router.push(`/posts/${response.postId}`);
+      // DETAIL 이용
+      router.push(POST_ROUTES.DETAIL(response.postId));
     } catch (error) {
       console.error("게시글 작성 실패:", error);
 
@@ -288,9 +297,7 @@ export function PostCreationForm() {
             </Button>
             <Button
               type="submit"
-              disabled={
-                isSubmitting || !title.trim() || !content.trim() || !concept
-              }
+              disabled={isSubmitting || validateNecessaries()}
               className="bg-gray-800 hover:bg-gray-900"
             >
               {isSubmitting ? (
