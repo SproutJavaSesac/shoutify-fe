@@ -1,24 +1,6 @@
-// 공통 상수들
-export const POST_CATEGORIES = [
-  "Classical Poetry",
-  "Biblical",
-  "Modern Poem",
-  "Prose",
-  "Haiku",
-  "Sonnet",
-  "Free Verse",
-] as const;
+import { CONCEPT_OPTIONS, EMOTION_OPTIONS } from "./posts";
 
-export const POST_EMOTIONS = [
-  "joyful",
-  "melancholy",
-  "romantic",
-  "contemplative",
-  "inspiring",
-  "nostalgic",
-  "peaceful",
-  "passionate",
-] as const;
+export { CONCEPT_OPTIONS, EMOTION_OPTIONS };
 
 export const REACTION_EMOJIS = ["❤️", "😊", "😢", "🤔", "👏"] as const;
 
@@ -32,18 +14,6 @@ export const REPORT_REASONS = [
 ] as const;
 
 export const PROFANITY_SEVERITIES = ["low", "medium", "high"] as const;
-
-// 감정별 색상 매핑
-export const EMOTION_COLORS = {
-  melancholy: "bg-blue-100 text-blue-800",
-  joyful: "bg-yellow-100 text-yellow-800",
-  contemplative: "bg-purple-100 text-purple-800",
-  romantic: "bg-pink-100 text-pink-800",
-  inspiring: "bg-green-100 text-green-800",
-  peaceful: "bg-teal-100 text-teal-800",
-  nostalgic: "bg-orange-100 text-orange-800",
-  passionate: "bg-red-100 text-red-800",
-} as const;
 
 // 페이징 기본값
 export const DEFAULT_PAGE_SIZE = 10;
