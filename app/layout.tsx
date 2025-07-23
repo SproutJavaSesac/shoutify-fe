@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    url: "https://versebyverse.com",
+    url: "https://versebyverse.vercel.app",
     siteName: "구절구절",
     title: "구절구절 - 당신의 이야기가 문학이 되는 곳",
     description:
