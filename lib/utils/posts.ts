@@ -1,11 +1,11 @@
 // 게시글 작성 관련 유틸리티 함수들
 import { ConceptType, EmotionType } from "@/types/posts";
-import { CATEGORY_OPTIONS, EMOTION_OPTIONS } from "@/constants/posts";
+import { CONCEPT_OPTIONS, EMOTION_OPTIONS } from "@/constants/posts";
 
 // 카테고리 값으로 한국어 라벨 찾기
 export const getCategoryLabel = (value: ConceptType): string => {
   return (
-    CATEGORY_OPTIONS.find((option) => option.value === value)?.label || value
+    CONCEPT_OPTIONS.find((option) => option.value === value)?.label || value
   );
 };
 
@@ -26,7 +26,7 @@ export const getEmotionColor = (value: EmotionType): string => {
 
 // 카테고리 한국어 라벨로 값 찾기 (역방향)
 export const getCategoryValue = (label: string): ConceptType | undefined => {
-  return CATEGORY_OPTIONS.find((option) => option.label === label)?.value;
+  return CONCEPT_OPTIONS.find((option) => option.label === label)?.value;
 };
 
 // 감정 한국어 라벨로 값 찾기 (역방향)

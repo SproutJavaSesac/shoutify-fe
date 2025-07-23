@@ -1,6 +1,6 @@
-import { CATEGORY_OPTIONS, EMOTION_OPTIONS } from "./posts";
+import { CONCEPT_OPTIONS, EMOTION_OPTIONS } from "./posts";
 
-export { CATEGORY_OPTIONS, EMOTION_OPTIONS };
+export { CONCEPT_OPTIONS, EMOTION_OPTIONS };
 
 export const REACTION_EMOJIS = ["❤️", "😊", "😢", "🤔", "👏"] as const;
 

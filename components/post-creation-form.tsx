@@ -22,12 +22,12 @@ import { useAuth } from "@/lib/auth";
 import { createPost } from "@/apis/posts";
 import { FetchError } from "@/apis/client";
 import { ConceptType, EmotionType } from "@/types/posts";
-import { CATEGORY_OPTIONS, EMOTION_OPTIONS } from "@/constants/posts";
+import { CONCEPT_OPTIONS, EMOTION_OPTIONS } from "@/constants/posts";
 
 export function PostCreationForm() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState<ConceptType | "">("");
+  const [concept, setConcept] = useState<ConceptType | "">("");
   const [emotion, setEmotion] = useState<EmotionType | null>(null);
   const [image, setImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,8 +46,8 @@ export function PostCreationForm() {
     setImage(null);
   };
 
-  const handleCategoryChange = (value: string) => {
-    setCategory(value as ConceptType);
+  const handleConceptChange = (value: string) => {
+    setConcept(value as ConceptType);
   };
 
   const handleEmotionClick = (emotionValue: EmotionType) => {
@@ -58,10 +58,10 @@ export function PostCreationForm() {
     e.preventDefault();
 
     // 필수 입력값 검증
-    if (!title.trim() || !content.trim() || !category) {
+    if (!title.trim() || !content.trim() || !concept) {
       toast({
         title: "입력 오류",
-        description: "카테고리, 제목, 내용은 필수 입력 항목입니다.",
+        description: "컨셉 카테고리, 제목, 내용은 필수 입력 항목입니다.",
         variant: "destructive",
       });
       return;
@@ -93,17 +93,13 @@ export function PostCreationForm() {
       const postData = {
         title: title.trim(),
         content: content.trim(),
-        conceptType: category,
+        conceptType: concept,
         emotionType: emotion,
         ...(imageUrl && { imageUrl }), // 이미지가 있을 때만 포함
       };
 
-      console.log("🚀 게시글 생성 요청 데이터:", postData);
-
       // API 요청 실행
       const response = await createPost(postData);
-
-      console.log("✅ 게시글 생성 성공:", response);
 
       // 성공 알림
       toast({
@@ -163,15 +159,15 @@ export function PostCreationForm() {
           )}
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Category Selection */}
+          {/* Concept Selection */}
           <div className="space-y-2">
-            <Label htmlFor="category">카테고리 *</Label>
-            <Select value={category} onValueChange={handleCategoryChange}>
+            <Label htmlFor="concept">컨셉 카테고리 *</Label>
+            <Select value={concept} onValueChange={handleConceptChange}>
               <SelectTrigger>
-                <SelectValue placeholder="카테고리를 선택해주세요" />
+                <SelectValue placeholder="컨셉 카테고리를 선택해주세요" />
               </SelectTrigger>
               <SelectContent>
-                {CATEGORY_OPTIONS.map((option) => (
+                {CONCEPT_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
@@ -293,7 +289,7 @@ export function PostCreationForm() {
             <Button
               type="submit"
               disabled={
-                isSubmitting || !title.trim() || !content.trim() || !category
+                isSubmitting || !title.trim() || !content.trim() || !concept
               }
               className="bg-gray-800 hover:bg-gray-900"
             >

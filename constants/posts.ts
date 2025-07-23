@@ -7,7 +7,7 @@ import {
 } from "@/types/posts";
 
 // 카테고리 옵션 (화면 표시용 한국어 → API 통신용 영어)
-export const CATEGORY_OPTIONS: CategoryOption[] = [
+export const CONCEPT_OPTIONS: CategoryOption[] = [
   { label: "고전 시", value: "CLASSICAL_POETRY" },
   { label: "현대 시", value: "POETRY" },
   { label: "소설", value: "NOVEL" },
