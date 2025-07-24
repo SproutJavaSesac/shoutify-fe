@@ -43,10 +43,10 @@ export async function deletePost(postId: number): Promise<string> {
 
 // 게시글 숨김
 export async function hidePost(postId: number): Promise<string> {
-  return api.post(POST_API_ENDPOINTS.POST_HIDE(postId));
+  return api.patch(POST_API_ENDPOINTS.POST_HIDE(postId));
 }
 
 // 게시글 공개
 export async function unhidePost(postId: number): Promise<string> {
-  return api.post(POST_API_ENDPOINTS.POST_UNHIDE(postId));
+  return api.patch(POST_API_ENDPOINTS.POST_UNHIDE(postId));
 }
