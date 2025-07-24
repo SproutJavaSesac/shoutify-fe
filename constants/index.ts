@@ -1,7 +1,3 @@
-import { CONCEPT_OPTIONS, EMOTION_OPTIONS } from "./posts";
-
-export { CONCEPT_OPTIONS, EMOTION_OPTIONS };
-
 export const REACTION_EMOJIS = ["❤️", "😊", "😢", "🤔", "👏"] as const;
 
 export const REPORT_REASONS = [

@@ -17,10 +17,10 @@ interface PostsListProps {
 }
 
 export default function PostsList({
-  initialSort = "latest",
+  initialSort = "createdAt",
   concept,
   limit = 10,
-}: PostsListProps) {
+}: Readonly<PostsListProps>) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +36,7 @@ export default function PostsList({
       const response = await getPosts({
         sort: initialSort,
         concept,
-        limit,
+        size: limit,
         ...params,
       });
 

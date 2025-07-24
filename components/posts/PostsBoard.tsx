@@ -3,17 +3,17 @@
 import React, { useState } from "react";
 import PostsList from "./PostsList";
 import type { ConceptType, PostSortType } from "@/types/posts";
-import { CONCEPT_OPTIONS } from "@/constants";
+import { CONCEPT_OPTIONS } from "@/constants/posts";
 
 const SORT_OPTIONS: { value: PostSortType; label: string }[] = [
-  { value: "latest", label: "최신순" },
+  { value: "createdAt", label: "최신순" },
   { value: "reactions", label: "반응 많은 순" },
   { value: "comments", label: "댓글 많은 순" },
 ];
 
 export default function PostsBoard() {
   const [selectedConcept, setSelectedConcept] = useState<ConceptType>("ALL");
-  const [selectedSort, setSelectedSort] = useState<PostSortType>("latest");
+  const [selectedSort, setSelectedSort] = useState<PostSortType>("createdAt");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -143,7 +143,7 @@ export default function PostsBoard() {
       <PostsList
         key={`${selectedConcept}-${selectedSort}-${searchQuery}`}
         initialSort={selectedSort}
-        concept={selectedConcept === "ALL" ? undefined : selectedConcept}
+        concept={selectedConcept}
         limit={10}
       />
     </div>
