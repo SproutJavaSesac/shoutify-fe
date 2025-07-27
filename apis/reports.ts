@@ -1,174 +1,71 @@
-import { api } from "./client";
-import type {
-  CreateReportRequest,
-  ProcessReportRequest,
-  Report,
+import { api } from "@/apis/client";
+import {
+  ReportCommentCreateRequest,
+  ReportCommentCreateResponse,
+  ReportListResponse,
+  ReportPostCreateRequest,
+  ReportPostCreateResponse,
+  ReportProcessRequest,
+  ReportProcessResponse,
   ReportQueryParams,
-  ReportReason,
-  ReportsResponse,
-  ReportStatus,
-  ReportType,
 } from "@/types/reports";
+import { REPORTS_API_ENDPOINTS } from "@/constants/reports";
 
-export class ReportsApi {
-  private readonly basePath = "/reports";
-
-  // 신고 목록 조회 (관리자용)
-  async getReports(params?: ReportQueryParams): Promise<ReportsResponse> {
-    return api.get<ReportsResponse>(this.basePath, params);
-  }
-
-  // 신고 상세 조회
-  async getReport(id: number): Promise<Report> {
-    return api.get<Report>(`${this.basePath}/${id}`);
-  }
-
-  // 신고 접수
-  async createReport(data: CreateReportRequest): Promise<Report> {
-    return api.post<Report>(this.basePath, data);
-  }
-
-  // 신고 처리 (관리자용)
-  async processReport(data: ProcessReportRequest): Promise<Report> {
-    const { reportId, ...processData } = data;
-    return api.put<Report>(`${this.basePath}/${reportId}/process`, processData);
-  }
-
-  // 신고 삭제 (관리자용)
-  async deleteReport(id: number): Promise<void> {
-    return api.delete<void>(`${this.basePath}/${id}`);
-  }
-
-  // 대기 중인 신고 목록 조회
-  async getPendingReports(
-    page?: number,
-    limit?: number,
-  ): Promise<ReportsResponse> {
-    return api.get<ReportsResponse>(`${this.basePath}/pending`, {
-      page,
-      limit,
-    });
-  }
-
-  // 처리된 신고 목록 조회
-  async getProcessedReports(
-    page?: number,
-    limit?: number,
-  ): Promise<ReportsResponse> {
-    return api.get<ReportsResponse>(`${this.basePath}/processed`, {
-      page,
-      limit,
-    });
-  }
-
-  // 특정 게시글에 대한 신고 목록 조회
-  async getPostReports(postId: number): Promise<Report[]> {
-    return api.get<Report[]>(`${this.basePath}/post/${postId}`);
-  }
-
-  // 특정 댓글에 대한 신고 목록 조회
-  async getCommentReports(commentId: number): Promise<Report[]> {
-    return api.get<Report[]>(`${this.basePath}/comment/${commentId}`);
-  }
-
-  // 특정 사용자가 받은 신고 목록 조회 (관리자용)
-  async getUserReports(
-    userId: string,
-    params?: ReportQueryParams,
-  ): Promise<ReportsResponse> {
-    return api.get<ReportsResponse>(`${this.basePath}/user/${userId}`, params);
-  }
-
-  // 사용자가 한 신고 목록 조회
-  async getMyReports(params?: ReportQueryParams): Promise<ReportsResponse> {
-    return api.get<ReportsResponse>(`${this.basePath}/my-reports`, params);
-  }
-
-  // 신고 이유 목록 조회
-  async getReportReasons(): Promise<
-    Array<{
-      value: ReportReason;
-      label: string;
-      description: string;
-    }>
-  > {
-    return api.public.get(`${this.basePath}/reasons`);
-  }
-
-  // 신고 통계 조회 (관리자용)
-  async getReportStats(period?: "daily" | "weekly" | "monthly"): Promise<{
-    totalReports: number;
-    pendingReports: number;
-    processedReports: number;
-    reportsByType: Record<ReportType, number>;
-    reportsByReason: Record<string, number>;
-    reportsByStatus: Record<ReportStatus, number>;
-    mostReportedUsers: Array<{
-      userId: string;
-      username: string;
-      reportCount: number;
-    }>;
-    mostReportedPosts: Array<{
-      postId: number;
-      title: string;
-      reportCount: number;
-    }>;
-  }> {
-    return api.get(`${this.basePath}/stats`, { period });
-  }
-
-  // 벌크 신고 처리 (관리자용)
-  async processBulkReports(
-    reportIds: number[],
-    action: "accept" | "reject",
-    notes?: string,
-  ): Promise<void> {
-    return api.post<void>(`${this.basePath}/bulk-process`, {
-      reportIds,
-      action,
-      notes,
-    });
-  }
-
-  // 신고 반려 (관리자용)
-  async rejectReport(reportId: number, notes?: string): Promise<Report> {
-    return api.put<Report>(`${this.basePath}/${reportId}/reject`, {
-      notes,
-    });
-  }
-
-  // 신고 승인 (관리자용)
-  async acceptReport(reportId: number, notes?: string): Promise<Report> {
-    return api.put<Report>(`${this.basePath}/${reportId}/accept`, {
-      notes,
-    });
-  }
-
-  // 자동 신고 규칙 조회 (관리자용)
-  async getAutoReportRules(): Promise<
-    Array<{
-      id: number;
-      name: string;
-      condition: string;
-      action: "flag" | "hide" | "delete";
-      isActive: boolean;
-    }>
-  > {
-    return api.get(`${this.basePath}/auto-rules`);
-  }
-
-  // 신고된 컨텐츠 자동 처리 상태 조회
-  async getAutoProcessingStatus(): Promise<{
-    enabled: boolean;
-    rules: Array<{
-      reportCount: number;
-      action: "hide" | "delete";
-      timeWindow: number;
-    }>;
-  }> {
-    return api.get(`${this.basePath}/auto-processing/status`);
-  }
+/**
+ * 관리자 신고 목록을 조회합니다.
+ * @param params 신고 목록 조회 쿼리 파라미터
+ * @return 신고 목록 조회 결과
+ */
+export async function getReports(
+  params: ReportQueryParams,
+): Promise<ReportListResponse> {
+  return api.get<ReportListResponse>(
+    REPORTS_API_ENDPOINTS.ADMIN_REPORTS,
+    params,
+  );
 }
 
-// API 인스턴스 생성 및 내보내기
-export const reportsApi = new ReportsApi();
+/**
+ * 신고를 처리합니다.
+ * @param reportId 처리할 신고 ID
+ * @param body 신고 처리 요청 본문
+ */
+export async function processReport({
+  reportId,
+  body,
+}: ReportProcessRequest): Promise<ReportProcessResponse> {
+  return api.patch<ReportProcessResponse>(
+    REPORTS_API_ENDPOINTS.ADMIN_REPORTS_PROCESS(reportId),
+    body,
+  );
+}
+
+/**
+ * 게시글 신고하기
+ * @param postId 신고할 게시글 ID
+ * @param body 신고 요청 본문
+ */
+export async function createPostReport({
+  postId,
+  body,
+}: ReportPostCreateRequest): Promise<ReportPostCreateResponse> {
+  return api.post<ReportPostCreateResponse>(
+    REPORTS_API_ENDPOINTS.REPORT_POST(postId),
+    body,
+  );
+}
+
+/**
+ * 댓글 신고하기
+ * @param commentId 신고할 댓글 ID
+ * @param body 신고 요청 본문
+ */
+export async function createCommentReport({
+  commentId,
+  body,
+}: ReportCommentCreateRequest): Promise<ReportCommentCreateResponse> {
+  return api.post<ReportCommentCreateResponse>(
+    REPORTS_API_ENDPOINTS.REPORT_COMMENT(commentId),
+    body,
+  );
+}

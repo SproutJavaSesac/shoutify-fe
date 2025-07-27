@@ -1,57 +1,89 @@
+import { Pagination } from "@/types/commons";
+
 export interface Report {
-  id: number;
-  type: "post" | "comment";
-  targetId: number;
-  title?: string;
-  postTitle?: string;
-  author: string;
-  authorId?: string;
-  reporterId: string;
-  reportCount: number;
-  reasons: string[];
-  content: string;
-  status: "pending" | "accepted" | "rejected";
-  reportedAt: string;
-  processedAt?: string;
-  processedBy?: string;
-  notes?: string;
-}
-
-export interface CreateReportRequest {
-  type: "post" | "comment";
-  targetId: number;
-  reason: string;
-  description?: string;
-}
-
-export interface ProcessReportRequest {
   reportId: number;
-  action: "accept" | "reject";
-  notes?: string;
+  reportType: ReportType;
+  reporterId: number;
+  targetId: number;
+  reasonCode: ReportCodeType;
+  reasonDetail: string;
+  createdAt: string;
+  postId: number;
+  commentId: number;
 }
 
-export interface ReportsResponse {
-  reports: Report[];
-  totalCount: number;
-  pendingCount: number;
-  processedCount: number;
+interface ReportCreateResponse {
+  reportId: number;
+  reportType: ReportType;
+  reasonType: ReportReasonType;
+  reasonDetail: string | null;
+  statusType: ReportStatusType;
+  createdAt: string;
+}
+
+export interface ReportCommentCreateRequestBody {
+  reasonType: ReportReasonType;
+  reasonDetail?: string | null; // 직접 입력일 때 입력.
+}
+
+export interface ReportCommentCreateRequest {
+  commentId: number;
+  body: ReportCommentCreateRequestBody;
+}
+
+export interface ReportCommentCreateResponse extends ReportCreateResponse {
+  commentId: number;
+}
+
+export interface ReportPostCreateRequestBody {
+  reasonType: ReportReasonType;
+  reasonDetail?: string | null; // 직접 입력일 때 입력.
+}
+
+export interface ReportPostCreateRequest {
+  postId: number;
+  body: ReportPostCreateRequestBody;
+}
+
+export interface ReportPostCreateResponse extends ReportCreateResponse {
+  postId: number;
+}
+
+interface ReportProcessRequestBody {
+  action: ReportProcessActionType;
+}
+
+export interface ReportProcessRequest {
+  reportId: number;
+  body: ReportProcessRequestBody;
+}
+
+export interface ReportProcessResponse {
+  reportId: number;
+  statusType: ReportStatusType;
+  updatedAt: string;
 }
 
 export interface ReportQueryParams {
-  status?: "pending" | "accepted" | "rejected" | "all";
-  type?: "post" | "comment";
+  statusType: ReportStatusType;
   page?: number;
-  limit?: number;
-  sortBy?: "reportedAt" | "reportCount" | "processedAt";
+  size?: number | null;
+  sort?: ReportSortType | null;
 }
 
-export type ReportReason =
-  | "Inappropriate language"
-  | "Hate speech"
-  | "Spam/Advertisement"
-  | "Harassment"
-  | "Copyright violation"
-  | "Other";
+export interface ReportListResponse {
+  reports: Report[];
+  pagination: Pagination;
+}
 
-export type ReportStatus = "pending" | "accepted" | "rejected";
-export type ReportType = "post" | "comment";
+export type ReportReasonType =
+  | "부적절한 언어"
+  | "혐오 발언"
+  | "성적 또는 노골적인 컨텐츠"
+  | "스팸 또는 광고"
+  | "직접 입력";
+export type ReportSortType = "latest" | "oldest";
+export type ReportStatusType = "PENDING" | "DECIDED";
+export type ReportType = "POST" | "CONTENT";
+export type ReportCodeType = "PROFANITY" | "OTHER";
+export type ReportProcessActionType = "ACCEPT" | "REJECT";
