@@ -1,9 +1,9 @@
 import { api } from "./client";
 import {
-  CreatePostRequest,
-  CreatePostResponse,
   Post,
-  PostListReponse,
+  PostCreateRequest,
+  PostCreateResponse,
+  PostListResponse,
   PostQueryParams,
 } from "@/types/posts";
 import { POST_API_ENDPOINTS } from "@/constants/posts";
@@ -11,7 +11,7 @@ import { POST_API_ENDPOINTS } from "@/constants/posts";
 // 게시글 목록 조회
 export async function getPosts(
   params?: PostQueryParams,
-): Promise<PostListReponse> {
+): Promise<PostListResponse> {
   try {
     return await api.public.get(POST_API_ENDPOINTS.POSTS, params);
   } catch (error) {
@@ -31,9 +31,9 @@ export async function getPost(postId: number): Promise<Post> {
 }
 
 export const createPost = async (
-  data: CreatePostRequest,
-): Promise<CreatePostResponse> => {
-  return api.post<CreatePostResponse>(POST_API_ENDPOINTS.POSTS_CREATE, data);
+  data: PostCreateRequest,
+): Promise<PostCreateResponse> => {
+  return api.post<PostCreateResponse>(POST_API_ENDPOINTS.POSTS_CREATE, data);
 };
 
 // 게시글 삭제

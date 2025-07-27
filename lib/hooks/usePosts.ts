@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import {
-  CreatePostRequest,
-  CreatePostResponse,
   Post,
-  PostListReponse,
+  PostCreateRequest,
+  PostCreateResponse,
+  PostListResponse,
   PostQueryParams,
 } from "@/types/posts";
 import {
@@ -20,7 +20,7 @@ import {
  * @param params 게시글 조회 파라미터
  */
 export function usePostList(params: PostQueryParams) {
-  const [data, setData] = useState<PostListReponse | null>(null);
+  const [data, setData] = useState<PostListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -88,14 +88,14 @@ export function usePost({ postId }: { postId: number }) {
  * 게시글 생성 훅
  * @param body 게시글 생성 데이터
  */
-export function useCreatePost(body: CreatePostRequest) {
-  const [data, setData] = useState<CreatePostResponse | null>(null);
+export function useCreatePost(body: PostCreateRequest) {
+  const [data, setData] = useState<PostCreateResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const createPostHook = async (
     postData: Post,
-  ): Promise<CreatePostResponse | null> => {
+  ): Promise<PostCreateResponse | null> => {
     try {
       setLoading(true);
       setError(null);

@@ -33,7 +33,7 @@ export interface Post {
   reactionDetailCount?: ReactionDetailCountMap;
 }
 
-export interface PostListReponse {
+export interface PostListResponse {
   nextCursor?: number;
   pagination: Pagination;
   posts: Post[];
@@ -48,7 +48,7 @@ export interface PostQueryParams {
   keyword?: string;
 }
 
-export type CreatePostRequest = {
+export type PostCreateRequest = {
   title: string;
   content: string;
   conceptType: string;
@@ -56,7 +56,7 @@ export type CreatePostRequest = {
   imageUrl?: string;
 };
 
-export type CreatePostResponse = {
+export type PostCreateResponse = {
   postId: number;
   afterTitle: string;
   afterContent: string;
