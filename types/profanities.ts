@@ -1,64 +1,61 @@
-export interface ProfanityWord {
-  id: number;
-  word: string;
-  severity: "low" | "medium" | "high";
-  replacement?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt?: string;
-  createdBy: string;
-}
+import { Pagination } from "@/types/commons";
 
-export interface ProfanityFilter {
-  id: number;
-  name: string;
+export interface Profanity {
+  profanityId: number;
+  original: string;
+  replacement: string;
   description: string;
-  words: string[];
-  isActive: boolean;
-  createdAt: string;
-  updatedAt?: string;
+  category: string;
 }
 
-export interface CreateProfanityWordRequest {
-  word: string;
-  severity: "low" | "medium" | "high";
-  replacement?: string;
+export type ProfanityCategory =
+  | "GENERAL_SWEAR"
+  | "SEXUAL_DEGRADATION"
+  | "DISCRIMINATION_HATE"
+  | "MODIFIED_SWEAR";
+
+export type ProfanityCategoryOption = {
+  label: string;
+  value: ProfanityCategory;
+};
+
+export interface ProfanityCreateRequest {
+  original: string;
+  replacement?: string | null;
+  description?: string | null;
+  category: ProfanityCategory;
 }
 
-export interface UpdateProfanityWordRequest {
-  id: number;
-  word?: string;
-  severity?: "low" | "medium" | "high";
-  replacement?: string;
-  isActive?: boolean;
+export interface ProfanityCreateResponse extends Profanity {}
+
+export interface ProfanityUpdateRequest {
+  profanityId: number;
+  body: ProfanityUpdateRequestBody;
 }
 
-export interface CreateProfanityFilterRequest {
-  name: string;
-  description: string;
-  words: string[];
+export interface ProfanityUpdateRequestBody {
+  original?: string | null;
+  replacement?: string | null;
+  description?: string | null;
+  category?: ProfanityCategory | null;
 }
 
-export interface ProfanityCheckRequest {
-  text: string;
-  filterLevel?: "low" | "medium" | "high";
+export interface ProfanityUpdateResponse extends Profanity {}
+
+export interface ProfanityQueryParams {
+  page?: number;
+  size?: number;
+  sort?: ProfanitySortType;
 }
 
-export interface ProfanityCheckResponse {
-  hasViolation: boolean;
-  violations: Array<{
-    word: string;
-    severity: "low" | "medium" | "high";
-    replacement?: string;
-    position: number;
-  }>;
-  cleanedText?: string;
+export interface ProfanityListResponse {
+  pagination: Pagination;
+  profanities: Profanity[];
 }
 
-export interface ProfanitiesResponse {
-  words: ProfanityWord[];
-  filters: ProfanityFilter[];
-  totalCount: number;
-}
+export type ProfanitySortType = "latest" | "oldest";
 
-export type ProfanitySeverity = "low" | "medium" | "high";
+export interface ProfanitySortOption {
+  label: string;
+  value: ProfanitySortType;
+}
