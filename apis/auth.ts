@@ -5,7 +5,7 @@ import { AUTH_API_ENDPOINTS } from "@/constants/auth";
 // OAuth2 로그인 시작
 export function loginWithGoogle(): void {
   const backendUrl =
-    process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") ||
+    process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") ??
     "http://localhost:8080";
   window.location.href = `${backendUrl}${AUTH_API_ENDPOINTS.SOCIAL_LOGIN("google")}`;
 }
