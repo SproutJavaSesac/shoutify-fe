@@ -1,49 +1,37 @@
-export interface RankedPost {
-  id: number;
-  title: string;
-  author: string;
-  authorId?: string;
-  emotion: string;
-  bookmarks?: number;
-  reactions?: number;
-  comments?: number;
-  score?: number;
-  trend: "up" | "down" | "same";
+export interface Ranking {
+  memberId: number;
+  memberNickname: string;
+  memberProfileImageUrl: string;
+  categoryValue: number;
   rank: number;
-  previousRank?: number;
+  previousRank: number;
+  rankChange: string; // +2, -, -3, NEW
+  createdAt: string;
 }
 
-export interface RankedUser {
-  id: string;
-  username: string;
-  avatar?: string;
-  posts: number;
-  totalReactions: number;
-  totalBookmarks: number;
-  totalComments?: number;
-  score?: number;
-  trend: "up" | "down" | "same";
-  rank: number;
-  previousRank?: number;
-}
-
-export interface RankingsResponse {
-  mostBookmarkedPosts: RankedPost[];
-  mostReactedPosts: RankedPost[];
-  mostActiveUsers: RankedUser[];
-  specialScoreUsers: RankedUser[];
+export interface RankingListResponse {
+  category: RankingCategoryType;
+  periodType: RankingPeriodType;
+  periodValue: string; // '2025-07-14' 형식
+  rankings: Ranking[];
 }
 
 export interface RankingQueryParams {
-  period?: "daily" | "weekly" | "monthly" | "all";
-  limit?: number;
-  category?: string;
+  category: RankingCategoryType;
+  periodType: RankingPeriodType;
+  periodValue: string; // '2025-07-14' 형식
 }
 
-export type RankingType =
-  | "most_bookmarked"
-  | "most_reacted"
-  | "most_active_users"
-  | "special_score";
+export type RankingCategoryType = "POST";
 
-export type RankingPeriod = "daily" | "weekly" | "monthly" | "all";
+export interface RankingCategoryOption {
+  label: string;
+  value: RankingCategoryType;
+}
+
+export type RankingPeriodType = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+
+export interface RankingPeriodTypeOption {
+  label: string;
+  value: RankingPeriodType;
+}
