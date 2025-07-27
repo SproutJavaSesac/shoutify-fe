@@ -9,6 +9,7 @@ import {
 } from "react";
 import {
   checkLoginStatus,
+  deleteAccount,
   loginWithGoogle,
   logout as authLogout,
 } from "@/apis/auth";
@@ -141,6 +142,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
         user: null,
         loading: false,
       });
+    }
+  };
+
+  const withdraw = async () => {
+    try {
+      // 회원 탈퇴 API 호출
+      await deleteAccount(); // 실제 회원 탈퇴 API로 변경 필요
+      // JSESSIONID 쿠키 삭제
+      if (typeof window !== "undefined") {
+        document.cookie =
+          "JSESSIONID=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      }
+      // 상태 초기화
+      setState({
+        isAuthenticated: false,
+        user: null,
+        loading: false,
+      });
+    } catch (error) {
+      console.error("회원 탈퇴에 실패했습니다:", error);
     }
   };
 
