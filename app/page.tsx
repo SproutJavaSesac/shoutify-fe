@@ -14,6 +14,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { POST_ROUTES } from "@/constants/posts";
+import { COMMENT_ROUTES } from "@/constants/comments";
+import { RANKING_ROUTES } from "@/constants/rankings";
 
 // Mock data for infinite scroll
 const generatePosts = (page: number) => {
@@ -117,7 +120,7 @@ export default function HomePage() {
               Transform your thoughts into beautiful literary with the AI
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/write">
+              <Link href={POST_ROUTES.CREATE}>
                 <Button
                   size="lg"
                   className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-8 py-3"
@@ -126,7 +129,7 @@ export default function HomePage() {
                   Start Writing
                 </Button>
               </Link>
-              <Link href="/posts">
+              <Link href={POST_ROUTES.LIST}>
                 <Button
                   size="lg"
                   variant="outline"
@@ -190,7 +193,7 @@ export default function HomePage() {
 
         {/* Quick Navigation Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Link href="/posts">
+          <Link href={POST_ROUTES.LIST}>
             <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-blue-200">
               <CardContent className="p-6 text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-4">
@@ -204,7 +207,7 @@ export default function HomePage() {
             </Card>
           </Link>
 
-          <Link href="/ranking">
+          <Link href={RANKING_ROUTES.LIST}>
             <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-green-200">
               <CardContent className="p-6 text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-4">
@@ -220,7 +223,7 @@ export default function HomePage() {
             </Card>
           </Link>
 
-          <Link href="/write">
+          <Link href={POST_ROUTES.CREATE}>
             <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-yellow-200 bg-gradient-to-br from-yellow-50 to-orange-50">
               <CardContent className="p-6 text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-full mb-4">
@@ -265,7 +268,7 @@ export default function HomePage() {
                       )}
                     </div>
 
-                    <Link href={`/post/${post.id}`}>
+                    <Link href={POST_ROUTES.DETAIL(post.id)}>
                       <h3 className="text-xl font-bold text-gray-900 mb-3 hover:text-blue-600 cursor-pointer transition-colors line-clamp-2">
                         {post.title}
                       </h3>
@@ -290,7 +293,7 @@ export default function HomePage() {
                         </span>
                       </div>
 
-                      <Link href={`/post/${post.id}#comments`}>
+                      <Link href={COMMENT_ROUTES.SECTION(post.id)}>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -306,7 +309,7 @@ export default function HomePage() {
                   {post.hasImage && (
                     <div className="flex-shrink-0">
                       <Image
-                        src={post.imageUrl || "/placeholder.svg"}
+                        src={post.imageUrl ?? "/placeholder.svg"}
                         alt="Post thumbnail"
                         width={120}
                         height={120}

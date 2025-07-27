@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowLeft, FileX, Home, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { POST_ROUTES } from "@/constants/posts";
 
 export default function NotFound() {
   return (
@@ -92,7 +93,7 @@ export default function NotFound() {
               📝 게시글 목록
             </Link>
             <Link
-              href="/posts/write"
+              href={POST_ROUTES.CREATE}
               className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 hover:underline"
               replace={true}
             >

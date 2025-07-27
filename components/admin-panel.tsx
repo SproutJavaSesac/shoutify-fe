@@ -90,7 +90,7 @@ const users = [
   {
     id: 1,
     username: "LiteraryMuse",
-    email: "user@example.com",
+    email: "member@example.com",
     posts: 23,
     joinDate: "March 2024",
     reports: 0,

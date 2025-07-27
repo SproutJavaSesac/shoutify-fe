@@ -41,5 +41,11 @@ export const MEMBER_ROUTES = {
   /**
    * 특정 회원의 프로필 페이지 경로
    */
-  MEMBER_PROFILE: (memberId: number): string => `/profile/member/${memberId}`,
+  MEMBER_PROFILE: (memberId: number | string): string =>
+    `/profile/member/${memberId}`,
+
+  /**
+   * 마이 페이지 경로
+   */
+  MY_PAGE: "/mypage",
 };

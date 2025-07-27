@@ -11,6 +11,7 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
+import { POST_ROUTES } from "@/constants/posts";
 
 const userData = {
   username: "LiteraryMuse",
@@ -66,7 +67,7 @@ const emotionColors = {
   peaceful: "bg-teal-100 text-teal-800",
 };
 
-export function UserProfile({ username }: { username: string }) {
+export function UserProfile() {
   return (
     <div className="space-y-8">
       {/* Profile Header */}
@@ -113,8 +114,11 @@ export function UserProfile({ username }: { username: string }) {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {userData.badges.map((badge, index) => (
-                  <Badge key={index} className="bg-yellow-100 text-yellow-800">
+                {userData.badges.map((badge) => (
+                  <Badge
+                    key={badge.name}
+                    className="bg-yellow-100 text-yellow-800"
+                  >
                     <span className="mr-1">{badge.icon}</span>
                     {badge.name}
                   </Badge>
@@ -138,7 +142,7 @@ export function UserProfile({ username }: { username: string }) {
             <div className="space-y-4">
               {categoryRankings.map((ranking, index) => (
                 <div
-                  key={index}
+                  key={index} // TODO id로 변경 필요.
                   className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                 >
                   <div>
@@ -187,7 +191,7 @@ export function UserProfile({ username }: { username: string }) {
                     </span>
                   </div>
 
-                  <Link href={`/post/${post.id}`}>
+                  <Link href={POST_ROUTES.DETAIL(post.id)}>
                     <h3 className="font-medium text-gray-900 hover:text-gray-700 cursor-pointer mb-2">
                       {post.title}
                     </h3>

@@ -20,7 +20,7 @@ export const RANKING_ROUTES = {
   /**
    * 전체 랭킹 페이지 URL
    */
-  LIST: "/rankings",
+  LIST: "/ranking",
 };
 
 /**
