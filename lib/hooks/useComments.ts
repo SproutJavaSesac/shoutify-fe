@@ -50,7 +50,10 @@ export function useCreateComment() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const createCommentHook = async ({ postId, body }: CommentCreateRequest) => {
+  const createCommentHook = async ({
+    postId,
+    body,
+  }: CommentCreateRequest): Promise<CommentCreateResponse | null> => {
     try {
       setLoading(true);
       setError(null);
@@ -60,6 +63,7 @@ export function useCreateComment() {
       return response;
     } catch (err: any) {
       setError(err);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -81,7 +85,7 @@ export function useDeleteComment() {
   const deleteCommentHook = async ({
     postId,
     commentId,
-  }: CommentPathParams) => {
+  }: CommentPathParams): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
@@ -89,8 +93,10 @@ export function useDeleteComment() {
       const response = await deleteComment({ postId, commentId });
 
       setData(response);
+      return response;
     } catch (err: any) {
       setError(err);
+      return null;
     } finally {
       setLoading(false);
     }

@@ -34,6 +34,7 @@ export function usePostList(params: PostQueryParams) {
         setData(response);
       } catch (err: any) {
         setError(err);
+        return null;
       } finally {
         setLoading(false);
       }
@@ -71,6 +72,7 @@ export function usePost({ postId }: { postId: number }) {
         setData(response);
       } catch (err: any) {
         setError(err);
+        return null;
       } finally {
         setLoading(false);
       }
@@ -91,7 +93,9 @@ export function useCreatePost(body: CreatePostRequest) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const createPostHook = async (postData: Post) => {
+  const createPostHook = async (
+    postData: Post,
+  ): Promise<CreatePostResponse | null> => {
     try {
       setLoading(true);
       setError(null);
@@ -101,6 +105,7 @@ export function useCreatePost(body: CreatePostRequest) {
       return response;
     } catch (err: any) {
       setError(err);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -118,19 +123,18 @@ export function useDeletePost(postId: number) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const deletePostHook = async () => {
+  const deletePostHook = async (): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
       // 여기에 게시글 삭제 API 호출 로직을 추가해야 합니다.
       const response = await deletePost(postId);
       setData(response);
-      if (response) {
-        // TODO 삭제 성공 시 추가 로직 고민 - 삭제된 게시글을 목록에서 제거 / 목록으로 이동 등
-        return response;
-      }
+      // TODO 삭제 성공 시 추가 로직 고민 - 삭제된 게시글을 목록에서 제거 / 목록으로 이동 등
+      return response;
     } catch (err: any) {
       setError(err);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -148,7 +152,7 @@ export function useHidePost(postId: number) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const hidePostHook = async () => {
+  const hidePostHook = async (): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
@@ -158,6 +162,7 @@ export function useHidePost(postId: number) {
       return response;
     } catch (err: any) {
       setError(err);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -175,7 +180,7 @@ export function useUnhidePost(postId: number) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const unhidePostHook = async () => {
+  const unhidePostHook = async (): Promise<string | null> => {
     try {
       setLoading(true);
       setError(null);
@@ -185,6 +190,7 @@ export function useUnhidePost(postId: number) {
       return response;
     } catch (err: any) {
       setError(err);
+      return null;
     } finally {
       setLoading(false);
     }

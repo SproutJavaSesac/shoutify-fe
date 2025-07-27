@@ -17,7 +17,10 @@ export function useDoPostReaction() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const doPostReactionHook = async ({ postId, body }: PostReactionRequest) => {
+  const doPostReactionHook = async ({
+    postId,
+    body,
+  }: PostReactionRequest): Promise<PostReactionResponse | null> => {
     try {
       setLoading(true);
       setError(null);
@@ -27,6 +30,7 @@ export function useDoPostReaction() {
       return response;
     } catch (err: any) {
       setError(err);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -49,7 +53,7 @@ export function useDoCommentReaction() {
     postId,
     commentId,
     body,
-  }: CommentReactionRequest) => {
+  }: CommentReactionRequest): Promise<CommentReactionResponse | null> => {
     try {
       setLoading(true);
       setError(null);
@@ -59,6 +63,7 @@ export function useDoCommentReaction() {
       return response;
     } catch (err: any) {
       setError(err);
+      return null;
     } finally {
       setLoading(false);
     }
