@@ -1,69 +1,55 @@
 import { api } from "./client";
-import type {
-  Comment,
-  CommentQueryParams,
-  CommentsResponse,
-  CreateCommentRequest,
+import {
+  CommentCreateRequest,
+  CommentCreateResponse,
+  CommentListRequest,
+  CommentListResponse,
+  CommentPathParams,
 } from "@/types/comments";
+import { COMMENT_API_ENDPOINTS } from "@/constants/comments";
 
-// 게시글의 댓글 목록 조회
+/**
+ * 게시글을 댓글 목록 조회
+ *
+ * @param request 댓글 목록 조회 요청 객체
+ */
 export async function getComments({
   postId,
   queryParams,
-}: {
-  postId: number;
-  queryParams: CommentQueryParams;
-}): Promise<CommentsResponse> {
-  return api.public.get<CommentsResponse>(
-    `/posts/${postId}/comments`,
+}: CommentListRequest): Promise<CommentListResponse> {
+  return api.public.get<CommentListResponse>(
+    COMMENT_API_ENDPOINTS.COMMENTS({ postId }),
     queryParams,
   );
 }
 
-// 댓글 작성
-export async function createComment(
-  data: CreateCommentRequest,
-): Promise<Comment> {
-  return api.post<Comment>("/comments", data);
+/**
+ * 게시글에 댓글을 작성합니다.
+ *
+ * @param postId 게시글 ID
+ * @param body 댓글 작성 요청 본문
+ */
+export async function createComment({
+  postId,
+  body,
+}: CommentCreateRequest): Promise<CommentCreateResponse> {
+  return api.post<CommentCreateResponse>(
+    COMMENT_API_ENDPOINTS.COMMENT_CREATE({ postId }),
+    body,
+  );
 }
 
-// 댓글 수정
-export async function updateComment(
-  commentId: number,
-  content: string,
-): Promise<Comment> {
-  return api.put<Comment>(`/comments/${commentId}`, { content });
-}
-
-// 댓글 삭제
-export async function deleteComment(commentId: number): Promise<void> {
-  return api.delete<void>(`/comments/${commentId}`);
-}
-
-// 댓글에 반응하기
-export async function addReaction(
-  commentId: number,
-  emoji: string,
-): Promise<void> {
-  return api.post<void>(`/comments/${commentId}/reactions`, { emoji });
-}
-
-// 댓글 반응 제거
-export async function removeReaction(
-  commentId: number,
-  emoji: string,
-): Promise<void> {
-  return api.delete<void>(`/comments/${commentId}/reactions/${emoji}`);
-}
-
-// 댓글 신고
-export async function reportComment(
-  commentId: number,
-  reason: string,
-  description?: string,
-): Promise<void> {
-  return api.post<void>(`/comments/${commentId}/report`, {
-    reason,
-    description,
-  });
+/**
+ * 게시글의 댓글을 삭제합니다.
+ *
+ * @param postId 게시글 ID
+ * @param commentId 댓글 ID
+ */
+export async function deleteComment({
+  postId,
+  commentId,
+}: CommentPathParams): Promise<string> {
+  return api.delete<string>(
+    COMMENT_API_ENDPOINTS.COMMENT_DELETE({ postId, commentId }),
+  );
 }
