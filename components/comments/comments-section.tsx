@@ -12,16 +12,8 @@ import type { Comment, CommentQueryParams } from "@/types/comments";
 import { utcToLocaleDateString } from "@/lib/utils";
 import { getComments } from "@/apis/comments";
 import { Pagination } from "@/types/commons";
-
-// 문자열 키와 이모티콘 매핑
-const reactionMapping = {
-  HAPPY: "😊",
-  SAD: "😢",
-  ANGRY: "😡",
-  EXCITED: "🤩",
-  CONFUSED: "🤔",
-  PROUD: "👏",
-} as const;
+import { EmoticonType } from "@/types/reactions";
+import { EMOTION_TO_EMOJI_MAP } from "@/constants/reactions";
 
 export function CommentsSection({ postId }: Readonly<{ postId: string }>) {
   // 상태 관리
@@ -86,7 +78,6 @@ export function CommentsSection({ postId }: Readonly<{ postId: string }>) {
   useEffect(() => {
     if (postId) {
       fetchComments({
-        postId: parseInt(postId),
         page: 0,
         size: 20,
       });
@@ -162,26 +153,24 @@ export function CommentsSection({ postId }: Readonly<{ postId: string }>) {
 
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              {Object.entries(comment.reactions).map(
-                ([reactionType, count]) => {
-                  const emoji =
-                    reactionMapping[
-                      reactionType as keyof typeof reactionMapping
-                    ];
-                  if (!emoji || count === 0) return null;
+              {/* ReactionDetailCountMap의 순서로 EmoticonType을 ReactionEmojiType로 변환하여 출력 */}
+              {(Object.keys(EMOTION_TO_EMOJI_MAP) as EmoticonType[]).map(
+                (emotionType) => {
+                  const emoji = EMOTION_TO_EMOJI_MAP[emotionType];
+                  const count = comment.reactions[emotionType] || 0;
 
                   return (
-                    <div key={reactionType} className="flex items-center">
+                    <div key={emotionType} className="flex items-center">
                       <Button
                         variant="ghost"
                         size="sm"
                         className={`h-6 w-6 p-0 text-xs ${
-                          commentReactions[comment.commentId] === reactionType
+                          commentReactions[comment.commentId] === emotionType
                             ? "bg-gray-100 ring-2 ring-blue-300"
                             : ""
                         }`}
                         onClick={() =>
-                          handleCommentReaction(comment.commentId, reactionType)
+                          handleCommentReaction(comment.commentId, emotionType)
                         }
                       >
                         {emoji}
@@ -302,7 +291,6 @@ export function CommentsSection({ postId }: Readonly<{ postId: string }>) {
                   variant="outline"
                   onClick={() =>
                     fetchComments({
-                      postId: parseInt(postId),
                       page: 1,
                       size: 20,
                     })
@@ -339,7 +327,6 @@ export function CommentsSection({ postId }: Readonly<{ postId: string }>) {
                       onClick={() =>
                         fetchComments(
                           {
-                            postId: parseInt(postId),
                             page: paginationData.currentPage + 1,
                             size: paginationData.pageSize,
                           },

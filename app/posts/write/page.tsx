@@ -1,4 +1,4 @@
-import { PostCreationForm } from "@/components/post-creation-form";
+import { PostCreationForm } from "@/components/posts/post-creation-form";
 import { ProtectedRoute } from "@/components/protected-route";
 
 export default function WritePage() {

@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MessageCircle } from "lucide-react";
 import Link from "next/link";
+import { POST_ROUTES } from "@/constants/posts";
 
 const recommendedPosts = [
   {
@@ -46,7 +47,11 @@ export function RecommendedPosts() {
         <CardContent>
           <div className="space-y-3">
             {recommendedPosts.map((post) => (
-              <Link key={post.id} href={`/post/${post.id}`} className="block">
+              <Link
+                key={post.id}
+                href={POST_ROUTES.DETAIL(post.id)}
+                className="block"
+              >
                 <Card className="hover:shadow-md transition-shadow cursor-pointer">
                   <CardContent className="px-4 py-2">
                     <div className="flex items-center justify-between gap-3">

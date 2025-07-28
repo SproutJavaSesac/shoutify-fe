@@ -1,41 +1,21 @@
-export type PostSortType = "latest" | "reactions" | "comments";
+import { ReactionDetailCountMap } from "@/types/reactions";
+import { Pagination } from "@/types/commons";
+
+export type PostSortType = "createdAt" | "reactions" | "comments";
 // 게시글 작성 관련 타입 정의만 포함
 
 export type ConceptType =
+  | "ALL"
   | "CLASSICAL_POETRY"
   | "POETRY"
   | "NOVEL"
   | "DRAMA"
   | "ESSAY";
 
-export type EmotionType =
-  | "HAPPY"
-  | "SAD"
-  | "ANGRY"
-  | "EXCITED"
-  | "CONFUSED"
-  | "PROUD";
-
 // 카테고리 옵션 타입
 export interface CategoryOption {
   label: string;
   value: ConceptType;
-}
-
-// 감정 옵션 타입
-export interface EmotionOption {
-  label: string;
-  value: EmotionType;
-  color: string;
-}
-
-interface ReactionDetailCountMap {
-  happy: number;
-  sad: number;
-  angry: number;
-  excited: number;
-  confused: number;
-  proud: number;
 }
 
 export interface Post {
@@ -44,33 +24,19 @@ export interface Post {
   afterTitle: string;
   afterContent: string;
   createdAt: Date;
+  imgUrl: string;
   reactionCount: number;
   commentCount: number;
   conceptType: ConceptType;
-  imgUrl: string;
   isHidden?: boolean;
-  isMine: boolean;
-  reactionDetailCount: ReactionDetailCountMap;
+  isMine?: boolean;
+  reactionDetailCount?: ReactionDetailCountMap;
 }
 
-export interface Pagination {
-  currentPage: number;
-  totalPages: number;
-  totalCount: number;
-  pageSize: number;
-  hasNext: boolean;
-  hasPrevious: boolean;
-}
-
-export interface PostsResult {
+export interface PostListResponse {
   nextCursor?: number;
   pagination: Pagination;
   posts: Post[];
-}
-
-export interface PostsApiResponse {
-  isSuccess: boolean;
-  result: PostsResult;
 }
 
 export interface PostQueryParams {
@@ -78,11 +44,11 @@ export interface PostQueryParams {
   concept?: ConceptType;
   cursor?: number;
   page?: number;
-  limit?: number;
+  size?: number;
   keyword?: string;
 }
 
-export type CreatePostRequest = {
+export type PostCreateRequest = {
   title: string;
   content: string;
   conceptType: string;
@@ -90,7 +56,7 @@ export type CreatePostRequest = {
   imageUrl?: string;
 };
 
-export type CreatePostResponse = {
+export type PostCreateResponse = {
   postId: number;
   afterTitle: string;
   afterContent: string;

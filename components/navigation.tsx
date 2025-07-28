@@ -8,6 +8,9 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/auth";
 import { AuthModal } from "@/components/auth-modal";
 import { UserMenu } from "@/components/user-menu";
+import { POST_ROUTES } from "@/constants/posts";
+import { RANKING_ROUTES } from "@/constants/rankings";
+import { MEMBER_ROUTES } from "@/constants/members";
 
 export function Navigation() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -26,19 +29,19 @@ export function Navigation() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link
-              href="/posts"
+              href={POST_ROUTES.LIST}
               className="text-gray-700 hover:text-gray-900 transition-colors"
             >
               Posts
             </Link>
             <Link
-              href="/ranking"
+              href={RANKING_ROUTES.LIST}
               className="text-gray-700 hover:text-gray-900 transition-colors"
             >
               Ranking
             </Link>
             <Link
-              href="/mypage"
+              href={MEMBER_ROUTES.MY_PAGE}
               className="text-gray-700 hover:text-gray-900 transition-colors"
             >
               My Page
@@ -51,7 +54,7 @@ export function Navigation() {
               <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse" />
             ) : user ? (
               <>
-                <Link href="/write">
+                <Link href={POST_ROUTES.CREATE}>
                   <Button className="bg-gray-800 hover:bg-gray-900">
                     Write
                   </Button>
@@ -76,18 +79,27 @@ export function Navigation() {
               </SheetTrigger>
               <SheetContent>
                 <nav className="flex flex-col space-y-4 mt-8">
-                  <Link href="/posts" className="text-lg font-medium">
+                  <Link href={POST_ROUTES.LIST} className="text-lg font-medium">
                     Posts
                   </Link>
-                  <Link href="/ranking" className="text-lg font-medium">
+                  <Link
+                    href={RANKING_ROUTES.LIST}
+                    className="text-lg font-medium"
+                  >
                     Ranking
                   </Link>
                   {user ? (
                     <>
-                      <Link href="/mypage" className="text-lg font-medium">
+                      <Link
+                        href={MEMBER_ROUTES.MY_PAGE}
+                        className="text-lg font-medium"
+                      >
                         My Page
                       </Link>
-                      <Link href="/write" className="text-lg font-medium">
+                      <Link
+                        href={POST_ROUTES.CREATE}
+                        className="text-lg font-medium"
+                      >
                         Write
                       </Link>
                     </>

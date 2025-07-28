@@ -1,4 +1,11 @@
 import { Pagination } from "@/types/commons";
+import { ReactionDetailCountMap } from "./reactions";
+
+// comment url 경로 파람 타입
+export type CommentPathParams = {
+  postId: number;
+  commentId: number;
+};
 
 export interface Comment {
   commentId: number;
@@ -9,7 +16,7 @@ export interface Comment {
   level: number;
   content: string;
   reactionCount: number;
-  reactions: Record<string, number>;
+  reactions: ReactionDetailCountMap;
   isDeleted: boolean;
   isReported: boolean;
   isMine?: boolean; // TODO isMine 추가 시 ? 제거하기
@@ -17,30 +24,30 @@ export interface Comment {
   updatedAt: Date;
 }
 
-export interface CommentQueryParams {
+export interface CommentListRequest {
   postId: number;
+  queryParams: CommentQueryParams;
+}
+
+export interface CommentQueryParams {
   page?: number;
   size?: number;
 }
 
-export interface CreateCommentRequest {
-  postId: number;
-  content: string;
-  parentId?: number;
-}
-
-export interface UpdateCommentRequest {
-  id: number;
-  content: string;
-}
-
-export interface CommentReactionRequest {
-  commentId: number;
-  emoji: string;
-}
-
-export interface CommentsResponse {
+export interface CommentListResponse {
   postId: number;
   pagination: Pagination;
   comments: Comment[];
 }
+
+export interface CommentCreateRequest {
+  postId: number;
+  body: CommentCreateResponseBody;
+}
+
+export interface CommentCreateResponseBody {
+  content: string;
+  parentId?: number | null;
+}
+
+export type CommentCreateResponse = Comment;

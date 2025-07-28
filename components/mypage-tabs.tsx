@@ -20,7 +20,8 @@ import {
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { useMyComments, useMyInfo, useMyPosts } from "@/lib/hooks/useMembers";
-import type { PaginationDto } from "@/types/members";
+import { MEMBER_ROUTES } from "@/constants/members";
+import type { Pagination } from "@/types/commons";
 
 const bookmarkedPosts = [
   {
@@ -138,11 +139,11 @@ const emotionTypeColors: { [key: string]: string } = {
 };
 
 interface PaginationProps {
-  pagination: PaginationDto | undefined;
+  pagination: Pagination | undefined;
   onPageChange: (page: number) => void;
 }
 
-function Pagination({ pagination, onPageChange }: PaginationProps) {
+function Pagination({ pagination, onPageChange }: Readonly<PaginationProps>) {
   if (!pagination || pagination.totalPages <= 1) return null;
 
   const { totalPages, currentPage, hasPrevious, hasNext } = pagination;
@@ -217,7 +218,7 @@ export function MyPageTabs() {
           <div className="flex items-start space-x-6">
             <Avatar className="w-20 h-20">
               <AvatarImage
-                src={myInfo.profileImageUrl || "/placeholder.svg"}
+                src={myInfo.profileImageUrl ?? "/placeholder.svg"}
                 alt={myInfo.nickname}
               />
               <AvatarFallback className="text-lg">
@@ -257,7 +258,7 @@ export function MyPageTabs() {
               </div>
 
               <div className="flex space-x-4">
-                <Link href="/profile/edit">
+                <Link href={MEMBER_ROUTES.MY_INFO_EDIT}>
                   <Button
                     variant="outline"
                     className="flex items-center space-x-2"
@@ -266,7 +267,7 @@ export function MyPageTabs() {
                     <span>Edit Profile</span>
                   </Button>
                 </Link>
-                <Link href={`/profile/user/${myInfo.nickname}`}>
+                <Link href={MEMBER_ROUTES.MEMBER_PROFILE(myInfo.memberId)}>
                   <Button className="flex items-center space-x-2">
                     <ExternalLink className="h-4 w-4" />
                     <span>Go to Public Profile</span>

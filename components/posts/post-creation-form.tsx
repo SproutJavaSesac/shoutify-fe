@@ -21,18 +21,19 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { createPost } from "@/apis/posts";
 import { FetchError } from "@/apis/client";
-import { ConceptType, EmotionType } from "@/types/posts";
+import { ConceptType } from "@/types/posts";
 import {
   CONCEPT_OPTIONS,
-  EMOTION_OPTIONS,
+  EMOTICON_OPTIONS,
   POST_ROUTES,
 } from "@/constants/posts";
+import { EmoticonType } from "@/types/reactions";
 
 export function PostCreationForm() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [concept, setConcept] = useState<ConceptType | "">("");
-  const [emotion, setEmotion] = useState<EmotionType | null>(null);
+  const [emotion, setEmotion] = useState<EmoticonType | null>(null);
   const [image, setImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -54,7 +55,7 @@ export function PostCreationForm() {
     setConcept(value as ConceptType);
   };
 
-  const handleEmotionClick = (emotionValue: EmotionType) => {
+  const handleEmotionClick = (emotionValue: EmoticonType) => {
     setEmotion(emotionValue);
   };
 
@@ -221,7 +222,7 @@ export function PostCreationForm() {
               AI 변환에 참고할 감정을 선택하거나, 비워두면 자동으로 감지됩니다
             </p>
             <div className="flex flex-wrap gap-2">
-              {EMOTION_OPTIONS.map((emotionOption) => (
+              {EMOTICON_OPTIONS.map((emotionOption) => (
                 <Badge
                   key={emotionOption.value}
                   className={`cursor-pointer transition-all ${

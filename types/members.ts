@@ -1,21 +1,12 @@
-// 회원 관련 타입들 (백엔드 API 기준)
-
-// 페이지네이션 공통 타입
-export interface PaginationDto {
-  currentPage: number;
-  totalPages: number;
-  totalCount: number;
-  pageSize: number;
-  hasNext: boolean;
-  hasPrevious: boolean;
-}
-
 // 내 정보 조회 응답
+import { Pagination } from "@/types/commons";
+import { RankingCategoryType, RankingPeriodType } from "@/types/rankings";
+
 export interface MyInfoGetResponse {
   memberId: number;
   nickname: string;
   email: string;
-  profileImageUrl?: string;
+  profileImageUrl?: string; // TODO 추후 ? 제거 필요.
   postCount: number;
   reactionCount: number; // 임시: 하드코딩된 값
   commentCount: number;
@@ -31,7 +22,7 @@ export interface MyInfoEditResponse {
   memberId: number;
   nickname: string;
   email: string;
-  profileImageUrl?: string;
+  profileImageUrl?: string; // TODO 추후 ? 제거 필요.
 }
 
 // 내 게시글 요약 정보
@@ -46,14 +37,14 @@ export interface MyPostSummary {
   conceptType: string;
   reactionCount: number; // 임시: 하드코딩된 값
   commentCount: number; // 임시: 하드코딩된 값
-  imageUrl?: string;
+  imageUrl?: string; // TODO 추후 ? 제거 필요.
   isHidden: boolean;
 }
 
 // 내 게시글 목록 응답
 export interface MyPostListResponse {
   posts: MyPostSummary[];
-  pagination: PaginationDto;
+  pagination: Pagination;
 }
 
 // 내 댓글 요약 정보
@@ -63,14 +54,55 @@ export interface MyCommentSummary {
   postTitle: string;
   beforeContent: string;
   afterContent: string;
-  createdAt: string;
   reactionCount: number; // 임시: 하드코딩된 값
+  createdAt: string;
 }
 
 // 내 댓글 목록 응답
 export interface MyCommentListResponse {
   comments: MyCommentSummary[];
-  pagination: PaginationDto;
+  pagination: Pagination;
+}
+
+export interface MyBadgeSummary {
+  badgeId: number;
+  name: string;
+  description: string;
+  iconUrl: string;
+  isEarned: boolean; // 배지가 획득되었는지 여부
+  createdAt?: string | null; // 배지를 획득한 날짜 (선택적)
+}
+
+export interface MyBadgeTotalSummary {
+  totalBadges: number; // 총 배지 개수
+  earnedBadges: number; // 획득한 배지 개수
+}
+
+// 내 배지 목록 응답
+export interface MyBadgeListResponse {
+  summaries: MyBadgeTotalSummary[];
+  badges: MyBadgeSummary[];
+}
+
+export interface MyRankingQueryParams {
+  category: RankingCategoryType;
+  period: number; // 랭킹 조회 기간 (최대 30개)
+  periodType: RankingPeriodType;
+}
+
+export interface RankingSummary {
+  categoryValue: number;
+  rank: number;
+  previousRank: number;
+  rankChange: string;
+}
+
+// 내 랭킹 목록 응답
+export interface MyRankingListResponse {
+  category: RankingCategoryType;
+  maxCount: number;
+  periodType: RankingPeriodType;
+  rankings: RankingSummary[];
 }
 
 // 페이지네이션 쿼리 파라미터

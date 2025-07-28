@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bookmark, Crown, Heart, PenTool, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { POST_ROUTES } from "@/constants/posts";
+import { MEMBER_ROUTES } from "@/constants/members";
 
 const mostBookmarkedPosts = [
   {
@@ -230,13 +232,13 @@ export function RankingTabs() {
                       {getTrendIcon(post.trend)}
                     </div>
 
-                    <Link href={`/post/${post.id}`}>
+                    <Link href={POST_ROUTES.DETAIL(post.id)}>
                       <h3 className="font-semibold text-gray-900 hover:text-gray-700 cursor-pointer">
                         {post.title}
                       </h3>
                     </Link>
 
-                    <Link href={`/profile/user/${post.author}`}>
+                    <Link href={MEMBER_ROUTES.MEMBER_PROFILE(post.author)}>
                       <p className="text-sm text-gray-600 hover:text-gray-800 cursor-pointer">
                         by {post.author}
                       </p>
@@ -296,13 +298,13 @@ export function RankingTabs() {
                       {getTrendIcon(post.trend)}
                     </div>
 
-                    <Link href={`/post/${post.id}`}>
+                    <Link href={POST_ROUTES.DETAIL(post.id)}>
                       <h3 className="font-semibold text-gray-900 hover:text-gray-700 cursor-pointer">
                         {post.title}
                       </h3>
                     </Link>
 
-                    <Link href={`/profile/user/${post.author}`}>
+                    <Link href={MEMBER_ROUTES.MEMBER_PROFILE(post.author)}>
                       <p className="text-sm text-gray-600 hover:text-gray-800 cursor-pointer">
                         by {post.author}
                       </p>
@@ -353,7 +355,7 @@ export function RankingTabs() {
                       {getTrendIcon(user.trend)}
                     </div>
 
-                    <Link href={`/profile/user/${user.username}`}>
+                    <Link href={MEMBER_ROUTES.MEMBER_PROFILE(user.username)}>
                       <h3 className="font-semibold text-gray-900 hover:text-gray-700 cursor-pointer">
                         {user.username}
                       </h3>
@@ -409,7 +411,7 @@ export function RankingTabs() {
                       {getTrendIcon(user.trend)}
                     </div>
 
-                    <Link href={`/profile/user/${user.username}`}>
+                    <Link href={MEMBER_ROUTES.MEMBER_PROFILE(user.username)}>
                       <h3 className="font-semibold text-gray-900 hover:text-gray-700 cursor-pointer">
                         {user.username}
                       </h3>

@@ -19,7 +19,9 @@ import { ShareModal } from "@/components/share-modal";
 import { UserProfileModal } from "@/components/user-profile-modal";
 import { getPost } from "@/apis/posts";
 import { Post } from "@/types/posts";
+import { EmotionOption } from "@/types/reactions";
 import { utcToLocaleDateString } from "@/lib/utils";
+import { EMOTICON_OPTIONS } from "@/constants/posts";
 
 const postMockData = {
   author: "LiteraryMuse",
@@ -33,21 +35,11 @@ const emotionColors = {
   melancholy: "bg-blue-100 text-blue-800",
 };
 
-// const reactionEmojis = {
-//     "happy": "❤️",
-//     "sad": "😢",
-//     "angry": "😠",
-//     "excited": "🎉",
-//     "confused": "🤔",
-//     "proud": "👏",
-// }
-const reactionEmojis = ["❤️", "😊", "😢", "🤔", "👏"];
-
 export function PostDetail({ postId }: Readonly<{ postId: string }>) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [postData, setPostData] = useState<Post>();
-  const [reactions, setReactions] = useState<string | null>(null);
+  const [reactions, setReactions] = useState<EmotionOption | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [reportModal, setReportModal] = useState(false);
@@ -75,7 +67,7 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
     }
   };
 
-  const handleReaction = (emoji: string) => {
+  const handleReaction = (emoji: EmotionOption) => {
     setReactions((prev) => (prev === emoji ? null : emoji));
   };
 
@@ -280,22 +272,18 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
             <div className="flex items-center space-x-4">
               {/* Reaction Buttons with individual counts */}
               <div className="flex items-center space-x-2">
-                {reactionEmojis.map((emoji) => (
-                  <div key={emoji} className="flex items-center">
+                {EMOTICON_OPTIONS.map((emoji) => (
+                  <div key={emoji.value} className="flex items-center">
                     <Button
                       variant="ghost"
                       size="sm"
                       className={`h-8 w-8 p-0 ${reactions === emoji ? "bg-gray-100 ring-2 ring-blue-300" : ""}`}
                       onClick={() => handleReaction(emoji)}
                     >
-                      {emoji}
+                      {}
                     </Button>
                     <span className="text-sm text-gray-500 ml-1">
-                      {
-                        postMockData.reactions[
-                          emoji as keyof typeof postMockData.reactions
-                        ]
-                      }
+                      {/*{postMockData.reactions[emoji.value] || 0}*/}
                     </span>
                   </div>
                 ))}

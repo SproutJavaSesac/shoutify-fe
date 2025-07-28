@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { COMMENT_ROUTES } from "@/constants/comments";
+import { POST_ROUTES } from "@/constants/posts";
 
 const allPosts = [
   {
@@ -193,7 +195,7 @@ interface PostFeedProps {
 export function PostFeed({
   selectedCategory,
   searchQuery = "",
-}: PostFeedProps) {
+}: Readonly<PostFeedProps>) {
   const [currentPage, setCurrentPage] = useState(1);
 
   // Filter posts by category and search query
@@ -359,7 +361,7 @@ export function PostFeed({
                   </Badge>
                 </div>
 
-                <Link href={`/post/${post.id}`}>
+                <Link href={POST_ROUTES.DETAIL(post.id)}>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-gray-700 cursor-pointer">
                     {post.title}
                   </h3>
@@ -382,7 +384,7 @@ export function PostFeed({
                     </span>
                   </div>
 
-                  <Link href={`/post/${post.id}#comments`}>
+                  <Link href={COMMENT_ROUTES.SECTION(post.id)}>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -398,7 +400,7 @@ export function PostFeed({
               {post.hasImage && (
                 <div className="flex-shrink-0">
                   <Image
-                    src={post.imageUrl || "/placeholder.svg"}
+                    src={post.imageUrl ?? "/placeholder.svg"}
                     alt="Post thumbnail"
                     width={60}
                     height={60}

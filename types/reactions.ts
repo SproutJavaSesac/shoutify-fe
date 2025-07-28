@@ -1,31 +1,93 @@
+export type ReactionActionType = "add" | "remove";
+
 export interface Reaction {
-  id: number;
-  userId: string;
-  targetId: number;
-  targetType: "post" | "comment";
-  emoji: string;
-  createdAt: string;
+  // id: number;
+  // userId: string;
+  // targetId: number;
+  // targetType: "post" | "comment";
+  // emoji: string;
+  // createdAt: string;
+  status: ReactionActionType;
+  reaction: EmoticonType;
+  reactionCount: number;
+  reactionDetails: ReactionDetailCountMap;
 }
 
-export interface ReactionRequest {
-  targetId: number;
-  targetType: "post" | "comment";
-  emoji: string;
+export interface PostReactionRequest {
+  postId: number;
+  body: PostReactionRequestBody;
 }
 
-export interface ReactionsResponse {
-  reactions: Record<string, number>;
-  userReaction?: string;
+interface ReactionRequestBody {
+  emotion: EmoticonType;
+  action: ReactionActionType;
 }
 
-export interface ReactionStats {
-  totalReactions: number;
-  reactionBreakdown: Record<string, number>;
-  topEmojis: Array<{
-    emoji: string;
-    count: number;
-  }>;
+export interface PostReactionRequestBody extends ReactionRequestBody {}
+
+export interface CommentReactionRequest {
+  postId: number;
+  commentId: number;
+  body: CommentReactionRequestBody;
 }
 
-export type ReactionTarget = "post" | "comment";
-export type ReactionEmoji = "❤️" | "😊" | "😢" | "🤔" | "👏";
+export interface CommentReactionRequestBody extends ReactionRequestBody {}
+
+interface ReactionResponse extends Reaction {}
+
+export interface PostReactionResponse extends ReactionResponse {}
+
+export interface CommentReactionResponse extends ReactionResponse {}
+
+// export interface ReactionRequest {
+//   // targetId: number;
+//   // targetType: "post" | "comment";
+//   // emoji: string;
+// }
+//
+// export interface ReactionsResponse {
+//   reactions: Record<string, number>;
+//   userReaction?: string;
+// }
+//
+// export interface ReactionStats {
+//   totalReactions: number;
+//   reactionBreakdown: Record<string, number>;
+//   topEmojis: Array<{
+//     emoji: string;
+//     count: number;
+//   }>;
+// }
+
+// export type ReactionTarget = "post" | "comment";
+
+export type EmoticonType =
+  | "HAPPY"
+  | "SAD"
+  | "ANGRY"
+  | "EXCITED"
+  | "CONFUSED"
+  | "PROUD";
+
+export type ReactionEmojiType =
+  | "❤️" // happy
+  | "😢" // sad
+  | "😠" // angry
+  | "🎉" // excited
+  | "🤔" // confused
+  | "👏"; // proud
+
+// 감정 옵션 타입
+export interface EmotionOption {
+  label: string;
+  emotionType: ReactionEmojiType;
+  value: EmoticonType;
+  color: string;
+}
+
+export type ReactionDetailCountMap = {
+  [K in EmoticonType]: number;
+};
+
+// ✨ 방법 1: EmoticonType을 기반으로 한 Record 타입 (권장)
+// export type ReactionDetailCountMap = Record<EmoticonType, number>;

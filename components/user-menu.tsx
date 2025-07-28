@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, LogOut, Settings } from "lucide-react";
 import Link from "next/link";
+import { MEMBER_ROUTES } from "@/constants/members";
 
 export function UserMenu() {
   const { user, logout } = useAuth();
@@ -58,14 +59,14 @@ export function UserMenu() {
         <DropdownMenuSeparator />
 
         <DropdownMenuItem asChild>
-          <Link href="/mypage" className="flex items-center">
+          <Link href={MEMBER_ROUTES.MY_PAGE} className="flex items-center">
             <FileText className="mr-2 h-4 w-4" />
             <span>My Page</span>
           </Link>
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
-          <Link href="/profile/edit" className="flex items-center">
+          <Link href={MEMBER_ROUTES.MY_INFO_EDIT} className="flex items-center">
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
           </Link>

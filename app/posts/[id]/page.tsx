@@ -1,4 +1,4 @@
-import { PostDetail } from "@/components/post-detail";
+import { PostDetail } from "@/components/posts/post-detail";
 import { CommentsSection } from "@/components/comments/comments-section";
 import { RecommendedPosts } from "@/components/recommended-posts";
 

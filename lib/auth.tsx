@@ -9,6 +9,7 @@ import {
 } from "react";
 import {
   checkLoginStatus,
+  deleteAccount,
   loginWithGoogle,
   logout as authLogout,
 } from "@/apis/auth";
@@ -34,7 +35,7 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-export function AuthProvider({ children }: AuthProviderProps) {
+export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
   const [state, setState] = useState<AuthState>({
     isAuthenticated: false,
     user: null,
@@ -144,6 +145,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const withdraw = async () => {
+    try {
+      // 회원 탈퇴 API 호출
+      await deleteAccount(); // 실제 회원 탈퇴 API로 변경 필요
+      // JSESSIONID 쿠키 삭제
+      if (typeof window !== "undefined") {
+        document.cookie =
+          "JSESSIONID=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      }
+      // 상태 초기화
+      setState({
+        isAuthenticated: false,
+        user: null,
+        loading: false,
+      });
+    } catch (error) {
+      console.error("회원 탈퇴에 실패했습니다:", error);
+    }
+  };
+
   // 초기 인증 상태 확인
   useEffect(() => {
     checkAuthStatus();
@@ -172,165 +193,4 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-// 인증이 필요한 컴포넌트를 위한 HOC
-export function withAuth<P extends object>(
-  WrappedComponent: React.ComponentType<P>,
-) {
-  return function AuthenticatedComponent(props: P) {
-    const { isAuthenticated, loading, login } = useAuth();
-
-    if (loading) {
-      return <div>로딩 중...</div>;
-    }
-
-    if (!isAuthenticated) {
-      // 로그인 페이지로 리디렉션하거나 로그인 모달을 표시
-      // 여기서는 간단하게 로그인 버튼을 보여주는 예시
-      return (
-        <div className="flex flex-col items-center justify-center min-h-screen">
-          <p className="mb-4">로그인이 필요한 서비스입니다.</p>
-          <button
-            onClick={() => login("google")}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Google로 로그인
-          </button>
-        </div>
-      );
-    }
-
-    return <WrappedComponent {...props} />;
-  };
-}
-
-// 로그인 버튼 컴포넌트 (AuthModal 사용으로 인해 현재는 불필요)
-/*
-export function LoginButton() {
-  const handleLogin = () => {
-    // 바로 리다이렉트
-    console.log("🚀 구글 로그인 시작");
-    const backendUrl =
-      process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") ||
-      "http://localhost:8080";
-    window.location.href = `${backendUrl}/api/oauth2/authorization/google`;
-  };
-
-  return (
-    <button
-      onClick={handleLogin}
-      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-    >
-      Google로 로그인
-    </button>
-  );
-}
-*/
-
-// 로그아웃 버튼 컴포넌트
-export function LogoutButton() {
-  const { logout } = useAuth();
-
-  return (
-    <button
-      onClick={logout}
-      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-    >
-      로그아웃
-    </button>
-  );
-}
-
-// 사용자 정보 표시 컴포넌트
-export function UserProfile() {
-  const { user, isAuthenticated } = useAuth();
-
-  if (!isAuthenticated || !user) {
-    return null;
-  }
-
-  return (
-    <div className="flex items-center space-x-2">
-      <span className="text-sm text-gray-600">{user.nickname}</span>
-      <span className="text-xs text-gray-400">({user.email})</span>
-    </div>
-  );
-}
-
-// 개발 환경용 인증 컨트롤러 (개발 중에만 표시)
-export function DevAuthController() {
-  if (process.env.NODE_ENV !== "development") {
-    return null;
-  }
-
-  const { isAuthenticated, user, logout } = useAuth();
-
-  const setMockAuth = () => {
-    // JSESSIONID 쿠키 설정하여 하드코딩된 인증 트리거
-    document.cookie = "JSESSIONID=mock-session-id; path=/";
-    window.location.reload();
-  };
-
-  const clearMockAuth = () => {
-    // JSESSIONID 쿠키 삭제
-    document.cookie =
-      "JSESSIONID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    window.location.reload();
-  };
-
-  return (
-    <div className="fixed bottom-4 right-4 bg-yellow-100 border border-yellow-300 rounded-lg p-4 shadow-lg">
-      <div className="text-xs font-bold text-yellow-800 mb-2">
-        🔧 개발자 도구
-      </div>
-
-      <div className="text-xs text-yellow-700 mb-2">
-        현재 상태:{" "}
-        {isAuthenticated ? `로그인됨 (${user?.nickname})` : "비로그인"}
-      </div>
-
-      <div className="space-y-2">
-        {!isAuthenticated ? (
-          <div className="space-y-1">
-            <button
-              onClick={setMockAuth}
-              className="w-full text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Mock 로그인 (하드코딩)
-            </button>
-            <button
-              onClick={() => {
-                console.log("🚀 실제 OAuth2 로그인 시작");
-                const backendUrl =
-                  process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") ||
-                  "http://localhost:8080";
-                window.location.href = `${backendUrl}/api/oauth2/authorization/google`;
-              }}
-              className="w-full text-xs px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-            >
-              실제 OAuth2 로그인
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-1">
-            <button
-              onClick={logout}
-              className="w-full text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-            >
-              로그아웃
-            </button>
-            {user?.id === 1 && (
-              <button
-                onClick={clearMockAuth}
-                className="w-full text-xs px-2 py-1 bg-orange-500 text-white rounded hover:bg-orange-600"
-              >
-                Mock 세션 삭제
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
 }

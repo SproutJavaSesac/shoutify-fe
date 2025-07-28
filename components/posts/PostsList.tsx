@@ -9,6 +9,7 @@ import type {
   PostSortType,
 } from "@/types/posts";
 import Link from "next/link";
+import { POST_ROUTES } from "@/constants/posts";
 
 interface PostsListProps {
   initialSort?: PostSortType;
@@ -17,10 +18,10 @@ interface PostsListProps {
 }
 
 export default function PostsList({
-  initialSort = "latest",
+  initialSort = "createdAt",
   concept,
   limit = 10,
-}: PostsListProps) {
+}: Readonly<PostsListProps>) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +37,7 @@ export default function PostsList({
       const response = await getPosts({
         sort: initialSort,
         concept,
-        limit,
+        size: limit,
         ...params,
       });
 
@@ -98,7 +99,7 @@ export default function PostsList({
     <div className="space-y-4">
       {/* 게시글 목록 */}
       {posts.map((post) => (
-        <Link href={`/posts/${post.postId}`} key={post.postId}>
+        <Link href={POST_ROUTES.DETAIL(post.postId)} key={post.postId}>
           <div
             key={post.postId}
             className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow"

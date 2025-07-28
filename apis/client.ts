@@ -60,6 +60,14 @@ class ApiClient {
     });
   }
 
+  async patch<T>(url: string, data?: any, authenticated = true): Promise<T> {
+    return this.request<T>(url, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      auth: authenticated,
+    });
+  }
+
   async delete<T>(url: string, authenticated = true): Promise<T> {
     return this.request<T>(url, { method: "DELETE", auth: authenticated });
   }
@@ -136,6 +144,7 @@ export const api = {
   post: <T>(url: string, data?: any) => client.post<T>(url, data, true),
   put: <T>(url: string, data?: any) => client.put<T>(url, data, true),
   delete: <T>(url: string) => client.delete<T>(url, true),
+  patch: <T>(url: string, data?: any) => client.patch<T>(url, data, true),
 
   // 인증이 필요 없는 공개 API 호출
   public: {
