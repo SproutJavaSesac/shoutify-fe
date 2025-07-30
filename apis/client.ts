@@ -1,4 +1,6 @@
 // API 클라이언트
+import { ApiError } from "@/types/apis";
+
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 
@@ -9,17 +11,6 @@ export type Response<T> = {
   message?: string;
   error?: string;
 };
-
-export class FetchError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-    public data?: any,
-  ) {
-    super(message);
-    this.name = "FetchError";
-  }
-}
 
 class ApiClient {
   private token?: string;
@@ -101,7 +92,7 @@ class ApiClient {
         console.error(
           "🚨 백엔드 500 에러: 서버 내부 오류가 발생했습니다. userPrincipal이 null일 수 있습니다.",
         );
-        throw new FetchError(
+        throw new ApiError(
           500,
           "서버에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
         );
@@ -116,16 +107,16 @@ class ApiClient {
           `API Error: ${response.status} - ${errorMessage}`,
           result,
         );
-        throw new FetchError(response.status, errorMessage, result);
+        throw new ApiError(response.status, errorMessage, result);
       }
 
       return result.result;
     } catch (error) {
-      if (error instanceof FetchError) {
+      if (error instanceof ApiError) {
         throw error;
       }
       console.error("네트워크 또는 예상치 못한 에러:", error);
-      throw new FetchError(
+      throw new ApiError(
         503,
         "서버에 연결할 수 없거나 응답을 처리할 수 없습니다.",
       );

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ApiError } from "@/apis/client";
+import { ApiError } from "@/types/apis";
 
 export interface UseApiState<T> {
   data: T | null;

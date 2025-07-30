@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { createPost } from "@/apis/posts";
-import { FetchError } from "@/apis/client";
+import { ApiError } from "@/types/apis";
 import { ConceptType } from "@/types/posts";
 import {
   CONCEPT_OPTIONS,
@@ -124,7 +124,7 @@ export function PostCreationForm() {
 
       let errorMessage = "게시글 작성 중 오류가 발생했습니다.";
 
-      if (error instanceof FetchError) {
+      if (error instanceof ApiError) {
         // 서버에서 받은 구체적인 에러 메시지 사용
         errorMessage = error.message || "서버 오류가 발생했습니다.";
 
