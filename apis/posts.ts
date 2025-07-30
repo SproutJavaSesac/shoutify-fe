@@ -21,7 +21,7 @@ export async function getPosts(
 }
 
 // 게시글 상세 조회
-export async function getPost(postId: number): Promise<Post> {
+export async function getPost(postId: string | number): Promise<Post> {
   try {
     return await api.public.get(POST_API_ENDPOINTS.POST_DETAIL(postId));
   } catch (error) {
@@ -37,16 +37,16 @@ export const createPost = async (
 };
 
 // 게시글 삭제
-export async function deletePost(postId: number): Promise<string> {
+export async function deletePost(postId: string | number): Promise<string> {
   return api.delete(POST_API_ENDPOINTS.POST_DELETE(postId));
 }
 
 // 게시글 숨김
-export async function hidePost(postId: number): Promise<string> {
+export async function hidePost(postId: string | number): Promise<string> {
   return api.patch(POST_API_ENDPOINTS.POST_HIDE(postId));
 }
 
 // 게시글 공개
-export async function unhidePost(postId: number): Promise<string> {
+export async function unhidePost(postId: string | number): Promise<string> {
   return api.patch(POST_API_ENDPOINTS.POST_UNHIDE(postId));
 }

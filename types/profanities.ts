@@ -1,7 +1,7 @@
 import { Pagination } from "@/types/commons";
 
 export interface Profanity {
-  profanityId: number;
+  profanityId: string | number;
   original: string;
   replacement: string;
   description: string;
@@ -29,7 +29,7 @@ export interface ProfanityCreateRequest {
 export interface ProfanityCreateResponse extends Profanity {}
 
 export interface ProfanityUpdateRequest {
-  profanityId: number;
+  profanityId: string | number;
   body: ProfanityUpdateRequestBody;
 }
 

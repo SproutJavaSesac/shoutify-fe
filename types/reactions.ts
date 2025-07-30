@@ -1,12 +1,6 @@
 export type ReactionActionType = "add" | "remove";
 
 export interface Reaction {
-  // id: number;
-  // userId: string;
-  // targetId: number;
-  // targetType: "post" | "comment";
-  // emoji: string;
-  // createdAt: string;
   status: ReactionActionType;
   reaction: EmoticonType;
   reactionCount: number;
@@ -14,7 +8,7 @@ export interface Reaction {
 }
 
 export interface PostReactionRequest {
-  postId: number;
+  postId: string | number;
   body: PostReactionRequestBody;
 }
 
@@ -26,8 +20,8 @@ interface ReactionRequestBody {
 export interface PostReactionRequestBody extends ReactionRequestBody {}
 
 export interface CommentReactionRequest {
-  postId: number;
-  commentId: number;
+  postId: string | number;
+  commentId: string | number;
   body: CommentReactionRequestBody;
 }
 
@@ -38,28 +32,6 @@ interface ReactionResponse extends Reaction {}
 export interface PostReactionResponse extends ReactionResponse {}
 
 export interface CommentReactionResponse extends ReactionResponse {}
-
-// export interface ReactionRequest {
-//   // targetId: number;
-//   // targetType: "post" | "comment";
-//   // emoji: string;
-// }
-//
-// export interface ReactionsResponse {
-//   reactions: Record<string, number>;
-//   userReaction?: string;
-// }
-//
-// export interface ReactionStats {
-//   totalReactions: number;
-//   reactionBreakdown: Record<string, number>;
-//   topEmojis: Array<{
-//     emoji: string;
-//     count: number;
-//   }>;
-// }
-
-// export type ReactionTarget = "post" | "comment";
 
 export type EmoticonType =
   | "HAPPY"
@@ -88,6 +60,3 @@ export interface EmotionOption {
 export type ReactionDetailCountMap = {
   [K in EmoticonType]: number;
 };
-
-// ✨ 방법 1: EmoticonType을 기반으로 한 Record 타입 (권장)
-// export type ReactionDetailCountMap = Record<EmoticonType, number>;

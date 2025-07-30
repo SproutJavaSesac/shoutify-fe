@@ -64,7 +64,7 @@ export async function getMyComments(
  * @returns 내 배지 목록 데이터
  */
 export async function getMyBadges(
-  params: PaginationParam,
+  params: PaginationParams,
 ): Promise<MyBadgeListResponse> {
   return api.get(MEMBER_API_ENDPOINTS.MEMBER_BADGES, params);
 }

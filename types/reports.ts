@@ -1,19 +1,19 @@
 import { Pagination } from "@/types/commons";
 
 export interface Report {
-  reportId: number;
+  reportId: string | number;
   reportType: ReportType;
-  reporterId: number;
-  targetId: number;
+  reporterId: string | number;
+  targetId: string | number;
   reasonCode: ReportCodeType;
   reasonDetail: string;
   createdAt: string;
-  postId: number;
-  commentId: number;
+  postId: string | number;
+  commentId: string | number;
 }
 
 interface ReportCreateResponse {
-  reportId: number;
+  reportId: string | number;
   reportType: ReportType;
   reasonType: ReportReasonType;
   reasonDetail: string | null;
@@ -27,12 +27,12 @@ export interface ReportCommentCreateRequestBody {
 }
 
 export interface ReportCommentCreateRequest {
-  commentId: number;
+  commentId: string | number;
   body: ReportCommentCreateRequestBody;
 }
 
 export interface ReportCommentCreateResponse extends ReportCreateResponse {
-  commentId: number;
+  commentId: string | number;
 }
 
 export interface ReportPostCreateRequestBody {
@@ -41,12 +41,12 @@ export interface ReportPostCreateRequestBody {
 }
 
 export interface ReportPostCreateRequest {
-  postId: number;
+  postId: string | number;
   body: ReportPostCreateRequestBody;
 }
 
 export interface ReportPostCreateResponse extends ReportCreateResponse {
-  postId: number;
+  postId: string | number;
 }
 
 interface ReportProcessRequestBody {
@@ -54,12 +54,12 @@ interface ReportProcessRequestBody {
 }
 
 export interface ReportProcessRequest {
-  reportId: number;
+  reportId: string | number;
   body: ReportProcessRequestBody;
 }
 
 export interface ReportProcessResponse {
-  reportId: number;
+  reportId: string | number;
   statusType: ReportStatusType;
   updatedAt: string;
 }

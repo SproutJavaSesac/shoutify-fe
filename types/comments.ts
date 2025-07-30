@@ -3,15 +3,15 @@ import { ReactionDetailCountMap } from "./reactions";
 
 // comment url 경로 파람 타입
 export type CommentPathParams = {
-  postId: number;
-  commentId: number;
+  postId: string | number;
+  commentId: string | number;
 };
 
 export interface Comment {
-  commentId: number;
-  commenterId: number | null;
+  commentId: string | number;
+  commenterId: string | number | null;
   commenterNickname: string;
-  parentId: number | null;
+  parentId: string | number | null;
   order: number;
   level: number;
   content: string;
@@ -20,12 +20,12 @@ export interface Comment {
   isDeleted: boolean;
   isReported: boolean;
   isMine?: boolean; // TODO isMine 추가 시 ? 제거하기
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CommentListRequest {
-  postId: number;
+  postId: string | number;
   queryParams: CommentQueryParams;
 }
 
@@ -35,19 +35,19 @@ export interface CommentQueryParams {
 }
 
 export interface CommentListResponse {
-  postId: number;
+  postId: string | number;
   pagination: Pagination;
   comments: Comment[];
 }
 
 export interface CommentCreateRequest {
-  postId: number;
+  postId: string | number;
   body: CommentCreateResponseBody;
 }
 
 export interface CommentCreateResponseBody {
   content: string;
-  parentId?: number | null;
+  parentId?: string | number | null;
 }
 
 export type CommentCreateResponse = Comment;

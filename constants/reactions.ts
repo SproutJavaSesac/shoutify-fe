@@ -20,7 +20,7 @@ export const REACTION_API_ENDPOINTS = {
    * 게시글에 반응하기 API 엔드포인트
    * @param postId 게시글 ID
    */
-  POST_REACTION: ({ postId }: { postId: number }) =>
+  POST_REACTION: ({ postId }: { postId: string | number }) =>
     `${POST_API_ENDPOINTS.POST_DETAIL(postId)}/reactions`,
 
   /**
@@ -32,7 +32,7 @@ export const REACTION_API_ENDPOINTS = {
     postId,
     commentId,
   }: {
-    postId: number;
-    commentId: number;
+    postId: string | number;
+    commentId: string | number;
   }) => `/posts/${postId}/comments/${commentId}/reactions`,
 };

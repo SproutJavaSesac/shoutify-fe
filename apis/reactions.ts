@@ -19,7 +19,7 @@ export async function doPostReaction({
 }: PostReactionRequest): Promise<PostReactionResponse> {
   return api.post<PostReactionResponse>(
     REACTION_API_ENDPOINTS.POST_REACTION({ postId }),
-    { body },
+    body,
   );
 }
 
