@@ -21,7 +21,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { useMyComments, useMyInfo, useMyPosts } from "@/lib/hooks/useMembers";
 import { MEMBER_ROUTES } from "@/constants/members";
-import type { Pagination } from "@/types/commons";
+import type { Pagination } from "@/types/apis";
 
 const bookmarkedPosts = [
   {

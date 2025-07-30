@@ -1,4 +1,4 @@
-import { Pagination } from "@/types/commons";
+import { Pagination } from "@/types/apis";
 import { ReactionDetailCountMap } from "./reactions";
 
 // comment url 경로 파람 타입

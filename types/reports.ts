@@ -1,4 +1,4 @@
-import { Pagination } from "@/types/commons";
+import { Pagination } from "@/types/apis";
 
 export interface Report {
   reportId: string | number;

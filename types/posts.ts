@@ -1,5 +1,5 @@
 import { ReactionDetailCountMap } from "@/types/reactions";
-import { Pagination } from "@/types/commons";
+import { Pagination } from "@/types/apis";
 
 export type PostSortType = "createdAt" | "reactions" | "comments";
 // 게시글 작성 관련 타입 정의만 포함
