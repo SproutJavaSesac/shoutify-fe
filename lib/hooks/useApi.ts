@@ -1,24 +1,25 @@
 import { useCallback, useEffect, useState } from "react";
-import { ApiError } from "@/types/apis";
+import {
+  ApiError,
+  ApiOptions,
+  ApiState,
+  MutationState,
+  PaginationOptions,
+  PaginationParams,
+  PaginationState,
+} from "@/types/apis";
 
-export interface UseApiState<T> {
-  data: T | null;
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-}
-
-export interface UseApiOptions {
-  immediate?: boolean;
-  onSuccess?: (data: any) => void;
-  onError?: (error: string) => void;
-}
-
-// 기본 API 훅
+/**
+ * 범용적인 API 호출 훅.
+ * 사실상 조회(fetch)용으로 주로 사용하다가, 필요하다면 재호출도 할 수 있고, 즉시 실행 여부도 조절 가능함.
+ *
+ * @param apiCall API 호출을 수행하는 함수. Promise를 반환해야 합니다.
+ * @param options API 호출 옵션 객체입니다.
+ */
 export function useApi<T>(
   apiCall: () => Promise<T>,
-  options: UseApiOptions = {},
-): UseApiState<T> {
+  options: ApiOptions = {},
+): ApiState<T> {
   const { immediate = true, onSuccess, onError } = options;
 
   const [data, setData] = useState<T | null>(null);
@@ -58,19 +59,20 @@ export function useApi<T>(
   };
 }
 
-// 뮤테이션 훅 (POST, PUT, DELETE 등)
-export interface UseMutationState<T> {
-  data: T | null;
-  loading: boolean;
-  error: string | null;
-  mutate: (...args: any[]) => Promise<T | null>;
-  reset: () => void;
-}
-
-export function useMutation<T, P extends any[]>(
-  mutationFn: (...args: P) => Promise<T>,
-  options: UseApiOptions = {},
-): UseMutationState<T> {
+/**
+ * 사용자 정의 뮤테이션 훅.
+ * <ul>
+ *   <li>T - 반환되는 데이터 타입</li>
+ *   <li>P - 뮤테이션 함수에 전달되는 인자 타입, 대부분 body 1개 사용.</li>
+ * </ul>
+ *
+ * @param mutationFn - 뮤테이션을 수행하는 함수. Promise를 반환해야 합니다.
+ * @param options - 뮤테이션 성공 및 실패 시 호출되는 콜백 함수들을 포함하는 옵션 객체입니다.
+ */
+export function useMutation<T, P>(
+  mutationFn: (args: P) => Promise<T>,
+  options: ApiOptions = {},
+): MutationState<T> {
   const { onSuccess, onError } = options;
 
   const [data, setData] = useState<T | null>(null);
@@ -78,12 +80,12 @@ export function useMutation<T, P extends any[]>(
   const [error, setError] = useState<string | null>(null);
 
   const mutate = useCallback(
-    async (...args: P): Promise<T | null> => {
+    async (args: P): Promise<T | null> => {
       try {
         setLoading(true);
         setError(null);
 
-        const result = await mutationFn(...args);
+        const result = await mutationFn(args);
         setData(result);
         onSuccess?.(result);
 
@@ -120,45 +122,22 @@ export function useMutation<T, P extends any[]>(
   };
 }
 
-// 페이지네이션 훅
-export interface UsePaginationOptions<T> {
-  pageSize?: number;
-  immediate?: boolean;
-}
-
-export interface UsePaginationState<T> {
-  data: T[];
-  currentPage: number;
-  totalPages: number;
-  totalCount: number;
-  loading: boolean;
-  error: string | null;
-  hasNext: boolean;
-  hasPrev: boolean;
-  goToPage: (page: number) => void;
-  nextPage: () => void;
-  prevPage: () => void;
-  refetch: () => void;
-}
-
+/**
+ * 범용적인 페이지네이션 훅.
+ * @param fetchFn 페이지네이션된 데이터를 가져오는 함수.
+ * @param options 페이지네이션 옵션 객체입니다.
+ */
 export function usePagination<T>(
-  fetchFn: (
-    page: number,
-    limit: number,
-  ) => Promise<{
-    data: T[];
-    totalCount: number;
-    currentPage: number;
-    totalPages: number;
-  }>,
-  options: UsePaginationOptions<T> = {},
-): UsePaginationState<T> {
-  const { pageSize = 10, immediate = true } = options;
+  fetchFn: (params: PaginationParams) => Promise<any>,
+  options: PaginationOptions = {},
+): PaginationState<T> {
+  const { size = 10, immediate = true, page = 1, sort, order } = options;
 
   const [data, setData] = useState<T[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(page);
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  const [pageSize, setPageSize] = useState(size);
   const [loading, setLoading] = useState(immediate);
   const [error, setError] = useState<string | null>(null);
 
@@ -168,7 +147,12 @@ export function usePagination<T>(
         setLoading(true);
         setError(null);
 
-        const result = await fetchFn(page, pageSize);
+        const result = await fetchFn({
+          page,
+          size: pageSize,
+          sort,
+          order,
+        });
 
         setData(result.data);
         setCurrentPage(result.currentPage);
@@ -185,7 +169,7 @@ export function usePagination<T>(
         setLoading(false);
       }
     },
-    [fetchFn, pageSize],
+    [fetchFn, pageSize, sort, order],
   );
 
   const goToPage = useCallback(
@@ -215,19 +199,20 @@ export function usePagination<T>(
 
   useEffect(() => {
     if (immediate) {
-      fetchData(1);
+      fetchData(currentPage - 1);
     }
-  }, [fetchData, immediate]);
+  }, [fetchData, immediate, currentPage]);
 
   return {
     data,
     currentPage,
     totalPages,
     totalCount,
+    pageSize,
     loading,
     error,
     hasNext: currentPage < totalPages,
-    hasPrev: currentPage > 1,
+    hasPrevious: currentPage > 1,
     goToPage,
     nextPage,
     prevPage,

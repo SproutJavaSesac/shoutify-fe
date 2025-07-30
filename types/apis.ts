@@ -18,13 +18,73 @@ export class ApiError extends Error {
 export interface ApiState<T> {
   data: T | null;
   loading: boolean;
-  error: Error | null;
+  error: string | null;
+  refetch: () => Promise<void>;
 }
 
 /**
  * get이 아닌 http method를 사용하는 API에서 성공, 실패 시 동작을 정의하는 옵션입니다.
  */
-export type MutationOptions<R = any, E = any> = {
-  onSuccess?: (data?: R) => void;
-  onError?: (error: E) => void;
-};
+export interface ApiOptions {
+  immediate?: boolean;
+  onSuccess?: (data: any) => void;
+  onError?: (error: string) => void;
+}
+
+/**
+ * Mutation 훅에서 사용하는 상태 형식입니다.
+ * 예: POST, PUT, DELETE 요청 등
+ */
+export interface MutationState<T> {
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+  mutate: (...args: any[]) => Promise<T | null>;
+  reset: () => void;
+}
+
+/**
+ * Pagination hook에서 사용하는 옵션을 정의합니다.
+ */
+export interface PaginationOptions {
+  size?: number;
+  page?: number;
+  sort?: string;
+  order?: "ASC" | "DESC";
+  immediate?: boolean;
+}
+
+/**
+ * PaginationParams는 페이지네이션 요청 시 필요한 파라미터를 정의합니다.
+ */
+export interface PaginationParams {
+  page: number;
+  size: number;
+  sort?: string;
+  order?: "ASC" | "DESC";
+}
+
+/**
+ * API에서 공통으로 반환받는 페이지네이션 정보를 정의합니다.
+ */
+export interface Pagination {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  pageSize: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+/**
+ * PaginationState는 hook에서 반환하는 페이지네이션 상태를 정의합니다.
+ */
+export interface PaginationState<T> extends Pagination {
+  data: T[];
+  loading: boolean;
+  error: string | null;
+  goToPage: (page: number) => void;
+  nextPage: () => void;
+  prevPage: () => void;
+  refetch: () => void;
+}
