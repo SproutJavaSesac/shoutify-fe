@@ -77,14 +77,24 @@ export interface Pagination {
 }
 
 /**
- * PaginationState는 hook에서 반환하는 페이지네이션 상태를 정의합니다.
+ * Pagination hook에서 반환하는 상태를 정의합니다.
+ * Pagination 정보와 함께 데이터 조회 상태 및 액션들을 포함합니다.
+ *
+ * @template T - 페이지네이션된 데이터의 타입
  */
 export interface PaginationState<T> extends Pagination {
+  /** 현재 페이지의 데이터 배열 */
   data: T[];
+  /** 데이터 로딩 상태 */
   loading: boolean;
+  /** 에러 메시지 (에러가 없으면 null) */
   error: string | null;
+  /** 특정 페이지로 이동하는 함수 */
   goToPage: (page: number) => void;
+  /** 다음 페이지로 이동하는 함수 */
   nextPage: () => void;
+  /** 이전 페이지로 이동하는 함수 */
   prevPage: () => void;
+  /** 현재 페이지 데이터를 다시 불러오는 함수 */
   refetch: () => void;
 }
