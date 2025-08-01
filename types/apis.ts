@@ -2,14 +2,43 @@
  * Api 호출 시 발생하는 에러를 나타내는 클래스입니다.
  */
 export class ApiError extends Error {
+  public readonly statusCode: number; // HTTP 상태 코드
+  public readonly url: string; // 에러가 발생한 URL
+  public readonly name: string;
+  public readonly message: string;
+  public readonly param?: string; // 에러가 발생한 파라미터 (선택적)
+  public readonly timestamp: string; // 에러 발생 시간 (ISO 8601 형식)
+
+  /**
+   * ApiError 생성자
+   *
+   * @param statusCode - HTTP 상태 코드 (예: 404, 500 등)
+   * @param url - 에러가 발생한 API URL
+   * @param apiErrorResponse - API에서 반환된 에러 응답 객체
+   */
   constructor(
-    public status: number,
-    message: string,
-    public data?: any,
+    statusCode: number,
+    url: string,
+    apiErrorResponse: ApiErrorResponse,
   ) {
-    super(message);
-    this.name = "ApiError";
+    super(apiErrorResponse.message);
+    this.statusCode = statusCode;
+    this.url = url;
+    this.param = apiErrorResponse.param;
+    this.name = apiErrorResponse.name;
+    this.message = apiErrorResponse.message;
+    this.timestamp = apiErrorResponse.timestamp || new Date().toISOString();
   }
+}
+
+/**
+ * API 500대에서 사용하는 공통 에러 형식입니다.
+ */
+export interface ApiErrorResponse {
+  name: string;
+  param: string;
+  message: string;
+  timestamp: string;
 }
 
 /**
