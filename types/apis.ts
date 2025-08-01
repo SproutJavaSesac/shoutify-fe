@@ -42,6 +42,84 @@ export interface ApiErrorResponse {
 }
 
 /**
+ * API Contract는 API 엔드포인트의 요청 및 응답 형식을 정의합니다.
+ * 각 엔드포인트에서 사용할 쿼리, 파라미터, 바디, 응답 타입을 제네릭으로 정의합니다.
+ *
+ * @template Q - 쿼리 파라미터 타입
+ * @template P - URL 파라미터 타입
+ * @template B - 요청 바디 타입
+ * @template R - 응답 데이터 타입
+ */
+export interface ApiContract<P = any, Q = any, B = any, R = any> {
+  paths?: P;
+  queries?: Q;
+  body?: B;
+  response?: R;
+}
+
+/** 개별 엔드포인트에서 사용할 헬퍼 */
+export type Endpoint<C extends ApiContract> = {
+  method: "GET" | "POST" | "PATCH" | "DELETE";
+  path: string;
+} & C;
+
+// ===== 유틸리티 타입들 =====
+
+/** ApiContract에서 각 속성을 안전하게 추출하는 헬퍼 타입들 */
+export type ExtractQueries<T extends ApiContract> =
+  T extends ApiContract<any, infer Q, any, any> ? Q : never;
+export type ExtractPaths<T extends ApiContract> =
+  T extends ApiContract<infer P, any, any, any> ? P : never;
+export type ExtractBody<T extends ApiContract> =
+  T extends ApiContract<any, any, infer B, any> ? B : never;
+export type ExtractResponse<T extends ApiContract> =
+  T extends ApiContract<any, any, any, infer R> ? R : never;
+
+/** GET 요청 (useApi)에서 사용하는 인자 타입 */
+export type ApiQueryArgs<T extends ApiContract> = {
+  [K in keyof Pick<T, "queries" | "paths"> as T[K] extends undefined
+    ? never
+    : K]: T[K];
+};
+
+/** Mutation 요청에서 사용하는 인자 타입 */
+export type MutationArgs<T extends ApiContract> = {
+  [K in keyof Pick<T, "queries" | "paths" | "body"> as T[K] extends undefined
+    ? never
+    : K]: NonNullable<T[K]>;
+} & {
+  // 실제로 정의된 속성들을 필수로 만듦
+  [K in keyof T as T[K] extends undefined
+    ? never
+    : K extends "paths" | "queries" | "body"
+      ? K
+      : never]-?: NonNullable<T[K]>;
+};
+
+/** Mutation, Delete 요청 (useMutation)에서 사용하는 path만 있는 인자 타입 */
+export type ApiPathArgs<T extends ApiContract> = {
+  [K in keyof Pick<T, "paths"> as T[K] extends undefined ? never : K]: T[K];
+};
+
+/** Pagination이 포함된 ApiContract 타입 체크 */
+export type IsPaginatedContract<T extends ApiContract> =
+  ExtractResponse<T> extends { pagination: any } ? true : false;
+
+/** Pagination에서 데이터 배열을 추출하는 타입 */
+export type ExtractPaginatedData<T extends ApiContract> =
+  ExtractResponse<T> extends { pagination: any }
+    ? ExtractResponse<T> extends Record<string, any>
+      ? {
+          [K in keyof ExtractResponse<T>]: ExtractResponse<T>[K] extends Array<
+            infer U
+          >
+            ? U
+            : never;
+        }[keyof ExtractResponse<T>]
+      : never
+    : never;
+
+/**
  * API 호출 hooks에서 사용하는 공통 응답 형식입니다.
  */
 export interface ApiState<T> {
@@ -95,6 +173,8 @@ export interface PaginationParams {
   order?: "ASC" | "DESC";
 }
 
+export type IdType = string | number;
+
 /**
  * API에서 공통으로 반환받는 페이지네이션 정보를 정의합니다.
  */
@@ -106,6 +186,35 @@ export interface Pagination {
   hasNext: boolean;
   hasPrevious: boolean;
 }
+
+/**
+ * 기본 페이지네이션 API 응답 구조
+ * @template T - 데이터 배열의 아이템 타입
+ */
+export interface BasePaginationResponse<T> {
+  pagination: Pagination;
+}
+
+/**
+ * 동적 키를 가진 페이지네이션 응답 타입 생성 유틸리티
+ * @template T - 데이터 배열의 아이템 타입
+ * @template K - 데이터 배열을 담는 키 이름 (예: 'posts', 'comments', 'profanities')
+ */
+export type PaginationResponse<
+  T,
+  K extends string,
+> = BasePaginationResponse<T> & {
+  [Key in K]: T[];
+};
+
+// 각 도메인별 응답 타입 정의를 위한 헬퍼 타입들
+export type PostsPaginationResponse<T> = PaginationResponse<T, "posts">;
+export type CommentsPaginationResponse<T> = PaginationResponse<T, "comments">;
+export type ProfanitiesPaginationResponse<T> = PaginationResponse<
+  T,
+  "profanities"
+>;
+export type MembersPaginationResponse<T> = PaginationResponse<T, "members">;
 
 /**
  * Pagination hook에서 반환하는 상태를 정의합니다.
