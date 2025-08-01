@@ -4,6 +4,7 @@ import {
   ApiOptions,
   ApiState,
   MutationState,
+  Pagination,
   PaginationOptions,
   PaginationParams,
   PaginationState,
@@ -131,33 +132,69 @@ export function usePagination<T>(
   fetchFn: (params: PaginationParams) => Promise<any>,
   options: PaginationOptions = {},
 ): PaginationState<T> {
-  const { size = 10, immediate = true, page = 1, sort, order } = options;
+  const { size = 10, immediate = true, page = 0, sort, order } = options;
 
   const [data, setData] = useState<T[]>([]);
-  const [currentPage, setCurrentPage] = useState(page);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalCount, setTotalCount] = useState(0);
-  const [pageSize, setPageSize] = useState(size);
+  const [paginationData, setPaginationData] = useState<Pagination>({
+    currentPage: page,
+    totalPages: 0,
+    totalCount: 0,
+    pageSize: size,
+    hasNext: false,
+    hasPrevious: false,
+  });
   const [loading, setLoading] = useState(immediate);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(
-    async (page: number) => {
+    async (pageNumber: number) => {
       try {
         setLoading(true);
         setError(null);
 
         const result = await fetchFn({
-          page,
-          size: pageSize,
+          page: pageNumber,
+          size: paginationData.pageSize,
           sort,
           order,
         });
 
-        setData(result.data);
-        setCurrentPage(result.currentPage);
-        setTotalPages(result.totalPages);
-        setTotalCount(result.totalCount);
+        // 응답 구조를 자동으로 감지하여 데이터 추출
+        let extractedData: T[];
+        let paginationInfo: any;
+
+        paginationInfo = result.pagination;
+
+        // 데이터 배열 추출 - 다양한 키 이름 지원
+        if (result.data) {
+          extractedData = result.data;
+        } else if (result.comments) {
+          extractedData = result.comments;
+        } else if (result.posts) {
+          extractedData = result.posts;
+        } else if (result.profanities) {
+          extractedData = result.profanities;
+        } else if (result.members) {
+          extractedData = result.members;
+        } else {
+          // 다른 가능한 키들을 찾아서 배열인 것을 선택
+          const possibleDataKey = Object.keys(result).find(
+            (key) => key !== "pagination" && Array.isArray(result[key]),
+          );
+          extractedData = possibleDataKey ? result[possibleDataKey] : [];
+        }
+
+        setData(extractedData);
+
+        // 모든 pagination 정보를 한 번에 업데이트 (성능 개선)
+        setPaginationData({
+          currentPage: pageNumber,
+          totalPages: paginationInfo.totalPages ?? 0,
+          totalCount: paginationInfo.totalCount ?? 0,
+          pageSize: paginationData.pageSize,
+          hasNext: pageNumber < (paginationInfo.totalPages ?? 0) - 1,
+          hasPrevious: pageNumber > 0,
+        });
       } catch (err) {
         const errorMessage =
           err instanceof ApiError
@@ -169,50 +206,45 @@ export function usePagination<T>(
         setLoading(false);
       }
     },
-    [fetchFn, pageSize, sort, order],
+    [fetchFn, paginationData.pageSize, sort, order],
   );
 
   const goToPage = useCallback(
-    (page: number) => {
-      if (page >= 1 && page <= totalPages) {
-        fetchData(page);
+    (pageNumber: number) => {
+      if (pageNumber >= 0 && pageNumber < paginationData.totalPages) {
+        fetchData(pageNumber);
       }
     },
-    [fetchData, totalPages],
+    [fetchData, paginationData.totalPages],
   );
 
   const nextPage = useCallback(() => {
-    if (currentPage < totalPages) {
-      goToPage(currentPage + 1);
+    if (paginationData.hasNext) {
+      goToPage(paginationData.currentPage + 1);
     }
-  }, [currentPage, totalPages, goToPage]);
+  }, [paginationData.hasNext, paginationData.currentPage, goToPage]);
 
   const prevPage = useCallback(() => {
-    if (currentPage > 1) {
-      goToPage(currentPage - 1);
+    if (paginationData.hasPrevious) {
+      goToPage(paginationData.currentPage - 1);
     }
-  }, [currentPage, goToPage]);
+  }, [paginationData.hasPrevious, paginationData.currentPage, goToPage]);
 
   const refetch = useCallback(() => {
-    fetchData(currentPage);
-  }, [fetchData, currentPage]);
+    fetchData(paginationData.currentPage);
+  }, [fetchData, paginationData.currentPage]);
 
   useEffect(() => {
     if (immediate) {
-      fetchData(currentPage - 1);
+      fetchData(page);
     }
-  }, [fetchData, immediate, currentPage]);
+  }, [fetchData, immediate, page]);
 
   return {
     data,
-    currentPage,
-    totalPages,
-    totalCount,
-    pageSize,
     loading,
     error,
-    hasNext: currentPage < totalPages,
-    hasPrevious: currentPage > 1,
+    ...paginationData, // Pagination 객체의 모든 속성을 spread
     goToPage,
     nextPage,
     prevPage,
