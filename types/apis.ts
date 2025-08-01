@@ -65,6 +65,9 @@ export type Endpoint<C extends ApiContract> = {
 
 // ===== 유틸리티 타입들 =====
 
+/** PaginationParams의 키들을 추출하는 타입 */
+type PaginationKeys = keyof PaginationParams;
+
 /** ApiContract에서 각 속성을 안전하게 추출하는 헬퍼 타입들 */
 export type ExtractQueries<T extends ApiContract> =
   T extends ApiContract<any, infer Q, any, any> ? Q : never;
@@ -81,6 +84,24 @@ export type ApiQueryArgs<T extends ApiContract> = {
     ? never
     : K]: T[K];
 };
+
+/** 페이지네이션을 포함한 GET 요청에서 사용하는 인자 타입 */
+export type ApiPaginationArgs<T extends ApiContract<any, any, any, any>> = {
+  [K in keyof Pick<T, "paths"> as T[K] extends undefined ? never : K]: T[K];
+} & {
+  queries?: (T extends ApiContract<any, infer Q, any, any> ? Q : never) &
+    PaginationParams;
+};
+
+/** 페이지네이션을 제외한 쿼리 필터만 추출하는 타입 */
+export type ApiQueryFilters<T extends ApiContract<any, any, any, any>> = Omit<
+  NonNullable<ApiPaginationArgs<T>["queries"]>,
+  PaginationKeys
+>;
+
+/** 페이지네이션 관련 매개변수만 추출하는 타입 */
+export type ApiPaginationParams<T extends ApiContract<any, any, any, any>> =
+  Pick<NonNullable<ApiPaginationArgs<T>["queries"]>, PaginationKeys>;
 
 /** Mutation 요청에서 사용하는 인자 타입 */
 export type MutationArgs<T extends ApiContract> = {

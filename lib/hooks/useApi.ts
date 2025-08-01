@@ -3,7 +3,9 @@ import {
   ApiContract,
   ApiError,
   ApiOptions,
+  ApiPaginationArgs,
   ApiQueryArgs,
+  ApiQueryFilters,
   ApiState,
   ExtractPaginatedData,
   ExtractResponse,
@@ -11,7 +13,6 @@ import {
   MutationState,
   Pagination,
   PaginationOptions,
-  PaginationParams,
   PaginationState,
 } from "@/types/apis";
 
@@ -128,10 +129,8 @@ export function useMutation<T extends ApiContract<any, any, any, any>>(
  * 페이지네이션 전용 훅
  * ApiContract가 pagination 응답을 포함하는 경우에만 사용 가능합니다.
  */
-export function usePaginatedApi<T extends ApiContract<any, any, any, any>>(
-  fetchFn: (
-    args: ApiQueryArgs<T> & { pagination: PaginationParams },
-  ) => Promise<ExtractResponse<T>>,
+export function usePagination<T extends ApiContract<any, any, any, any>>(
+  fetchFn: (args: ApiPaginationArgs<T>) => Promise<ExtractResponse<T>>,
   options: PaginationOptions = {},
 ): PaginationState<ExtractPaginatedData<T>> {
   type DataType = ExtractPaginatedData<T>;
@@ -151,15 +150,13 @@ export function usePaginatedApi<T extends ApiContract<any, any, any, any>>(
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(
-    async (
-      pageNumber: number,
-      extraArgs?: Omit<ApiQueryArgs<T>, "pagination">,
-    ) => {
+    async (pageNumber: number, extraArgs?: ApiQueryFilters<T>) => {
       try {
         setLoading(true);
         setError(null);
 
-        const paginationParams: PaginationParams = {
+        const queriesWithPagination = {
+          ...extraArgs,
           page: pageNumber,
           size, // ← 무한 렌더링 방지 위해 결과값 paginationInfo.pageSize 대신 외부값 options.size 사용
           sort,
@@ -167,9 +164,8 @@ export function usePaginatedApi<T extends ApiContract<any, any, any, any>>(
         };
 
         const result = await fetchFn({
-          ...extraArgs,
-          pagination: paginationParams,
-        } as ApiQueryArgs<T> & { pagination: PaginationParams });
+          queries: queriesWithPagination,
+        } as ApiPaginationArgs<T>);
 
         // 응답에서 pagination 정보 추출
         const paginationData = (result as any).pagination as Pagination;
@@ -207,7 +203,7 @@ export function usePaginatedApi<T extends ApiContract<any, any, any, any>>(
   );
 
   const goToPage = useCallback(
-    (pageNumber: number, extraArgs?: Omit<ApiQueryArgs<T>, "pagination">) => {
+    (pageNumber: number, extraArgs?: ApiQueryFilters<T>) => {
       if (pageNumber >= 0 && pageNumber < paginationInfo.totalPages) {
         fetchData(pageNumber, extraArgs);
       }
@@ -216,7 +212,7 @@ export function usePaginatedApi<T extends ApiContract<any, any, any, any>>(
   );
 
   const nextPage = useCallback(
-    (extraArgs?: Omit<ApiQueryArgs<T>, "pagination">) => {
+    (extraArgs?: ApiQueryFilters<T>) => {
       if (paginationInfo.hasNext) {
         goToPage(paginationInfo.currentPage + 1, extraArgs);
       }
@@ -225,7 +221,7 @@ export function usePaginatedApi<T extends ApiContract<any, any, any, any>>(
   );
 
   const prevPage = useCallback(
-    (extraArgs?: Omit<ApiQueryArgs<T>, "pagination">) => {
+    (extraArgs?: ApiQueryFilters<T>) => {
       if (paginationInfo.hasPrevious) {
         goToPage(paginationInfo.currentPage - 1, extraArgs);
       }
@@ -234,7 +230,7 @@ export function usePaginatedApi<T extends ApiContract<any, any, any, any>>(
   );
 
   const refetch = useCallback(
-    (extraArgs?: Omit<ApiQueryArgs<T>, "pagination">) => {
+    (extraArgs?: ApiQueryFilters<T>) => {
       fetchData(paginationInfo.currentPage, extraArgs);
     },
     [fetchData, paginationInfo.currentPage],
