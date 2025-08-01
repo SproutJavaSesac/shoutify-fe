@@ -27,7 +27,14 @@ class ApiClient {
     params?: Record<string, any>,
     authenticated = true,
   ): Promise<T> {
-    const queryString = params ? `?${new URLSearchParams(params)}` : "";
+    // params에서 undefined, null 값 제거
+    const queryString = params
+      ? `?${new URLSearchParams(
+          Object.entries(params).filter(
+            ([, value]) => value !== undefined && value !== null,
+          ),
+        )}`
+      : "";
     return this.request<T>(`${url}${queryString}`, {
       method: "GET",
       auth: authenticated,
