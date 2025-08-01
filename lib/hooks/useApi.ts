@@ -19,7 +19,7 @@ import {
  */
 export function useApi<T>(
   apiCall: () => Promise<T>,
-  options: ApiOptions = {},
+  options: ApiOptions<T> = {},
 ): ApiState<T> {
   const { immediate = true, onSuccess, onError } = options;
 
@@ -72,7 +72,7 @@ export function useApi<T>(
  */
 export function useMutation<T, P>(
   mutationFn: (args: P) => Promise<T>,
-  options: ApiOptions = {},
+  options: ApiOptions<T> = {},
 ): MutationState<T> {
   const { onSuccess, onError } = options;
 

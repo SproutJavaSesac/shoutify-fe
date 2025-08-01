@@ -24,10 +24,12 @@ export interface ApiState<T> {
 
 /**
  * get이 아닌 http method를 사용하는 API에서 성공, 실패 시 동작을 정의하는 옵션입니다.
+ *
+ * @template R - API 호출의 성공 시 반환되는 데이터 타입
  */
-export interface ApiOptions {
+export interface ApiOptions<R> {
   immediate?: boolean;
-  onSuccess?: (data: any) => void;
+  onSuccess?: (data: R) => void;
   onError?: (error: string) => void;
 }
 
