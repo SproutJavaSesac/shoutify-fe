@@ -12,8 +12,10 @@ import {
   Shield,
   Users,
 } from "lucide-react";
+import { ProfanityManagement } from "./profanity-management";
+import { ReportManagement } from "./report-management";
 
-export function AdminPanelSimple() {
+export function AdminPanel() {
   const [activeTab, setActiveTab] = useState("overview");
 
   return (
@@ -168,37 +170,11 @@ export function AdminPanelSimple() {
           </TabsContent>
 
           <TabsContent value="reports" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>신고 관리</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Flag className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium mb-2">신고 관리 기능</h3>
-                  <p className="text-muted-foreground">
-                    신고된 콘텐츠 관리 기능이 로드됩니다.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <ReportManagement />
           </TabsContent>
 
           <TabsContent value="profanities" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>금지어 관리</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Shield className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium mb-2">금지어 관리 기능</h3>
-                  <p className="text-muted-foreground">
-                    금지어 관리 기능이 로드됩니다.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <ProfanityManagement />
           </TabsContent>
 
           <TabsContent value="users" className="mt-6">
