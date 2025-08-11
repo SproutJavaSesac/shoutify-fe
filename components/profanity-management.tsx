@@ -1,11 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import {
+  FilterBar,
+  FilterSearchBar,
+  FilterSelect,
+  FilterSortSelect,
+  Pagination,
+} from "@/components/commons";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -15,13 +27,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   Table,
   TableBody,
   TableCell,
@@ -29,15 +34,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  AlertCircle,
-  Edit,
-  Filter,
-  Plus,
-  Search,
-  Shield,
-  Trash2,
-} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { PROFANITIES_CATEGORY_OPTIONS } from "@/constants/profanities";
 import { useToast } from "@/hooks/use-toast";
 import {
   useCreateProfanity,
@@ -45,13 +43,13 @@ import {
   useProfanityList,
   useUpdateProfanity,
 } from "@/lib/hooks/useProfanities";
-import { PROFANITIES_CATEGORY_OPTIONS } from "@/constants/profanities";
 import {
   Profanity,
   ProfanityCategory,
   ProfanitySortType,
 } from "@/types/profanities";
-import { Pagination } from "@/components/commons";
+import { AlertCircle, Edit, Filter, Plus, Shield, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 export function ProfanityManagement() {
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -97,6 +95,27 @@ export function ProfanityManagement() {
     setCurrentPage(0);
     refetch();
   };
+
+  const handleResetFilters = () => {
+    setSearchKeyword("");
+    setSelectedCategory(undefined);
+    setSortBy("createdAt");
+    setOrderBy("DESC");
+    setCurrentPage(0);
+    refetch();
+  };
+
+  // 정렬 옵션들
+  const sortOptions = [
+    { value: "createdAt-DESC", label: "최신 등록순" },
+    { value: "createdAt-ASC", label: "오래된 순" },
+    { value: "updatedAt-DESC", label: "최근 수정순" },
+    { value: "updatedAt-ASC", label: "오래된 수정순" },
+    { value: "original-ASC", label: "단어 A-Z" },
+    { value: "original-DESC", label: "단어 Z-A" },
+    { value: "id-ASC", label: "ID 순" },
+    { value: "id-DESC", label: "ID 역순" },
+  ];
 
   const handleCreateProfanity = async () => {
     if (!formData.original.trim()) {
@@ -310,76 +329,47 @@ export function ProfanityManagement() {
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="금지어 검색..."
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
-                  className="pl-10"
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                />
-              </div>
-            </div>
+      <FilterBar title="금지어 필터" onReset={handleResetFilters}>
+        <FilterSearchBar
+          onSearch={(query) => {
+            setSearchKeyword(query);
+            handleSearch();
+          }}
+          placeholder="금지어 검색..."
+          initialValue={searchKeyword}
+          className="flex-1"
+        />
 
-            <Select
-              value={selectedCategory ?? "__ALL__"}
-              onValueChange={(value) =>
-                setSelectedCategory(
-                  value === "__ALL__" ? undefined : (value as ProfanityCategory)
-                )
-              }
-            >
-              <SelectTrigger className="w-48">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="분류 필터" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__ALL__">전체</SelectItem>
-                {PROFANITIES_CATEGORY_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <FilterSelect
+          options={PROFANITIES_CATEGORY_OPTIONS}
+          value={selectedCategory ?? "__ALL__"}
+          onValueChange={(value) =>
+            setSelectedCategory(
+              value === "__ALL__" ? undefined : (value as ProfanityCategory)
+            )
+          }
+          placeholder="분류 필터"
+          icon={<Filter className="h-4 w-4 mr-2" />}
+          className="w-32"
+          allOptionLabel="전체"
+        />
 
-            <Select
-              value={`${sortBy}-${orderBy}`}
-              onValueChange={(value) => {
-                const [sort, order] = value.split("-") as [
-                  ProfanitySortType,
-                  "ASC" | "DESC",
-                ];
-                setSortBy(sort);
-                setOrderBy(order);
-              }}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="createdAt-DESC">최신 등록순</SelectItem>
-                <SelectItem value="createdAt-ASC">오래된 순</SelectItem>
-                <SelectItem value="updatedAt-DESC">최근 수정순</SelectItem>
-                <SelectItem value="updatedAt-ASC">오래된 수정순</SelectItem>
-                <SelectItem value="original-ASC">단어 A-Z</SelectItem>
-                <SelectItem value="original-DESC">단어 Z-A</SelectItem>
-                <SelectItem value="id-ASC">ID 순</SelectItem>
-                <SelectItem value="id-DESC">ID 역순</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button onClick={handleSearch} disabled={loading}>
-              검색
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        <FilterSortSelect
+          options={sortOptions}
+          value={`${sortBy}-${orderBy}`}
+          onValueChange={(value) => {
+            const [sort, order] = value.split("-") as [
+              ProfanitySortType,
+              "ASC" | "DESC",
+            ];
+            setSortBy(sort);
+            setOrderBy(order);
+            handleSearch();
+          }}
+          placeholder="정렬 방식"
+          className="w-32"
+        />
+      </FilterBar>
 
       {/* Results */}
       <Card>

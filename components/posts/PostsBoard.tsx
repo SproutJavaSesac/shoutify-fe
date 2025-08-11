@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
-import PostsList from "./PostsList";
+import {
+  FilterBar,
+  FilterSearchBar,
+  FilterSortSelect,
+} from "@/components/commons";
 import type { ConceptType, PostSortType } from "@/types/posts";
-import { CONCEPT_OPTIONS } from "@/constants/posts";
+import { useState } from "react";
+import PostsList from "./PostsList";
 
 const SORT_OPTIONS: { value: PostSortType; label: string }[] = [
   { value: "createdAt", label: "최신순" },
@@ -12,24 +16,18 @@ const SORT_OPTIONS: { value: PostSortType; label: string }[] = [
 ];
 
 export default function PostsBoard() {
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedConcept, setSelectedConcept] = useState<ConceptType>("ALL");
   const [selectedSort, setSelectedSort] = useState<PostSortType>("createdAt");
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = () => {
-    setSearchQuery(searchKeyword.trim());
+    // 검색 로직은 FilterSearchBar의 onSearch에서 처리
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  };
-
-  const handleClearSearch = () => {
+  const handleResetFilters = () => {
     setSearchKeyword("");
-    setSearchQuery("");
+    setSelectedConcept("ALL");
+    setSelectedSort("createdAt");
   };
 
   return (
@@ -41,111 +39,29 @@ export default function PostsBoard() {
         </p>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div>
-            <label
-              htmlFor={"concept"}
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              컨셉
-            </label>
-            <select
-              id="concept"
-              value={selectedConcept}
-              onChange={(e) =>
-                setSelectedConcept(e.target.value as ConceptType)
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {CONCEPT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label
-              htmlFor={"sort"}
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              정렬
-            </label>
-            <select
-              id="sort"
-              value={selectedSort}
-              onChange={(e) => setSelectedSort(e.target.value as PostSortType)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label
-              htmlFor={"search"}
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              검색
-            </label>
-            <div className="flex">
-              <input
-                id="search"
-                type="text"
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                onKeyUp={handleKeyPress}
-                placeholder="게시글 검색..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                onClick={handleSearch}
-                className="px-4 py-2 bg-blue-500 text-white rounded-r-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                검색
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {searchQuery && (
-          <div className="flex items-center justify-between bg-blue-50 px-4 py-2 rounded">
-            <span className="text-sm text-blue-700">
-              '<strong>{searchQuery}</strong>' 검색 결과
-            </span>
-            <button
-              onClick={handleClearSearch}
-              className="text-sm text-blue-600 hover:text-blue-800"
-            >
-              검색 초기화
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-center space-x-4 mb-6 text-sm text-gray-600">
-        <span>
-          <strong>컨셉:</strong>{" "}
-          {CONCEPT_OPTIONS.find((o) => o.value === selectedConcept)?.label}
-        </span>
-        <span>
-          <strong>정렬:</strong>{" "}
-          {SORT_OPTIONS.find((o) => o.value === selectedSort)?.label}
-        </span>
-      </div>
+      {/* 필터 - 깔끔한 드롭다운 스타일 */}
+      <FilterBar title="게시글 필터" onReset={handleResetFilters}>
+        <FilterSortSelect
+          options={SORT_OPTIONS}
+          value={selectedSort}
+          onValueChange={(value) => setSelectedSort(value as PostSortType)}
+          placeholder="정렬 방식"
+          className="w-28"
+        />
+        <FilterSearchBar
+          onSearch={(query) => setSearchKeyword(query)}
+          placeholder="제목, 내용, 작성자로 검색..."
+          initialValue={searchKeyword}
+          className="flex-1"
+        />
+      </FilterBar>
 
       <PostsList
-        key={`${selectedConcept}-${selectedSort}-${searchQuery}`}
+        key={`${selectedConcept}-${selectedSort}-${searchKeyword}`}
         initialSort={selectedSort}
         concept={selectedConcept}
         limit={10}
-        keyword={searchQuery}
+        keyword={searchKeyword}
       />
     </div>
   );
