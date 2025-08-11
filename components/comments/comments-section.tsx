@@ -24,7 +24,7 @@ import { Comment, CommentSortType } from "@/types/comments";
 import { utcToLocaleDateString } from "@/lib/utils";
 import { EMOTION_TO_EMOJI_MAP } from "@/constants/reactions";
 import { ReactionLabelType } from "@/types/reactions";
-import { Pagination } from "@/components/commons";
+import { Pagination, ReactionButtons } from "@/components/commons";
 
 export function CommentsSection({
   postId,
@@ -138,6 +138,7 @@ export function CommentsSection({
         description: errorMessage,
         variant: "destructive",
       });
+      // 실패 시 상태 롤백은 필요없음 (미리 상태 업데이트하지 않으므로)
     },
   });
 
@@ -154,6 +155,7 @@ export function CommentsSection({
         description: errorMessage,
         variant: "destructive",
       });
+      // 실패 시 상태 롤백은 필요없음 (미리 상태 업데이트하지 않으므로)
     },
   });
 
@@ -170,6 +172,7 @@ export function CommentsSection({
         description: errorMessage,
         variant: "destructive",
       });
+      // 실패 시 상태 롤백은 필요없음 (미리 상태 업데이트하지 않으므로)
     },
   });
 
@@ -188,26 +191,41 @@ export function CommentsSection({
 
     // 현재 선택된 반응과 같은 반응을 다시 클릭한 경우 - 삭제
     if (currentReaction === reactionType) {
+      console.log("Deleting comment reaction:", {
+        postId,
+        commentId,
+        reactionType,
+      });
       deleteCommentReaction({
         paths: { postId, commentId },
       });
-      setMyReactions((prev) => ({ ...prev, [commentId]: null }));
+      // 성공 시에만 상태 업데이트 (onSuccess 콜백에서 처리)
     }
     // 처음 반응을 선택하는 경우 - 생성
     else if (!currentReaction) {
+      console.log("Creating comment reaction:", {
+        postId,
+        commentId,
+        reactionType,
+      });
       createCommentReaction({
         paths: { postId, commentId },
         body: { type: reactionType },
       });
-      setMyReactions((prev) => ({ ...prev, [commentId]: reactionType }));
+      // 성공 시에만 상태 업데이트 (onSuccess 콜백에서 처리)
     }
     // 다른 반응으로 변경하는 경우 - 수정
     else {
+      console.log("Updating comment reaction:", {
+        postId,
+        commentId,
+        reactionType,
+      });
       updateCommentReaction({
         paths: { postId, commentId },
         body: { type: reactionType },
       });
-      setMyReactions((prev) => ({ ...prev, [commentId]: reactionType }));
+      // 성공 시에만 상태 업데이트 (onSuccess 콜백에서 처리)
     }
   };
 
@@ -371,81 +389,18 @@ export function CommentsSection({
         {/* 댓글 액션 (반응, 답글) */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            {/* 반응 버튼들 - 기존 반응만 표시 */}
-            {comment.reactions && (
-              <div className="flex items-center space-x-1">
-                {Object.entries(comment.reactions).map(
-                  ([reactionType, count]) => {
-                    if (count === 0) return null;
-
-                    // 사용자가 이 반응을 선택했는지 확인
-                    const isSelected =
-                      myReactions[comment.commentId] === reactionType;
-
-                    return (
-                      <div key={reactionType} className="flex items-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={`h-6 w-6 p-0 text-xs ${
-                            isSelected ? "bg-blue-100 ring-1 ring-blue-300" : ""
-                          } hover:bg-gray-100`}
-                          onClick={() =>
-                            handleCommentReaction(
-                              comment.commentId,
-                              reactionType as ReactionLabelType
-                            )
-                          }
-                        >
-                          {
-                            EMOTION_TO_EMOJI_MAP[
-                              reactionType as ReactionLabelType
-                            ]
-                          }
-                        </Button>
-                        <span className="text-xs text-gray-500 ml-1">
-                          {count}
-                        </span>
-                      </div>
-                    );
-                  }
-                )}
-              </div>
-            )}
-
-            {/* 새 반응 추가 버튼 (로그인한 사용자만) */}
-            {user && (
-              <div className="flex items-center space-x-1">
-                {(Object.keys(EMOTION_TO_EMOJI_MAP) as ReactionLabelType[]).map(
-                  (reactionType) => {
-                    // 이미 표시된 반응은 제외
-                    if (comment.reactions?.[reactionType] > 0) return null;
-
-                    // 사용자가 이 반응을 선택했는지 확인
-                    const isSelected =
-                      myReactions[comment.commentId] === reactionType;
-
-                    return (
-                      <Button
-                        key={reactionType}
-                        variant="ghost"
-                        size="sm"
-                        className={`h-6 w-6 p-0 text-xs ${
-                          isSelected
-                            ? "bg-blue-100 ring-1 ring-blue-300 opacity-100"
-                            : "opacity-50 hover:opacity-100"
-                        } hover:bg-gray-100`}
-                        onClick={() =>
-                          handleCommentReaction(comment.commentId, reactionType)
-                        }
-                      >
-                        {EMOTION_TO_EMOJI_MAP[reactionType]}
-                      </Button>
-                    );
-                  }
-                )}
-              </div>
-            )}
+            {/* 반응 버튼들 */}
+            <ReactionButtons
+              reactions={comment.reactions || {}}
+              myReaction={myReactions[comment.commentId]}
+              onReactionClick={(reactionType) =>
+                handleCommentReaction(comment.commentId, reactionType)
+              }
+              isAuthenticated={!!user}
+              size="sm"
+              showAllReactions={true}
+              enableNewReactions={true}
+            />
           </div>
 
           {/* 답글 버튼 (대댓글까지 표시) */}
