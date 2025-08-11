@@ -31,7 +31,7 @@ export interface RankingCategoryOption {
   value: RankingCategoryType;
 }
 
-export type RankingPeriodType = "DAILY" | "WEEKLY" | "MONTHLY" ;
+export type RankingPeriodType = "DAILY" | "WEEKLY" | "MONTHLY";
 
 export interface RankingPeriodTypeOption {
   label: string;

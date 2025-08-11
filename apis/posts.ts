@@ -1,13 +1,10 @@
 import { api } from "./client";
 import {
   Post,
-  PostCreateBodyRequest,
-  PostCreateResponse,
-  PostPaginationResponse,
-  PostPaginationQueryRequest,
   PostCreateContract,
   PostDeleteContract,
   PostPaginationContract,
+  PostPaginationResponse,
 } from "@/types/posts";
 import { POST_API_ENDPOINTS } from "@/constants/posts";
 import {

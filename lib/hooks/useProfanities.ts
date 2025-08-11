@@ -5,14 +5,9 @@ import {
   ProfanityListResponse,
   ProfanityQueryParams,
   ProfanityUpdateRequest,
-  ProfanityUpdateResponse,
+  ProfanityUpdateResponse
 } from "@/types/profanities";
-import {
-  createProfanity,
-  deleteProfanity,
-  getProfanities,
-  updateProfanity,
-} from "@/apis/profanities";
+import { createProfanity, deleteProfanity, getProfanities, updateProfanity } from "@/apis/profanities";
 
 /**
  * 금지어 목록 조회 훅

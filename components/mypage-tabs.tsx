@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Award,
+  ChevronDown,
+  ChevronUp,
   ExternalLink,
+  ExternalLinkIcon,
   Eye,
   EyeOff,
   Heart,
@@ -18,9 +21,6 @@ import {
   MessageCircle,
   Settings,
   Trash2,
-  ExternalLinkIcon,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
@@ -28,7 +28,7 @@ import { useMyComments, useMyInfo, useMyPosts } from "@/lib/hooks/useMembers";
 import { MEMBER_ROUTES } from "@/constants/members";
 import { POST_ROUTES } from "@/constants/posts";
 import type { Pagination } from "@/types/apis";
-import { hidePost, unhidePost, deletePost } from "@/apis/posts";
+import { deletePost, hidePost, unhidePost } from "@/apis/posts";
 import { toast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -222,11 +222,11 @@ export function MyPageTabs() {
   // 파라미터 객체를 메모이제이션하여 무한 렌더링 방지
   const postsParams = useMemo(
     () => ({ page: postsPage, size: 5 }),
-    [postsPage]
+    [postsPage],
   );
   const commentsParams = useMemo(
     () => ({ page: commentsPage, size: 10 }),
-    [commentsPage]
+    [commentsPage],
   );
 
   const {
@@ -253,7 +253,7 @@ export function MyPageTabs() {
 
   const handlePostAction = async (
     postId: number,
-    action: "hide" | "unhide" | "delete"
+    action: "hide" | "unhide" | "delete",
   ) => {
     if (loadingActions.has(postId)) return;
 
@@ -531,7 +531,7 @@ export function MyPageTabs() {
                           onClick={() =>
                             handlePostAction(
                               post.postId,
-                              post.isHidden ? "unhide" : "hide"
+                              post.isHidden ? "unhide" : "hide",
                             )
                           }
                         >

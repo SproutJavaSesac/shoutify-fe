@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,37 +30,35 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Flag,
-  Eye,
-  Check,
-  X,
-  Search,
-  Filter,
   AlertTriangle,
-  Clock,
   CheckCircle,
-  XCircle,
-  User,
-  MessageSquare,
+  Clock,
+  Eye,
+  Filter,
+  Flag,
   Loader2,
+  MessageSquare,
+  Search,
+  User,
+  XCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useReportList, useProcessReport } from "@/lib/hooks/useReports";
+import { useProcessReport, useReportList } from "@/lib/hooks/useReports";
 import { getPost } from "@/apis/posts";
 import { getComment } from "@/apis/comments";
 import { Post } from "@/types/posts";
 import { Comment } from "@/types/comments";
 import {
+  REPORT_ACTION_OPTIONS,
   REPORT_REASON_OPTIONS,
   REPORT_STATUS_OPTIONS,
-  REPORT_ACTION_OPTIONS,
 } from "@/constants/reports";
 import {
-  ReportStatusType,
-  ReportReasonType,
-  ReportProcessActionType,
-  ReportSortType,
   Report,
+  ReportProcessActionType,
+  ReportReasonType,
+  ReportSortType,
+  ReportStatusType,
 } from "@/types/reports";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -295,7 +293,7 @@ export function ReportManagement() {
               value={selectedStatus ?? "__ALL__"}
               onValueChange={(value) =>
                 setSelectedStatus(
-                  value === "__ALL__" ? undefined : (value as ReportStatusType)
+                  value === "__ALL__" ? undefined : (value as ReportStatusType),
                 )
               }
             >
@@ -317,7 +315,7 @@ export function ReportManagement() {
               value={selectedReason ?? "__ALL__"}
               onValueChange={(value) =>
                 setSelectedReason(
-                  value === "__ALL__" ? undefined : (value as ReportReasonType)
+                  value === "__ALL__" ? undefined : (value as ReportReasonType),
                 )
               }
             >
@@ -585,10 +583,10 @@ export function ReportManagement() {
                                                 작성일:{" "}
                                                 {format(
                                                   new Date(
-                                                    originalContent.post.createdAt
+                                                    originalContent.post.createdAt,
                                                   ),
                                                   "yyyy-MM-dd HH:mm",
-                                                  { locale: ko }
+                                                  { locale: ko },
                                                 )}
                                               </div>
                                             </div>
@@ -626,10 +624,10 @@ export function ReportManagement() {
                                                     | 작성일:{" "}
                                                     {format(
                                                       new Date(
-                                                        originalContent.post.createdAt
+                                                        originalContent.post.createdAt,
                                                       ),
                                                       "yyyy-MM-dd HH:mm",
-                                                      { locale: ko }
+                                                      { locale: ko },
                                                     )}
                                                   </div>
                                                 </div>
@@ -670,10 +668,10 @@ export function ReportManagement() {
                                                   작성일:{" "}
                                                   {format(
                                                     new Date(
-                                                      originalContent.comment.createdAt
+                                                      originalContent.comment.createdAt,
                                                     ),
                                                     "yyyy-MM-dd HH:mm",
-                                                    { locale: ko }
+                                                    { locale: ko },
                                                   )}
                                                 </div>
                                               </div>
@@ -742,15 +740,15 @@ export function ReportManagement() {
                       >
                         {i + 1}
                       </Button>
-                    )
+                    ),
                   )}
                   <Button
                     onClick={() =>
                       setCurrentPage(
                         Math.min(
                           data.pagination.totalPages - 1,
-                          currentPage + 1
-                        )
+                          currentPage + 1,
+                        ),
                       )
                     }
                     disabled={currentPage >= data.pagination.totalPages - 1}

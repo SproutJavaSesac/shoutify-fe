@@ -23,7 +23,7 @@ export function loginWithGoogle(redirectUrl?: string): void {
 export async function checkLoginStatus(): Promise<LoginStatusResponse> {
   try {
     return await api.get<LoginStatusResponse>(
-      AUTH_API_ENDPOINTS.CHECK_LOGIN_STATUS
+      AUTH_API_ENDPOINTS.CHECK_LOGIN_STATUS,
     );
   } catch (error: any) {
     // 500/401 에러는 로그인하지 않은 상태로 처리 (백엔드 NullPointerException)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,59 +13,39 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  TrendingUp,
-  TrendingDown,
-  User,
   Calendar as CalendarIcon,
-  PenTool,
-  MessageCircle,
-  Star,
-  Trophy,
-  RotateCcw,
   ChevronLeft,
   ChevronRight,
+  MessageCircle,
+  PenTool,
+  Star,
+  TrendingDown,
+  TrendingUp,
+  Trophy,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import {
-  format,
-  startOfWeek,
-  startOfMonth,
-  startOfYear,
-  getWeek,
-  getYear,
-  getMonth,
-  addWeeks,
   addMonths,
+  addWeeks,
   addYears,
-  subWeeks,
-  subMonths,
-  subYears,
-  addDays,
-  subDays,
-  endOfWeek,
   endOfMonth,
-  endOfYear,
-  isSameWeek,
-  isSameMonth,
-  isSameYear,
-  isBefore,
+  endOfWeek,
+  format,
+  getYear,
   isAfter,
-  eachDayOfInterval,
-  getWeeksInMonth,
-  startOfMonth as startOfMonthFn,
+  isSameMonth,
+  isSameWeek,
+  startOfMonth,
+  startOfWeek,
+  subWeeks,
+  subYears,
 } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useRankingList } from "@/lib/hooks/useRankings";
-import { RankingPeriodType, RankingCategoryType } from "@/types/rankings";
+import { RankingCategoryType, RankingPeriodType } from "@/types/rankings";
 import { MEMBER_ROUTES } from "@/constants/members";
 
 const getTrendIcon = (trend: string) => {
@@ -109,7 +89,7 @@ const getRankChangeDisplay = (rankChange: string) => {
         "text-xs px-2 py-1 font-medium flex items-center gap-1",
         isUp
           ? "border-green-300 text-green-700 bg-green-50"
-          : "border-red-300 text-red-700 bg-red-50"
+          : "border-red-300 text-red-700 bg-red-50",
       )}
     >
       {isUp ? (
@@ -125,7 +105,7 @@ const getRankChangeDisplay = (rankChange: string) => {
 // 기간에 따른 시작 날짜 계산
 const getStartDateByPeriod = (
   period: RankingPeriodType,
-  baseDate: Date = new Date()
+  baseDate: Date = new Date(),
 ) => {
   switch (period) {
     case "DAILY":
@@ -186,7 +166,7 @@ const PeriodCalendar = ({
 
   const navigatePeriod = (
     direction: "prev" | "next",
-    event: React.MouseEvent
+    event: React.MouseEvent,
   ) => {
     event.preventDefault();
     event.stopPropagation();
@@ -692,7 +672,7 @@ export function RankingTabs() {
                 variant="outline"
                 className={cn(
                   "justify-center text-center font-normal",
-                  !selectedDate && "text-muted-foreground"
+                  !selectedDate && "text-muted-foreground",
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
@@ -782,7 +762,7 @@ export function RankingTabs() {
                           "relative flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 hover:shadow-md",
                           ranking.rank <= 3
                             ? "bg-gradient-to-r from-yellow-50/50 to-orange-50/50 border-yellow-200"
-                            : "bg-card hover:bg-accent/30 border-border"
+                            : "bg-card hover:bg-accent/30 border-border",
                         )}
                       >
                         {/* 순위 배지 */}
@@ -805,7 +785,7 @@ export function RankingTabs() {
                                 ranking.rank === 2 &&
                                   "bg-gray-400 text-white border-gray-300",
                                 ranking.rank === 3 &&
-                                  "bg-orange-500 text-white border-orange-400"
+                                  "bg-orange-500 text-white border-orange-400",
                               )}
                             >
                               {ranking.rank}
@@ -829,7 +809,7 @@ export function RankingTabs() {
                           <div className="flex items-center gap-2 mb-1">
                             <Link
                               href={MEMBER_ROUTES.MEMBER_PROFILE(
-                                ranking.memberNickname
+                                ranking.memberNickname,
                               )}
                               className="font-semibold hover:text-blue-600 transition-colors truncate text-lg"
                             >

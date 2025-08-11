@@ -7,55 +7,19 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Plus,
-  Edit,
-  Trash2,
-  Search,
-  Filter,
-  Shield,
-  AlertCircle,
-  CheckCircle,
-} from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AlertCircle, Edit, Filter, Plus, Search, Shield, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
-  useProfanityList,
   useCreateProfanity,
-  useUpdateProfanity,
   useDeleteProfanity,
+  useProfanityList,
+  useUpdateProfanity
 } from "@/lib/hooks/useProfanities";
-import {
-  PROFANITIES_CATEGORY_OPTIONS,
-  PROFANITIES_SORT_OPTIONS,
-} from "@/constants/profanities";
-import {
-  ProfanityCategory,
-  ProfanitySortType,
-  ProfanityCreateRequest,
-  Profanity,
-} from "@/types/profanities";
+import { PROFANITIES_CATEGORY_OPTIONS } from "@/constants/profanities";
+import { Profanity, ProfanityCategory, ProfanitySortType } from "@/types/profanities";
 
 export function ProfanityManagement() {
   const [searchKeyword, setSearchKeyword] = useState("");

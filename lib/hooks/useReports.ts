@@ -6,15 +6,10 @@ import {
   ReportPostCreateResponse,
   ReportProcessRequest,
   ReportProcessResponse,
-  ReportQueryParams,
+  ReportQueryParams
 } from "@/types/reports";
 import { useEffect, useState } from "react";
-import {
-  createCommentReport,
-  createPostReport,
-  getReports,
-  processReport,
-} from "@/apis/reports";
+import { createCommentReport, createPostReport, getReports, processReport } from "@/apis/reports";
 
 /**
  * 신고 목록을 조회하는 훅

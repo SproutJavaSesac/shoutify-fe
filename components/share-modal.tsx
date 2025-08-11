@@ -13,12 +13,11 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Copy,
   Facebook,
+  Image as ImageIcon,
   MessageCircle,
+  Quote,
   Share2,
   Twitter,
-  Instagram,
-  Image as ImageIcon,
-  Quote,
 } from "lucide-react";
 
 interface ShareModalProps {
@@ -88,7 +87,7 @@ export function ShareModal({
   const wrapText = (
     ctx: CanvasRenderingContext2D,
     text: string,
-    maxWidth: number
+    maxWidth: number,
   ): string[] => {
     const words = text.split(" ");
     const lines: string[] = [];
@@ -113,7 +112,7 @@ export function ShareModal({
   // 텍스트를 이미지로 변환하는 함수
   const createStoryImage = async (
     text: string,
-    type: "quote" | "transformation"
+    type: "quote" | "transformation",
   ) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -187,7 +186,7 @@ export function ShareModal({
         const transformedLines = wrapText(
           ctx,
           transformedText,
-          canvas.width - 200
+          canvas.width - 200,
         );
         transformedLines.forEach((line, index) => {
           ctx.fillText(line, canvas.width / 2, 1000 + index * 60);
@@ -208,7 +207,7 @@ export function ShareModal({
 
   // 이미지로 Instagram 스토리 공유
   const handleInstagramImageShare = async (
-    type: "quote" | "transformation"
+    type: "quote" | "transformation",
   ) => {
     try {
       const text = type === "quote" ? postTitle : transformedText || postTitle;

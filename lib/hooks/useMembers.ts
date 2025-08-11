@@ -2,36 +2,35 @@ import { useCallback } from "react";
 import { useApi, useMutation } from "./useApi";
 import {
   getMemberInfo,
-  updateMyInfo,
-  getMyPosts,
-  getMyComments,
   getMyBadges,
+  getMyComments,
+  getMyPosts,
   getMyRanking,
+  getUserBadges,
   getUserInfo,
   getUserPosts,
-  getUserBadges,
   getUserRanking,
+  updateMyInfo
 } from "@/apis/members";
 import type {
-  MyInfoGetResponse,
-  MyInfoEditRequest,
-  MyInfoEditResponse,
-  MyPostListResponse,
-  MyCommentListResponse,
+  MyBadgeListContract,
   MyBadgeListResponse,
+  MyCommentListContract,
+  MyCommentListResponse,
+  MyInfoEditContract,
+  MyInfoEditResponse,
+  MyInfoGetContract,
+  MyInfoGetResponse,
+  MyPostListContract,
+  MyPostListResponse,
+  MyRankingListContract,
   MyRankingListResponse,
   MyRankingQueryParams,
   PaginationParams,
-  MyInfoGetContract,
-  UserInfoGetContract,
-  MyInfoEditContract,
-  MyPostListContract,
-  UserPostListContract,
-  MyCommentListContract,
-  MyBadgeListContract,
   UserBadgeListContract,
-  MyRankingListContract,
-  UserRankingListContract,
+  UserInfoGetContract,
+  UserPostListContract,
+  UserRankingListContract
 } from "@/types/members";
 import { ApiOptions, IdType } from "@/types/apis";
 

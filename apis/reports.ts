@@ -7,7 +7,7 @@ import {
   ReportPostCreateResponse,
   ReportProcessRequest,
   ReportProcessResponse,
-  ReportQueryParams,
+  ReportQueryParams
 } from "@/types/reports";
 import { REPORTS_API_ENDPOINTS } from "@/constants/reports";
 import { cleanApiParams } from "@/lib/utils/api-params";

@@ -1,5 +1,5 @@
 // 내 정보 조회 응답
-import { Pagination, ApiContract, IdType } from "@/types/apis";
+import { ApiContract, IdType, Pagination } from "@/types/apis";
 import { RankingCategoryType, RankingPeriodType } from "@/types/rankings";
 
 export interface MyInfoGetResponse {

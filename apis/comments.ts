@@ -1,17 +1,15 @@
-import { api } from "./client";
+import {api} from "./client";
 import {
-  CommentCreateContract,
-  CommentCreateRequest,
-  CommentCreateResponse,
-  CommentDeleteContract,
-  CommentListContract,
-  CommentListRequest,
-  CommentListResponse,
-  CommentPathParams,
-  Comment,
+    Comment,
+    CommentCreateContract,
+    CommentCreateResponse,
+    CommentDeleteContract,
+    CommentListContract,
+    CommentListResponse,
+    CommentPathParams,
 } from "@/types/comments";
-import { COMMENT_API_ENDPOINTS } from "@/constants/comments";
-import { ApiPaginationArgs, MutationArgs } from "@/types/apis";
+import {COMMENT_API_ENDPOINTS} from "@/constants/comments";
+import {ApiPaginationArgs, MutationArgs} from "@/types/apis";
 
 /**
  * 게시글을 댓글 목록 조회

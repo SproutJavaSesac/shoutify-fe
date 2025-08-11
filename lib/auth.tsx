@@ -58,7 +58,7 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
 
         if (hasJSessionId) {
           console.log(
-            "🔧 개발 모드: JSESSIONID 감지됨, 하드코딩된 회원 정보 사용"
+            "🔧 개발 모드: JSESSIONID 감지됨, 하드코딩된 회원 정보 사용",
           );
 
           // 백엔드 더미 데이터와 동일한 회원 정보 (sesac1@gmail.com)

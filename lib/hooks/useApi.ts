@@ -13,7 +13,7 @@ import {
   MutationState,
   Pagination,
   PaginationOptions,
-  PaginationState,
+  PaginationState
 } from "@/types/apis";
 
 /**

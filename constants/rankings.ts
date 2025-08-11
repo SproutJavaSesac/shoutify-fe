@@ -1,7 +1,4 @@
-import {
-  RankingCategoryOption,
-  RankingPeriodTypeOption,
-} from "@/types/rankings";
+import { RankingCategoryOption, RankingPeriodTypeOption } from "@/types/rankings";
 
 /**
  * 랭킹 관련 API 엔드포인트

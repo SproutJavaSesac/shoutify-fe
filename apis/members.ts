@@ -1,27 +1,24 @@
-import { api } from "./client";
+import {api} from "./client";
 import type {
-  MyBadgeListResponse,
-  MyCommentListResponse,
-  MyInfoEditRequest,
-  MyInfoEditResponse,
-  MyInfoGetResponse,
-  MyPostListResponse,
-  MyRankingListResponse,
-  MyRankingQueryParams,
-  PaginationParams,
-  MyInfoGetContract,
-  UserInfoGetContract,
-  MyInfoEditContract,
-  MyPostListContract,
-  UserPostListContract,
-  MyCommentListContract,
-  MyBadgeListContract,
-  UserBadgeListContract,
-  MyRankingListContract,
-  UserRankingListContract,
+    MyBadgeListContract,
+    MyBadgeListResponse,
+    MyCommentListContract,
+    MyCommentListResponse,
+    MyInfoEditContract,
+    MyInfoEditResponse,
+    MyInfoGetContract,
+    MyInfoGetResponse,
+    MyPostListContract,
+    MyPostListResponse,
+    MyRankingListContract,
+    MyRankingListResponse,
+    UserBadgeListContract,
+    UserInfoGetContract,
+    UserPostListContract,
+    UserRankingListContract,
 } from "@/types/members";
-import { MEMBER_API_ENDPOINTS } from "@/constants/members";
-import { IdType, ApiQueryArgs, MutationArgs } from "@/types/apis";
+import {MEMBER_API_ENDPOINTS} from "@/constants/members";
+import {ApiQueryArgs, MutationArgs} from "@/types/apis";
 
 /**
  * 내 정보 조회

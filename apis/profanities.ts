@@ -5,7 +5,7 @@ import {
   ProfanityListResponse,
   ProfanityQueryParams,
   ProfanityUpdateRequest,
-  ProfanityUpdateResponse,
+  ProfanityUpdateResponse
 } from "@/types/profanities";
 import { PROFANITIES_API_ENDPOINTS } from "@/constants/profanities";
 import { cleanApiParams } from "@/lib/utils/api-params";

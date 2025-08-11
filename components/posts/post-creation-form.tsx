@@ -20,7 +20,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { usePostCreate } from "@/lib/hooks/usePosts";
-import { ApiError } from "@/types/apis";
 import { ConceptType } from "@/types/posts";
 import {
   CONCEPT_OPTIONS,

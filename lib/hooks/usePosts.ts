@@ -1,30 +1,16 @@
-import { useCallback } from "react";
-import { useApi, useMutation, usePagination } from "./useApi";
+import {useCallback} from "react";
+import {useApi, useMutation, usePagination} from "./useApi";
+import {createPost, deletePost, getPost, getPosts, hidePost, unhidePost,} from "@/apis/posts";
 import {
-  createPost,
-  deletePost,
-  getPost,
-  getPosts,
-  hidePost,
-  unhidePost,
-} from "@/apis/posts";
-import {
-  PostCreateContract,
-  PostCreateResponse,
-  PostDeleteContract,
-  PostDetailContract,
-  PostHideContract,
-  PostPaginationContract,
-  PostPaginationQueryRequest,
-  PostUnhideContract,
+    PostCreateContract,
+    PostCreateResponse,
+    PostDeleteContract,
+    PostDetailContract,
+    PostHideContract,
+    PostPaginationContract,
+    PostUnhideContract,
 } from "@/types/posts";
-import {
-  ApiOptions,
-  ApiPaginationArgs,
-  IdType,
-  MutationArgs,
-  PaginationOptions,
-} from "@/types/apis";
+import {ApiOptions, ApiPaginationArgs, IdType, MutationArgs, PaginationOptions,} from "@/types/apis";
 
 /**
  * 게시글 목록 조회 훅 (페이지네이션 지원)

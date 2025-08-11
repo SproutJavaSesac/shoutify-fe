@@ -12,10 +12,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Flag, AlertTriangle } from "lucide-react";
+import { AlertTriangle, Flag } from "lucide-react";
 import {
-  useCreatePostReport,
   useCreateCommentReport,
+  useCreatePostReport,
 } from "@/lib/hooks/useReports";
 import { REPORT_REASON_OPTIONS } from "@/constants/reports";
 import { ReportReasonType } from "@/types/reports";
@@ -38,7 +38,7 @@ export function ReportModal({
   targetContent,
 }: ReportModalProps) {
   const [selectedReason, setSelectedReason] = useState<ReportReasonType | "">(
-    ""
+    "",
   );
   const [customReason, setCustomReason] = useState("");
   const { toast } = useToast();

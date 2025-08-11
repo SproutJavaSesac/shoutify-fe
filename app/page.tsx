@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
-import { PenTool, BookOpen, Sparkles, Users, ArrowRight } from "lucide-react";
+import { ArrowRight, BookOpen, PenTool, Sparkles, Users } from "lucide-react";
 import { POST_ROUTES } from "@/constants/posts";
 
 export default function HomePage() {

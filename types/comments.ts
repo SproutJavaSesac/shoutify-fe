@@ -2,7 +2,6 @@ import {
   ApiContract,
   CommentsPaginationResponse,
   Pagination,
-  PaginationOptions,
   PaginationParams,
 } from "@/types/apis";
 import { ReactionDetailCountMap } from "./reactions";

@@ -5,12 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Shield,
-  Flag,
-  Users,
-  Settings,
-  BarChart3,
   AlertTriangle,
+  BarChart3,
+  Flag,
+  Settings,
+  Shield,
+  Users,
 } from "lucide-react";
 import { ProfanityManagement } from "@/components/profanity-management";
 import { ReportManagement } from "@/components/report-management";

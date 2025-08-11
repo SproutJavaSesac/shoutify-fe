@@ -4,12 +4,12 @@ import type { MutationArgs } from "@/types/apis";
 import type {
   CommentReactionCreateContract,
   CommentReactionDeleteContract,
+  CommentReactionResponse,
   CommentReactionUpdateContract,
   PostReactionCreateContract,
   PostReactionDeleteContract,
-  PostReactionUpdateContract,
   PostReactionResponse,
-  CommentReactionResponse,
+  PostReactionUpdateContract
 } from "@/types/reactions";
 
 /**

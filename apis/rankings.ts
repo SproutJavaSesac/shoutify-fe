@@ -1,9 +1,5 @@
 import { api } from "./client";
-import {
-  RankingListContract,
-  RankingListResponse,
-  RankingQueryParams,
-} from "@/types/rankings";
+import { RankingListContract, RankingListResponse } from "@/types/rankings";
 import { RANKING_API_ENDPOINTS } from "@/constants/rankings";
 import { ApiQueryArgs } from "@/types/apis";
 

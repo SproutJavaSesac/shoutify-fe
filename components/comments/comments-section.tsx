@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  MessageCircle,
-  Trash2,
   ChevronLeft,
   ChevronRight,
   Flag,
+  MessageCircle,
+  Trash2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
@@ -23,8 +23,8 @@ import {
 } from "@/lib/hooks/useComments";
 import {
   useCommentReactionCreate,
-  useCommentReactionUpdate,
   useCommentReactionDelete,
+  useCommentReactionUpdate,
 } from "@/lib/hooks/useReactions";
 import { Comment, CommentSortType } from "@/types/comments";
 import { utcToLocaleDateString } from "@/lib/utils";
@@ -50,7 +50,7 @@ export function CommentsSection({
   // 신고 모달 상태
   const [reportModal, setReportModal] = useState(false);
   const [reportingComment, setReportingComment] = useState<Comment | null>(
-    null
+    null,
   );
   const [authModal, setAuthModal] = useState(false);
 
@@ -181,7 +181,7 @@ export function CommentsSection({
   // 댓글 리액션 핸들러 - 게시글과 동일한 로직
   const handleCommentReaction = (
     commentId: string | number,
-    reactionType: ReactionLabelType
+    reactionType: ReactionLabelType,
   ) => {
     // 로그인 체크
     if (!user) {
@@ -253,7 +253,7 @@ export function CommentsSection({
   // 대댓글 작성 핸들러
   const handleReplySubmit = async (
     content: string,
-    parentCommentId: string | number
+    parentCommentId: string | number,
   ) => {
     // 로그인 체크
     if (!user) {
@@ -398,7 +398,7 @@ export function CommentsSection({
                           onClick={() =>
                             handleCommentReaction(
                               comment.commentId,
-                              reactionType as ReactionLabelType
+                              reactionType as ReactionLabelType,
                             )
                           }
                         >
@@ -413,7 +413,7 @@ export function CommentsSection({
                         </span>
                       </div>
                     );
-                  }
+                  },
                 )}
               </div>
             )}
@@ -447,7 +447,7 @@ export function CommentsSection({
                         {EMOTION_TO_EMOJI_MAP[reactionType]}
                       </Button>
                     );
-                  }
+                  },
                 )}
               </div>
             )}
@@ -460,7 +460,7 @@ export function CommentsSection({
               size="sm"
               onClick={() => {
                 setReplyingTo(
-                  replyingTo === comment.commentId ? null : comment.commentId
+                  replyingTo === comment.commentId ? null : comment.commentId,
                 );
               }}
               className="text-xs"

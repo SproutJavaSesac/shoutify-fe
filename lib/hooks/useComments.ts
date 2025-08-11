@@ -2,11 +2,9 @@ import { useCallback } from "react";
 import { useMutation, usePagination } from "./useApi";
 import { createComment, deleteComment, getComments } from "@/apis/comments";
 import {
-  Comment,
   CommentCreateContract,
   CommentDeleteContract,
   CommentListContract,
-  CommentPathParams,
 } from "@/types/comments";
 import { ApiOptions, ExtractResponse, PaginationOptions } from "@/types/apis";
 
@@ -22,7 +20,7 @@ export function useCommentList({
         queries: args.queries,
       });
     },
-    [postId]
+    [postId],
   );
 
   return usePagination<CommentListContract>(fetchFn, {
@@ -33,14 +31,14 @@ export function useCommentList({
 
 // 댓글 작성 - 낙관적 업데이트 지원
 export function useCommentCreate(
-  options?: ApiOptions<ExtractResponse<CommentCreateContract>>
+  options?: ApiOptions<ExtractResponse<CommentCreateContract>>,
 ) {
   return useMutation<CommentCreateContract>(createComment, options);
 }
 
 // 댓글 삭제
 export function useCommentDelete(
-  options?: ApiOptions<ExtractResponse<CommentDeleteContract>>
+  options?: ApiOptions<ExtractResponse<CommentDeleteContract>>,
 ) {
   return useMutation<CommentDeleteContract>(deleteComment, options);
 }

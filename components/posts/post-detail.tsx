@@ -29,8 +29,8 @@ import { utcToLocaleDateString } from "@/lib/utils";
 import { EMOTICON_OPTIONS } from "@/constants/posts";
 import {
   usePostReactionCreate,
-  usePostReactionUpdate,
   usePostReactionDelete,
+  usePostReactionUpdate,
 } from "@/lib/hooks/useReactions";
 import { EMOTION_TO_EMOJI_MAP } from "@/constants/reactions";
 import { useAuth } from "@/lib/auth";
@@ -144,7 +144,7 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
       if (response.emotion) {
         // convertEmotionTypeToEmoticon 함수가 있다면 사용하거나, 직접 변환
         const emotionOption = EMOTICON_OPTIONS.find(
-          (option) => option.value === response.emotion
+          (option) => option.value === response.emotion,
         );
         setPostEmotion(emotionOption || null);
       }
@@ -161,7 +161,7 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
     } catch (err) {
       console.error("게시글 조회 실패:", err);
       setError(
-        err instanceof Error ? err.message : "게시글을 불러오는데 실패했습니다"
+        err instanceof Error ? err.message : "게시글을 불러오는데 실패했습니다",
       );
     } finally {
       setLoading(false);
@@ -434,7 +434,7 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
                         </span>
                       </div>
                     );
-                  }
+                  },
                 )}
               </div>
 
