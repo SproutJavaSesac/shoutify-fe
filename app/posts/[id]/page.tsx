@@ -1,13 +1,19 @@
 import { PostDetail } from "@/components/posts/post-detail";
 import { CommentsSection } from "@/components/comments/comments-section";
-import { RecommendedPosts } from "@/components/recommended-posts";
 
-export default function PostDetailPage({ params }: { params: { id: string } }) {
+interface PostDetailPageProps {
+  params: Promise<{ id: string }>; // Next.js 15에서 params는 Promise
+}
+
+export default async function PostDetailPage({ params }: PostDetailPageProps) {
+  const { id } = await params; // params를 await해서 사용
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <PostDetail postId={params.id} />
-      <RecommendedPosts />
-      <CommentsSection postId={params.id} />
-    </div>
+    <main className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto p-6">
+        <PostDetail postId={id} />
+        <CommentsSection postId={id} />
+      </div>
+    </main>
   );
 }

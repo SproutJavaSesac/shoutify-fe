@@ -1,368 +1,620 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useEffect, useRef, useState } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Flag, MessageCircle, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  MessageCircle,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Flag,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
+import { CommentForm } from "@/components/comments/comment-form";
+import { ReportModal } from "@/components/report-modal";
 import { AuthModal } from "@/components/auth-modal";
-import type { Comment, CommentQueryParams } from "@/types/comments";
+import {
+  useCommentCreate,
+  useCommentDelete,
+  useCommentList,
+} from "@/lib/hooks/useComments";
+import {
+  useCommentReactionCreate,
+  useCommentReactionUpdate,
+  useCommentReactionDelete,
+} from "@/lib/hooks/useReactions";
+import { Comment, CommentSortType } from "@/types/comments";
 import { utcToLocaleDateString } from "@/lib/utils";
-import { getComments } from "@/apis/comments";
-import { Pagination } from "@/types/commons";
-import { EmoticonType } from "@/types/reactions";
 import { EMOTION_TO_EMOJI_MAP } from "@/constants/reactions";
+import { ReactionLabelType } from "@/types/reactions";
 
-export function CommentsSection({ postId }: Readonly<{ postId: string }>) {
+export function CommentsSection({
+  postId,
+}: Readonly<{ postId: string | number }>) {
   // 상태 관리
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [commentsData, setCommentsData] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState("");
-  const [replyingTo, setReplyingTo] = useState<number | null>(null);
-  const [replyText, setReplyText] = useState("");
-  const [commentReactions, setCommentReactions] = useState<{
-    [key: number]: string | null;
-  }>({});
-  const [paginationData, setPaginationData] = useState<
-    Pagination | undefined
-  >();
-  const [hasNext, setHasNext] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<string | number | null>(null);
+  const [sortType, setSortType] = useState<CommentSortType>("createdAt");
+  const [highlightedCommentId, setHighlightedCommentId] = useState<
+    string | number | null
+  >(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 각 댓글별 내 반응 상태 (commentId -> ReactionLabelType)
+  const [myReactions, setMyReactions] = useState<
+    Record<string | number, ReactionLabelType | null>
+  >({});
+
+  // 신고 모달 상태
+  const [reportModal, setReportModal] = useState(false);
+  const [reportingComment, setReportingComment] = useState<Comment | null>(
+    null
+  );
+  const [authModal, setAuthModal] = useState(false);
 
   const { toast } = useToast();
   const { user } = useAuth();
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const highlightRef = useRef<HTMLDivElement>(null);
 
-  // 댓글 데이터를 가져오는 함수
-  const fetchComments = async (
-    params: CommentQueryParams,
-    appendMode: boolean = false,
-  ) => {
-    try {
-      setLoading(true);
-      setError(null);
+  // 댓글 목록 조회
+  const {
+    data: comments,
+    loading,
+    error,
+    currentPage,
+    totalPages,
+    totalCount,
+    hasNext,
+    hasPrevious,
+    goToPage,
+    nextPage,
+    prevPage,
+    refetch,
+  } = useCommentList({
+    postId,
+    page: 0,
+    size: 20, // 페이지당 댓글 수
+    sort: sortType,
+    order: "ASC",
+  });
 
-      const response = await getComments({
-        postId: parseInt(postId),
-        queryParams: params,
-      });
+  // 댓글 생성
+  const { mutate: createComment } = useCommentCreate({
+    onSuccess: (response) => {
+      // 성공 시 상태 초기화
+      setReplyingTo(null);
+      setIsSubmitting(false);
 
-      // API 응답 데이터를 상태에 설정 (appendMode에 따라 누적 또는 교체)
-      if (appendMode) {
-        setCommentsData((prev) => [...prev, ...response.comments]);
-      } else {
-        setCommentsData(response.comments);
-      }
+      // 생성된 댓글 하이라이트
+      setHighlightedCommentId(response.commentId);
 
-      // 페이지네이션 정보 업데이트
-      if (response.pagination) {
-        setPaginationData(response.pagination);
-        setHasNext(response.pagination.hasNext);
-      }
-    } catch (err) {
-      console.error("댓글을 불러오는 중 오류가 발생했습니다:", err);
-      setError("댓글을 불러올 수 없습니다. 다시 시도해주세요.");
       toast({
+        description: "댓글이 등록되었습니다.",
+      });
+
+      // 생성된 댓글이 있는 페이지 계산 (새로운 댓글은 마지막 페이지에 추가됨)
+      const newTotalCount = totalCount + 1;
+      const targetPage = Math.floor((newTotalCount - 1) / 20);
+
+      if (targetPage !== currentPage) {
+        goToPage(targetPage);
+      } else {
+        refetch();
+      }
+    },
+    onError: (errorMessage) => {
+      setIsSubmitting(false);
+      toast({
+        title: "댓글 등록 실패",
+        description: errorMessage,
         variant: "destructive",
-        title: "오류",
-        description: "댓글을 불러올 수 없습니다.",
       });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 컴포넌트가 마운트될 때 댓글 불러오기
-  useEffect(() => {
-    if (postId) {
-      fetchComments({
-        page: 0,
-        size: 20,
+    },
+  }); // 댓글 삭제
+  const { mutate: deleteComment } = useCommentDelete({
+    onSuccess: () => {
+      toast({
+        description: "댓글이 삭제되었습니다.",
       });
-    }
-  }, [postId]);
+      refetch();
+    },
+    onError: (errorMessage) => {
+      toast({
+        title: "댓글 삭제 실패",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
 
-  const handleSubmitComment = () => {
+  // 댓글 리액션 훅들
+  const { mutate: createCommentReaction } = useCommentReactionCreate({
+    onSuccess: () => {
+      toast({
+        description: "반응을 표시했습니다.",
+      });
+      refetch(); // 댓글 목록 새로고침하여 최신 반응 상태 반영
+    },
+    onError: (errorMessage) => {
+      toast({
+        title: "반응 실패",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const { mutate: updateCommentReaction } = useCommentReactionUpdate({
+    onSuccess: () => {
+      toast({
+        description: "반응을 변경했습니다.",
+      });
+      refetch();
+    },
+    onError: (errorMessage) => {
+      toast({
+        title: "반응 변경 실패",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const { mutate: deleteCommentReaction } = useCommentReactionDelete({
+    onSuccess: () => {
+      toast({
+        description: "반응을 취소했습니다.",
+      });
+      refetch();
+    },
+    onError: (errorMessage) => {
+      toast({
+        title: "반응 취소 실패",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // 댓글 리액션 핸들러 - 게시글과 동일한 로직
+  const handleCommentReaction = (
+    commentId: string | number,
+    reactionType: ReactionLabelType
+  ) => {
+    // 로그인 체크
     if (!user) {
-      setShowAuthModal(true);
+      setAuthModal(true);
       return;
     }
-    if (newComment.trim()) {
-      toast({
-        description: "댓글을 작성했습니다.",
+
+    const currentReaction = myReactions[commentId];
+
+    // 현재 선택된 반응과 같은 반응을 다시 클릭한 경우 - 삭제
+    if (currentReaction === reactionType) {
+      deleteCommentReaction({
+        paths: { postId, commentId },
       });
-      setNewComment("");
+      setMyReactions((prev) => ({ ...prev, [commentId]: null }));
+    }
+    // 처음 반응을 선택하는 경우 - 생성
+    else if (!currentReaction) {
+      createCommentReaction({
+        paths: { postId, commentId },
+        body: { type: reactionType },
+      });
+      setMyReactions((prev) => ({ ...prev, [commentId]: reactionType }));
+    }
+    // 다른 반응으로 변경하는 경우 - 수정
+    else {
+      updateCommentReaction({
+        paths: { postId, commentId },
+        body: { type: reactionType },
+      });
+      setMyReactions((prev) => ({ ...prev, [commentId]: reactionType }));
     }
   };
 
-  const handleSubmitReply = (parentCommentId: number) => {
-    if (replyText.trim()) {
-      toast({
-        description: "답글을 작성했습니다.",
+  // 하이라이트된 댓글로 스크롤
+  useEffect(() => {
+    if (highlightedCommentId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
       });
-      setReplyText("");
-      setReplyingTo(null);
+
+      // 3초 후 하이라이트 제거
+      const timer = setTimeout(() => {
+        setHighlightedCommentId(null);
+      }, 3000);
+
+      return () => clearTimeout(timer);
     }
+  }, [highlightedCommentId, comments]);
+
+  // 댓글 작성 핸들러
+  const handleCommentSubmit = async (content: string) => {
+    // 로그인 체크
+    if (!user) {
+      setAuthModal(true);
+      return;
+    }
+
+    setIsSubmitting(true);
+    await createComment({
+      paths: { postId },
+      body: {
+        content,
+      },
+    });
   };
 
-  const handleCommentReaction = (commentId: number, reactionType: string) => {
-    setCommentReactions((prev) => ({
-      ...prev,
-      [commentId]: prev[commentId] === reactionType ? null : reactionType,
-    }));
+  // 대댓글 작성 핸들러
+  const handleReplySubmit = async (
+    content: string,
+    parentCommentId: string | number
+  ) => {
+    // 로그인 체크
+    if (!user) {
+      setAuthModal(true);
+      return;
+    }
+
+    await createComment({
+      paths: { postId },
+      body: {
+        content,
+        parentId: parentCommentId,
+      },
+    });
   };
 
-  const CommentComponent = ({
-    comment,
-    level = 0,
-  }: {
-    comment: Comment;
-    level?: number;
-  }) => (
-    <div
-      className={`${
-        level > 0 ? "mt-4" : ""
-      } ${level === 1 ? "pl-8" : level === 2 ? "pl-16" : ""}`}
-    >
-      <Card className="mb-4">
-        <CardContent className="p-4">
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <span className="font-medium text-gray-900">
-                {comment.commenterNickname}
-              </span>
-              <span className="text-sm text-gray-500 ml-2">
-                {utcToLocaleDateString(comment.createdAt)}
-              </span>
-            </div>
-            <div className="flex items-center space-x-1">
-              {comment.isMine && (
-                <Button variant="ghost" size="sm">
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              )}
-              <Button variant="ghost" size="sm">
-                <Flag className="h-3 w-3" />
-              </Button>
-            </div>
+  // 댓글 삭제 핸들러
+  const handleDeleteComment = (commentId: string | number) => {
+    deleteComment({
+      paths: {
+        postId,
+        commentId,
+      },
+    });
+  };
+
+  // 댓글 신고 핸들러
+  const handleReportComment = (comment: Comment) => {
+    // 로그인 체크
+    if (!user) {
+      setAuthModal(true);
+      return;
+    }
+
+    setReportingComment(comment);
+    setReportModal(true);
+  };
+
+  // 정렬 변경 핸들러
+  const handleSortChange = (newSort: CommentSortType) => {
+    setSortType(newSort);
+  };
+
+  // order 순서로 정렬된 댓글 목록 생성 - 서버에서 정렬된 데이터를 order 순으로만 정렬
+  const sortedComments = comments
+    ? [...comments].sort((a, b) => a.order - b.order)
+    : [];
+
+  // 댓글 렌더링 함수
+  const renderComment = (comment: Comment) => {
+    const isHighlighted = comment.commentId === highlightedCommentId;
+    const isReply = comment.level > 0;
+
+    // level에 따른 들여쓰기 계산 (level 1당 32px)
+    const indentStyle = {
+      marginLeft: `${comment.level * 32}px`,
+    };
+
+    return (
+      <div
+        key={comment.commentId}
+        ref={isHighlighted ? highlightRef : undefined}
+        style={indentStyle}
+        className={`border rounded-lg p-4 ${
+          isReply ? "bg-gray-50" : "bg-white"
+        } ${isHighlighted ? "ring-2 ring-blue-300 bg-blue-50" : ""}`}
+      >
+        {/* 댓글 헤더 */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-2">
+            <span className="font-medium text-gray-900">
+              {comment.commenterNickname}
+            </span>
+            <span className="text-xs text-gray-500">
+              {utcToLocaleDateString(comment.createdAt)}
+            </span>
+            {comment.isMine && (
+              <Badge variant="outline" className="text-xs">
+                내 댓글
+              </Badge>
+            )}
+            {/* level 표시 (개발용 - 나중에 제거) */}
+            <span className="text-xs text-gray-400">
+              level: {comment.level}
+            </span>
           </div>
 
-          <p className="text-gray-700 mb-3">{comment.content}</p>
-
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              {/* ReactionDetailCountMap의 순서로 EmoticonType을 ReactionEmojiType로 변환하여 출력 */}
-              {(Object.keys(EMOTION_TO_EMOJI_MAP) as EmoticonType[]).map(
-                (emotionType) => {
-                  const emoji = EMOTION_TO_EMOJI_MAP[emotionType];
-                  const count = comment.reactions[emotionType] || 0;
-
-                  return (
-                    <div key={emotionType} className="flex items-center">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={`h-6 w-6 p-0 text-xs ${
-                          commentReactions[comment.commentId] === emotionType
-                            ? "bg-gray-100 ring-2 ring-blue-300"
-                            : ""
-                        }`}
-                        onClick={() =>
-                          handleCommentReaction(comment.commentId, emotionType)
-                        }
-                      >
-                        {emoji}
-                      </Button>
-                      <span className="text-xs text-gray-500 ml-1">
-                        {count}
-                      </span>
-                    </div>
-                  );
-                },
-              )}
-            </div>
-
-            {level < 2 && !comment.isDeleted && !comment.isReported && (
+          <div className="flex items-center gap-2">
+            {/* 신고 버튼 - 내 댓글이 아닌 경우에만 표시 */}
+            {!comment.isMine && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() =>
-                  setReplyingTo(
-                    replyingTo === comment.commentId ? null : comment.commentId,
-                  )
-                }
+                onClick={() => handleReportComment(comment)}
+                className="h-6 w-6 p-0 text-gray-500 hover:text-red-500"
               >
-                <MessageCircle className="h-3 w-3 mr-1" />
-                답글 작성
+                <Flag className="h-3 w-3" />
+              </Button>
+            )}
+
+            {/* 삭제 버튼 - 내 댓글인 경우에만 표시 */}
+            {comment.isMine && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDeleteComment(comment.commentId)}
+                className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+              >
+                <Trash2 className="h-3 w-3" />
               </Button>
             )}
           </div>
+        </div>
 
-          {replyingTo === comment.commentId && (
-            <div className="mt-4 space-y-2">
-              <Textarea
-                placeholder="답글을 입력하세요."
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                className="min-h-[80px]"
-              />
-              <div className="flex space-x-2">
-                <Button
-                  size="sm"
-                  onClick={() => handleSubmitReply(comment.commentId)}
-                >
-                  작성
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setReplyingTo(null)}
-                >
-                  취소
-                </Button>
+        {/* 댓글 내용 */}
+        <p className="text-gray-800 mb-3 whitespace-pre-line">
+          {comment.content}
+        </p>
+
+        {/* 댓글 액션 (반응, 답글) */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            {/* 반응 버튼들 - 기존 반응만 표시 */}
+            {comment.reactions && (
+              <div className="flex items-center space-x-1">
+                {Object.entries(comment.reactions).map(
+                  ([reactionType, count]) => {
+                    if (count === 0) return null;
+
+                    // 사용자가 이 반응을 선택했는지 확인
+                    const isSelected =
+                      myReactions[comment.commentId] === reactionType;
+
+                    return (
+                      <div key={reactionType} className="flex items-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-6 w-6 p-0 text-xs ${
+                            isSelected ? "bg-blue-100 ring-1 ring-blue-300" : ""
+                          } hover:bg-gray-100`}
+                          onClick={() =>
+                            handleCommentReaction(
+                              comment.commentId,
+                              reactionType as ReactionLabelType
+                            )
+                          }
+                        >
+                          {
+                            EMOTION_TO_EMOJI_MAP[
+                              reactionType as ReactionLabelType
+                            ]
+                          }
+                        </Button>
+                        <span className="text-xs text-gray-500 ml-1">
+                          {count}
+                        </span>
+                      </div>
+                    );
+                  }
+                )}
               </div>
-            </div>
+            )}
+
+            {/* 새 반응 추가 버튼 (로그인한 사용자만) */}
+            {user && (
+              <div className="flex items-center space-x-1">
+                {(Object.keys(EMOTION_TO_EMOJI_MAP) as ReactionLabelType[]).map(
+                  (reactionType) => {
+                    // 이미 표시된 반응은 제외
+                    if (comment.reactions?.[reactionType] > 0) return null;
+
+                    // 사용자가 이 반응을 선택했는지 확인
+                    const isSelected =
+                      myReactions[comment.commentId] === reactionType;
+
+                    return (
+                      <Button
+                        key={reactionType}
+                        variant="ghost"
+                        size="sm"
+                        className={`h-6 w-6 p-0 text-xs ${
+                          isSelected
+                            ? "bg-blue-100 ring-1 ring-blue-300 opacity-100"
+                            : "opacity-50 hover:opacity-100"
+                        } hover:bg-gray-100`}
+                        onClick={() =>
+                          handleCommentReaction(comment.commentId, reactionType)
+                        }
+                      >
+                        {EMOTION_TO_EMOJI_MAP[reactionType]}
+                      </Button>
+                    );
+                  }
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 답글 버튼 (대댓글까지 표시) */}
+          {comment.level < 2 && !comment.isDeleted && !comment.isReported && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setReplyingTo(
+                  replyingTo === comment.commentId ? null : comment.commentId
+                );
+              }}
+              className="text-xs"
+            >
+              <MessageCircle className="h-3 w-3 mr-1" />
+              답글
+            </Button>
           )}
+        </div>
+
+        {/* 답글 작성 폼 */}
+        {comment.level === 0 && replyingTo === comment.commentId && (
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+            <CommentForm
+              placeholder="답글을 입력하세요..."
+              onSubmit={(content) =>
+                handleReplySubmit(content, comment.commentId)
+              }
+              onCancel={() => setReplyingTo(null)}
+              showCancel={true}
+              minHeight="min-h-[80px]"
+              submitLabel="답글 등록"
+            />
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-gray-500">댓글을 불러오는 중...</div>
         </CardContent>
       </Card>
-    </div>
-  );
+    );
+  }
 
-  return (
-    <section id="comments" className="mt-8">
+  if (error) {
+    return (
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <MessageCircle className="h-5 w-5" />
-            <span>댓글 ({commentsData.length})</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {user ? (
-            <div className="mb-6 space-y-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <span className="text-sm text-gray-600">현재 작성자: </span>
-                <span className="text-sm font-medium">@{user.nickname}</span>
-              </div>
-              <Textarea
-                placeholder="문학 작품을 인용해 생각을 나눠보세요!"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="min-h-[100px]"
-              />
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500">
-                  {1000 - newComment.length} 남은 글자수
-                </span>
-                <Button
-                  onClick={handleSubmitComment}
-                  disabled={!newComment.trim()}
-                >
-                  댓글 작성
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
-              <p className="text-gray-600 mb-3">
-                댓글을 작성하려면 먼저 로그인해 주세요.
-              </p>
-              <Button onClick={() => setShowAuthModal(true)}>로그인하기</Button>
-            </div>
-          )}
-
-          {/* Comments List */}
-          <div className="space-y-4">
-            {loading ? (
-              // 로딩 상태 UI
-              <div className="flex justify-center items-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                <span className="ml-2 text-gray-600">
-                  댓글을 불러오는 중...
-                </span>
-              </div>
-            ) : error ? (
-              // 에러 상태 UI
-              <div className="text-center py-8">
-                <p className="text-red-600 mb-4">{error}</p>
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    fetchComments({
-                      page: 1,
-                      size: 20,
-                    })
-                  }
-                >
-                  다시 시도
-                </Button>
-              </div>
-            ) : commentsData.length === 0 ? (
-              // 댓글이 없을 때 UI
-              <div className="text-center py-8">
-                <MessageCircle className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-600 mb-2">아직 댓글이 없습니다.</p>
-                <p className="text-sm text-gray-500">
-                  첫 번째 댓글을 작성해보세요!
-                </p>
-              </div>
-            ) : (
-              // 댓글 목록 표시
-              <>
-                {commentsData.map((comment) => (
-                  <CommentComponent
-                    key={comment.commentId}
-                    comment={comment}
-                    level={comment.level}
-                  />
-                ))}
-
-                {/* 더 많은 댓글 불러오기 버튼 */}
-                {hasNext && paginationData && (
-                  <div className="text-center py-4">
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        fetchComments(
-                          {
-                            page: paginationData.currentPage + 1,
-                            size: paginationData.pageSize,
-                          },
-                          true,
-                        )
-                      }
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
-                          불러오는 중...
-                        </>
-                      ) : (
-                        "더 많은 댓글 보기"
-                      )}
-                    </Button>
-                  </div>
-                )}
-
-                {/* 페이지네이션 정보 표시 */}
-                {paginationData && paginationData.totalCount > 0 && (
-                  <div className="text-center text-sm text-gray-500 py-2">
-                    총 {paginationData.totalCount}개의 댓글 중{" "}
-                    {commentsData.length}개 표시
-                  </div>
-                )}
-              </>
-            )}
+        <CardContent className="p-6">
+          <div className="text-center text-red-500">
+            댓글을 불러오는 중 오류가 발생했습니다: {error}
           </div>
         </CardContent>
       </Card>
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
+    );
+  }
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">
+              댓글 {totalCount > 0 && `(${totalCount})`}
+            </h3>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          {/* 댓글 작성 폼 */}
+          <CommentForm
+            placeholder="댓글을 입력하세요..."
+            onSubmit={handleCommentSubmit}
+            isSubmitting={isSubmitting}
+            submitLabel="댓글 등록"
+          />
+
+          {/* 댓글 목록 */}
+          {sortedComments && sortedComments.length > 0 ? (
+            <div className="space-y-4">
+              {sortedComments.map((comment) => renderComment(comment))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              첫 번째 댓글을 작성해보세요!
+            </div>
+          )}
+
+          {/* 페이지네이션 */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center space-x-2 pt-4 border-t">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={prevPage}
+                disabled={!hasPrevious}
+                className="flex items-center gap-1"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                이전
+              </Button>
+
+              <div className="flex items-center space-x-1">
+                <span className="text-sm text-gray-600 px-2">
+                  {currentPage + 1} / {totalPages}
+                </span>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+
+                  if (totalPages <= 5) {
+                    pageNum = i;
+                  } else if (currentPage <= 2) {
+                    pageNum = i;
+                  } else if (currentPage >= totalPages - 3) {
+                    pageNum = totalPages - 5 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={currentPage === pageNum ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => goToPage(pageNum)}
+                      className="min-w-[2.5rem]"
+                    >
+                      {pageNum + 1}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={nextPage}
+                disabled={!hasNext}
+                className="flex items-center gap-1"
+              >
+                다음
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 댓글 신고 모달 */}
+      <ReportModal
+        isOpen={reportModal}
+        onClose={() => {
+          setReportModal(false);
+          setReportingComment(null);
+        }}
+        type="comment"
+        targetId={reportingComment?.commentId || ""}
+        targetContent={reportingComment?.content || ""}
       />
-    </section>
+      <AuthModal isOpen={authModal} onClose={() => setAuthModal(false)} />
+    </>
   );
 }

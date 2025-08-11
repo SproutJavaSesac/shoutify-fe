@@ -17,11 +17,23 @@ import { useToast } from "@/hooks/use-toast";
 import { ReportModal } from "@/components/report-modal";
 import { ShareModal } from "@/components/share-modal";
 import { UserProfileModal } from "@/components/user-profile-modal";
+import { AuthModal } from "@/components/auth-modal";
 import { getPost } from "@/apis/posts";
 import { Post } from "@/types/posts";
-import { EmotionOption } from "@/types/reactions";
+import {
+  EmotionOption,
+  ReactionDetailCountMap,
+  ReactionLabelType,
+} from "@/types/reactions";
 import { utcToLocaleDateString } from "@/lib/utils";
 import { EMOTICON_OPTIONS } from "@/constants/posts";
+import {
+  usePostReactionCreate,
+  usePostReactionUpdate,
+  usePostReactionDelete,
+} from "@/lib/hooks/useReactions";
+import { EMOTION_TO_EMOJI_MAP } from "@/constants/reactions";
+import { useAuth } from "@/lib/auth";
 
 const postMockData = {
   author: "LiteraryMuse",
@@ -39,13 +51,84 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [postData, setPostData] = useState<Post>();
-  const [reactions, setReactions] = useState<EmotionOption | null>(null);
+
+  // 게시글의 원본 감정 (작성자가 설정한 감정, 변경되지 않음)
+  const [postEmotion, setPostEmotion] = useState<EmotionOption | null>(null);
+
+  // 사용자들의 반응 통계 (댓글 수, 좋아요 수 등)
+  const [reactions, setReactions] = useState<ReactionDetailCountMap>({
+    HAPPY: 0,
+    SAD: 0,
+    ANGRY: 0,
+    EXCITED: 0,
+    CONFUSED: 0,
+    PROUD: 0,
+  });
+
+  // 현재 로그인한 사용자가 표현한 반응
+  const [myReaction, setMyReaction] = useState<ReactionLabelType | null>(null);
+
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [reportModal, setReportModal] = useState(false);
   const [shareModal, setShareModal] = useState(false);
   const [userProfileModal, setUserProfileModal] = useState(false);
+  const [authModal, setAuthModal] = useState(false);
+
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // 게시글 리액션 훅들
+  const { mutate: createReaction } = usePostReactionCreate({
+    onSuccess: (response) => {
+      setReactions(response.reactionDetails);
+      setMyReaction(response.reaction);
+      toast({
+        description: "반응을 표시했습니다.",
+      });
+    },
+    onError: (errorMessage) => {
+      toast({
+        title: "반응 실패",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const { mutate: updateReaction } = usePostReactionUpdate({
+    onSuccess: (response) => {
+      setReactions(response.reactionDetails);
+      setMyReaction(response.reaction);
+      toast({
+        description: "반응을 변경했습니다.",
+      });
+    },
+    onError: (errorMessage) => {
+      toast({
+        title: "반응 변경 실패",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const { mutate: deleteReaction } = usePostReactionDelete({
+    onSuccess: (response) => {
+      setReactions(response.reactionDetails);
+      setMyReaction(null);
+      toast({
+        description: "반응을 취소했습니다.",
+      });
+    },
+    onError: (errorMessage) => {
+      toast({
+        title: "반응 취소 실패",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
 
   // 게시글 조회
   const fetchPost = async (postId: string) => {
@@ -56,19 +139,64 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
       const response = await getPost(parseInt(postId));
       setPostData(response);
       setIsHidden(response.isHidden || false);
+
+      // 게시글의 원본 감정 설정 (작성자가 설정한 감정)
+      if (response.emotion) {
+        // convertEmotionTypeToEmoticon 함수가 있다면 사용하거나, 직접 변환
+        const emotionOption = EMOTICON_OPTIONS.find(
+          (option) => option.value === response.emotion
+        );
+        setPostEmotion(emotionOption || null);
+      }
+
+      // 반응 통계 설정
+      if (response.reactionDetailCount) {
+        setReactions(response.reactionDetailCount);
+      }
+
+      // 내 반응 설정 (API에서 제공한다면)
+      // setMyReaction(response.myReaction || null);
+
       setLoading(false);
     } catch (err) {
       console.error("게시글 조회 실패:", err);
       setError(
-        err instanceof Error ? err.message : "게시글을 불러오는데 실패했습니다",
+        err instanceof Error ? err.message : "게시글을 불러오는데 실패했습니다"
       );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleReaction = (emoji: EmotionOption) => {
-    setReactions((prev) => (prev === emoji ? null : emoji));
+  const handleReaction = (reactionType: ReactionLabelType) => {
+    // 로그인 체크
+    if (!user) {
+      setAuthModal(true);
+      return;
+    }
+
+    if (!postData) return;
+
+    // 현재 선택된 반응과 같은 반응을 다시 클릭한 경우 - 삭제
+    if (myReaction === reactionType) {
+      deleteReaction({
+        paths: { postId },
+      });
+    }
+    // 처음 반응을 선택하는 경우 - 생성
+    else if (!myReaction) {
+      createReaction({
+        paths: { postId },
+        body: { type: reactionType },
+      });
+    }
+    // 다른 반응으로 변경하는 경우 - 수정
+    else {
+      updateReaction({
+        paths: { postId },
+        body: { type: reactionType },
+      });
+    }
   };
 
   const handleBookmark = () => {
@@ -88,6 +216,12 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
   };
 
   const handleReport = () => {
+    // 로그인 체크
+    if (!user) {
+      setAuthModal(true);
+      return;
+    }
+
     setReportModal(true);
   };
 
@@ -161,12 +295,15 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
               <div className="flex items-center space-x-2 mb-2">
-                {/*<Badge className={emotionColors[postData.emotion as keyof typeof emotionColors]}>*/}
-                {/*    {postData.emotion}*/}
-                {/*</Badge>*/}
-                <Badge className={emotionColors["melancholy"]}>
-                  {"melancholy"}
-                </Badge>
+                {/* 게시글의 원본 감정 표시 */}
+                {postEmotion && (
+                  <Badge className={postEmotion.color}>
+                    {postEmotion.emotionType} {postEmotion.label}
+                  </Badge>
+                )}
+                {!postEmotion && (
+                  <Badge className="bg-gray-200 text-gray-800">감정 없음</Badge>
+                )}
               </div>
 
               {/* Title with Bookmark and Share icons */}
@@ -272,21 +409,33 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
             <div className="flex items-center space-x-4">
               {/* Reaction Buttons with individual counts */}
               <div className="flex items-center space-x-2">
-                {EMOTICON_OPTIONS.map((emoji) => (
-                  <div key={emoji.value} className="flex items-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={`h-8 w-8 p-0 ${reactions === emoji ? "bg-gray-100 ring-2 ring-blue-300" : ""}`}
-                      onClick={() => handleReaction(emoji)}
-                    >
-                      {}
-                    </Button>
-                    <span className="text-sm text-gray-500 ml-1">
-                      {/*{postMockData.reactions[emoji.value] || 0}*/}
-                    </span>
-                  </div>
-                ))}
+                {Object.entries(EMOTION_TO_EMOJI_MAP).map(
+                  ([reactionType, emoji]) => {
+                    const count =
+                      reactions[reactionType as ReactionLabelType] || 0;
+                    const isSelected = myReaction === reactionType;
+
+                    return (
+                      <div key={reactionType} className="flex items-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-8 w-8 p-0 ${
+                            isSelected ? "bg-blue-100 ring-2 ring-blue-300" : ""
+                          }`}
+                          onClick={() =>
+                            handleReaction(reactionType as ReactionLabelType)
+                          }
+                        >
+                          {emoji}
+                        </Button>
+                        <span className="text-sm text-gray-500 ml-1">
+                          {count}
+                        </span>
+                      </div>
+                    );
+                  }
+                )}
               </div>
 
               <Button
@@ -320,6 +469,7 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
         onClose={() => setUserProfileModal(false)}
         userData={userMockData}
       />
+      <AuthModal isOpen={authModal} onClose={() => setAuthModal(false)} />
     </article>
   );
 }

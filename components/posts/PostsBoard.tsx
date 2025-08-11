@@ -145,6 +145,7 @@ export default function PostsBoard() {
         initialSort={selectedSort}
         concept={selectedConcept}
         limit={10}
+        keyword={searchQuery}
       />
     </div>
   );
