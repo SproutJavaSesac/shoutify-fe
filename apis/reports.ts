@@ -1,6 +1,4 @@
 import { api } from "@/apis/client";
-import { REPORTS_API_ENDPOINTS } from "@/constants/reports";
-import { cleanApiParams } from "@/lib/utils/api-params";
 import {
   ReportCommentCreateRequest,
   ReportCommentCreateResponse,
@@ -9,8 +7,10 @@ import {
   ReportPostCreateResponse,
   ReportProcessRequest,
   ReportProcessResponse,
-  ReportQueryParams,
+  ReportQueryParams
 } from "@/types/reports";
+import { REPORTS_API_ENDPOINTS } from "@/constants/reports";
+import { cleanApiParams } from "@/lib/utils/api-params";
 
 /**
  * 관리자용 신고 목록을 조회합니다.
@@ -21,11 +21,7 @@ export async function getReports(
   params: ReportQueryParams
 ): Promise<ReportListResponse> {
   // 빈 문자열과 null/undefined 값을 제거
-  const cleanParams = cleanApiParams({
-    ...params,
-    statusType: "all",
-  });
-
+  const cleanParams = cleanApiParams(params);
   return api.get<ReportListResponse>(
     REPORTS_API_ENDPOINTS.ADMIN_REPORTS,
     cleanParams
