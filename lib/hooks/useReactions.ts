@@ -1,73 +1,83 @@
-import { useState } from "react";
+import { useMutation } from "./useApi";
 import {
-  CommentReactionRequest,
+  createCommentReaction,
+  createPostReaction,
+  deleteCommentReaction,
+  deletePostReaction,
+  updateCommentReaction,
+  updatePostReaction
+} from "@/apis/reactions";
+import type {
+  CommentReactionCreateContract,
+  CommentReactionDeleteContract,
   CommentReactionResponse,
-  PostReactionRequest,
+  CommentReactionUpdateContract,
+  PostReactionCreateContract,
+  PostReactionDeleteContract,
   PostReactionResponse,
+  PostReactionUpdateContract
 } from "@/types/reactions";
-import { doCommentReaction, doPostReaction } from "@/apis/reactions";
+import { ApiOptions } from "@/types/apis";
 
 /**
- * 게시글에 반응하는 훅
- *
- * @returns 게시글 반응 함수와 성공, 로딩, 실패 상태 정보
+ * 게시글 반응 생성 훅
  */
-export function useDoPostReaction() {
-  const [data, setData] = useState<PostReactionResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  const doPostReactionHook = async ({
-    postId,
-    body,
-  }: PostReactionRequest): Promise<PostReactionResponse | null> => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await doPostReaction({ postId, body });
-      setData(response);
-      return response;
-    } catch (err: any) {
-      setError(err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { doPostReaction: doPostReactionHook, data, loading, error };
+export function usePostReactionCreate(
+  options?: ApiOptions<PostReactionResponse>
+) {
+  return useMutation<PostReactionCreateContract>(createPostReaction, options);
 }
 
 /**
- * 댓글에 반응하는 훅
- *
- * @returns 댓글 반응 함수와 성공, 로딩, 실패 상태 정보
+ * 게시글 반응 수정 훅
  */
-export function useDoCommentReaction() {
-  const [data, setData] = useState<CommentReactionResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+export function usePostReactionUpdate(
+  options?: ApiOptions<PostReactionResponse>
+) {
+  return useMutation<PostReactionUpdateContract>(updatePostReaction, options);
+}
 
-  const doCommentReactionHook = async ({
-    postId,
-    commentId,
-    body,
-  }: CommentReactionRequest): Promise<CommentReactionResponse | null> => {
-    try {
-      setLoading(true);
-      setError(null);
+/**
+ * 게시글 반응 삭제 훅
+ */
+export function usePostReactionDelete(
+  options?: ApiOptions<PostReactionResponse>
+) {
+  return useMutation<PostReactionDeleteContract>(deletePostReaction, options);
+}
 
-      const response = await doCommentReaction({ postId, commentId, body });
-      setData(response);
-      return response;
-    } catch (err: any) {
-      setError(err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+/**
+ * 댓글 반응 생성 훅
+ */
+export function useCommentReactionCreate(
+  options?: ApiOptions<CommentReactionResponse>
+) {
+  return useMutation<CommentReactionCreateContract>(
+    createCommentReaction,
+    options
+  );
+}
 
-  return { doCommentReaction: doCommentReactionHook, data, loading, error };
+/**
+ * 댓글 반응 수정 훅
+ */
+export function useCommentReactionUpdate(
+  options?: ApiOptions<CommentReactionResponse>
+) {
+  return useMutation<CommentReactionUpdateContract>(
+    updateCommentReaction,
+    options
+  );
+}
+
+/**
+ * 댓글 반응 삭제 훅
+ */
+export function useCommentReactionDelete(
+  options?: ApiOptions<CommentReactionResponse>
+) {
+  return useMutation<CommentReactionDeleteContract>(
+    deleteCommentReaction,
+    options
+  );
 }

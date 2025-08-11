@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -17,34 +18,43 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultMode?: "login" | "register";
+  redirectUrl?: string; // 로그인 후 돌아갈 URL
 }
 
 export function AuthModal({
   isOpen,
   onClose,
   defaultMode = "login",
+  redirectUrl,
 }: AuthModalProps) {
   const [mode, setMode] = useState<"login" | "register">(defaultMode);
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const { login } = useAuth();
   const { toast } = useToast();
+  const pathname = usePathname();
 
   const handleSocialLogin = async (provider: "google" | "kakao") => {
     setIsLoading(provider);
     try {
-      await login(provider);
-      toast({
-        description: `Successfully ${mode === "login" ? "logged in" : "registered"} with ${provider === "google" ? "Google" : "KakaoTalk"}!`,
-      });
-      onClose();
+      // redirectUrl이 제공되면 사용하고, 그렇지 않으면 현재 페이지 URL 사용
+      // 홈페이지("/")에서는 리다이렉트하지 않음
+      let targetUrl = "";
+      if (redirectUrl) {
+        targetUrl = redirectUrl;
+      } else if (pathname && pathname !== "/") {
+        targetUrl = typeof window !== "undefined" ? window.location.href : "";
+      }
+
+      await login(provider, targetUrl);
+      // 성공 토스트는 로그인 완료 후 AuthProvider에서 처리됨
     } catch (error) {
       toast({
         description: `Failed to ${mode} with ${provider === "google" ? "Google" : "KakaoTalk"}. Please try again.`,
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(null);
+      setIsLoading(null); // 에러 시에만 로딩 상태 해제
     }
+    // 성공 시에는 리다이렉트되므로 setIsLoading(null)이 실행되지 않음
   };
 
   return (

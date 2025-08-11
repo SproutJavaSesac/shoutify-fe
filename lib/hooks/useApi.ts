@@ -1,48 +1,58 @@
 import { useCallback, useEffect, useState } from "react";
-import { ApiError } from "@/apis/client";
+import {
+  ApiContract,
+  ApiError,
+  ApiOptions,
+  ApiPaginationArgs,
+  ApiQueryArgs,
+  ApiQueryFilters,
+  ApiState,
+  ExtractPaginatedData,
+  ExtractResponse,
+  MutationArgs,
+  MutationState,
+  Pagination,
+  PaginationOptions,
+  PaginationState
+} from "@/types/apis";
 
-export interface UseApiState<T> {
-  data: T | null;
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-}
-
-export interface UseApiOptions {
-  immediate?: boolean;
-  onSuccess?: (data: any) => void;
-  onError?: (error: string) => void;
-}
-
-// 기본 API 훅
-export function useApi<T>(
-  apiCall: () => Promise<T>,
-  options: UseApiOptions = {},
-): UseApiState<T> {
+/**
+ * 범용적인 API 조회 훅
+ * GET 요청에 최적화되어 있으며, queries와 paths만 인자로 받습니다.
+ */
+export function useApi<T extends ApiContract<any, any, any, any>>(
+  apiCall: (args?: ApiQueryArgs<T>) => Promise<ExtractResponse<T>>,
+  options: ApiOptions<ExtractResponse<T>> = {},
+): ApiState<ExtractResponse<T>> {
   const { immediate = true, onSuccess, onError } = options;
 
-  const [data, setData] = useState<T | null>(null);
+  const [data, setData] = useState<ExtractResponse<T> | null>(null);
   const [loading, setLoading] = useState(immediate);
   const [error, setError] = useState<string | null>(null);
 
-  const execute = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  const execute = useCallback(
+    async (args?: ApiQueryArgs<T>) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const result = await apiCall();
-      setData(result);
-      onSuccess?.(result);
-    } catch (err) {
-      const errorMessage =
-        err instanceof ApiError ? err.message : "An unexpected error occurred";
+        const result = await apiCall(args);
+        setData(result);
+        onSuccess?.(result);
+      } catch (err) {
+        const errorMessage =
+          err instanceof ApiError
+            ? err.message
+            : "An unexpected error occurred";
 
-      setError(errorMessage);
-      onError?.(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [apiCall, onSuccess, onError]);
+        setError(errorMessage);
+        onError?.(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [apiCall, onSuccess, onError],
+  );
 
   useEffect(() => {
     if (immediate) {
@@ -54,36 +64,31 @@ export function useApi<T>(
     data,
     loading,
     error,
-    refetch: execute,
+    refetch: () => execute(),
   };
 }
 
-// 뮤테이션 훅 (POST, PUT, DELETE 등)
-export interface UseMutationState<T> {
-  data: T | null;
-  loading: boolean;
-  error: string | null;
-  mutate: (...args: any[]) => Promise<T | null>;
-  reset: () => void;
-}
-
-export function useMutation<T, P extends any[]>(
-  mutationFn: (...args: P) => Promise<T>,
-  options: UseApiOptions = {},
-): UseMutationState<T> {
+/**
+ * 뮤테이션 훅 (POST, PUT, PATCH, DELETE)
+ * queries, paths, body를 모두 인자로 받을 수 있습니다.
+ */
+export function useMutation<T extends ApiContract<any, any, any, any>>(
+  mutationFn: (args: MutationArgs<T>) => Promise<ExtractResponse<T>>,
+  options: ApiOptions<ExtractResponse<T>> = {},
+): MutationState<ExtractResponse<T>> {
   const { onSuccess, onError } = options;
 
-  const [data, setData] = useState<T | null>(null);
+  const [data, setData] = useState<ExtractResponse<T> | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const mutate = useCallback(
-    async (...args: P): Promise<T | null> => {
+    async (args: MutationArgs<T>): Promise<ExtractResponse<T> | null> => {
       try {
         setLoading(true);
         setError(null);
 
-        const result = await mutationFn(...args);
+        const result = await mutationFn(args);
         setData(result);
         onSuccess?.(result);
 
@@ -120,60 +125,69 @@ export function useMutation<T, P extends any[]>(
   };
 }
 
-// 페이지네이션 훅
-export interface UsePaginationOptions<T> {
-  pageSize?: number;
-  immediate?: boolean;
-}
+/**
+ * 페이지네이션 전용 훅
+ * ApiContract가 pagination 응답을 포함하는 경우에만 사용 가능합니다.
+ */
+export function usePagination<T extends ApiContract<any, any, any, any>>(
+  fetchFn: (args: ApiPaginationArgs<T>) => Promise<ExtractResponse<T>>,
+  options: PaginationOptions = {},
+): PaginationState<ExtractPaginatedData<T>> {
+  type DataType = ExtractPaginatedData<T>;
 
-export interface UsePaginationState<T> {
-  data: T[];
-  currentPage: number;
-  totalPages: number;
-  totalCount: number;
-  loading: boolean;
-  error: string | null;
-  hasNext: boolean;
-  hasPrev: boolean;
-  goToPage: (page: number) => void;
-  nextPage: () => void;
-  prevPage: () => void;
-  refetch: () => void;
-}
+  const { size = 10, immediate = true, page = 0, sort, order } = options;
 
-export function usePagination<T>(
-  fetchFn: (
-    page: number,
-    limit: number,
-  ) => Promise<{
-    data: T[];
-    totalCount: number;
-    currentPage: number;
-    totalPages: number;
-  }>,
-  options: UsePaginationOptions<T> = {},
-): UsePaginationState<T> {
-  const { pageSize = 10, immediate = true } = options;
-
-  const [data, setData] = useState<T[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalCount, setTotalCount] = useState(0);
+  const [data, setData] = useState<DataType[]>([]);
+  const [paginationInfo, setPaginationInfo] = useState<Pagination>({
+    currentPage: page,
+    totalPages: 0,
+    totalCount: 0,
+    pageSize: size,
+    hasNext: false,
+    hasPrevious: false,
+  });
   const [loading, setLoading] = useState(immediate);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(
-    async (page: number) => {
+    async (pageNumber: number, extraArgs?: ApiQueryFilters<T>) => {
       try {
         setLoading(true);
         setError(null);
 
-        const result = await fetchFn(page, pageSize);
+        const queriesWithPagination = {
+          ...extraArgs,
+          page: pageNumber,
+          size, // ← 무한 렌더링 방지 위해 결과값 paginationInfo.pageSize 대신 외부값 options.size 사용
+          sort,
+          order,
+        };
 
-        setData(result.data);
-        setCurrentPage(result.currentPage);
-        setTotalPages(result.totalPages);
-        setTotalCount(result.totalCount);
+        const result = await fetchFn({
+          queries: queriesWithPagination,
+        } as ApiPaginationArgs<T>);
+
+        // 응답에서 pagination 정보 추출
+        const paginationData = (result as any).pagination as Pagination;
+
+        // 데이터 배열 추출 (pagination을 제외한 배열 속성 찾기)
+        const dataArrayKey = Object.keys(result as any).find(
+          (key) => key !== "pagination" && Array.isArray((result as any)[key]),
+        );
+
+        const extractedData: DataType[] = dataArrayKey
+          ? (result as any)[dataArrayKey]
+          : [];
+
+        setData(extractedData);
+        setPaginationInfo({
+          currentPage: pageNumber,
+          totalPages: paginationData.totalPages ?? 0,
+          totalCount: paginationData.totalCount ?? 0,
+          pageSize: size, // ← 여기도 수정
+          hasNext: pageNumber < (paginationData.totalPages ?? 0) - 1,
+          hasPrevious: pageNumber > 0,
+        });
       } catch (err) {
         const errorMessage =
           err instanceof ApiError
@@ -185,49 +199,54 @@ export function usePagination<T>(
         setLoading(false);
       }
     },
-    [fetchFn, pageSize],
+    [fetchFn, size, sort, order], // ← paginationInfo.pageSize 제거
   );
 
   const goToPage = useCallback(
-    (page: number) => {
-      if (page >= 1 && page <= totalPages) {
-        fetchData(page);
+    (pageNumber: number, extraArgs?: ApiQueryFilters<T>) => {
+      if (pageNumber >= 0 && pageNumber < paginationInfo.totalPages) {
+        fetchData(pageNumber, extraArgs);
       }
     },
-    [fetchData, totalPages],
+    [fetchData, paginationInfo.totalPages],
   );
 
-  const nextPage = useCallback(() => {
-    if (currentPage < totalPages) {
-      goToPage(currentPage + 1);
-    }
-  }, [currentPage, totalPages, goToPage]);
+  const nextPage = useCallback(
+    (extraArgs?: ApiQueryFilters<T>) => {
+      if (paginationInfo.hasNext) {
+        goToPage(paginationInfo.currentPage + 1, extraArgs);
+      }
+    },
+    [paginationInfo.hasNext, paginationInfo.currentPage, goToPage],
+  );
 
-  const prevPage = useCallback(() => {
-    if (currentPage > 1) {
-      goToPage(currentPage - 1);
-    }
-  }, [currentPage, goToPage]);
+  const prevPage = useCallback(
+    (extraArgs?: ApiQueryFilters<T>) => {
+      if (paginationInfo.hasPrevious) {
+        goToPage(paginationInfo.currentPage - 1, extraArgs);
+      }
+    },
+    [paginationInfo.hasPrevious, paginationInfo.currentPage, goToPage],
+  );
 
-  const refetch = useCallback(() => {
-    fetchData(currentPage);
-  }, [fetchData, currentPage]);
+  const refetch = useCallback(
+    (extraArgs?: ApiQueryFilters<T>) => {
+      fetchData(paginationInfo.currentPage, extraArgs);
+    },
+    [fetchData, paginationInfo.currentPage],
+  );
 
   useEffect(() => {
     if (immediate) {
-      fetchData(1);
+      fetchData(page);
     }
-  }, [fetchData, immediate]);
+  }, [fetchData, immediate, page]);
 
   return {
     data,
-    currentPage,
-    totalPages,
-    totalCount,
     loading,
     error,
-    hasNext: currentPage < totalPages,
-    hasPrev: currentPage > 1,
+    ...paginationInfo,
     goToPage,
     nextPage,
     prevPage,

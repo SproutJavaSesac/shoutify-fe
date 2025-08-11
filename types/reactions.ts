@@ -1,33 +1,28 @@
 export type ReactionActionType = "add" | "remove";
 
+import { ApiContract, IdType } from "./apis";
+
 export interface Reaction {
-  // id: number;
-  // userId: string;
-  // targetId: number;
-  // targetType: "post" | "comment";
-  // emoji: string;
-  // createdAt: string;
   status: ReactionActionType;
-  reaction: EmoticonType;
+  reaction: ReactionLabelType;
   reactionCount: number;
   reactionDetails: ReactionDetailCountMap;
 }
 
 export interface PostReactionRequest {
-  postId: number;
+  postId: string | number;
   body: PostReactionRequestBody;
 }
 
 interface ReactionRequestBody {
-  emotion: EmoticonType;
-  action: ReactionActionType;
+  type: ReactionLabelType;
 }
 
 export interface PostReactionRequestBody extends ReactionRequestBody {}
 
 export interface CommentReactionRequest {
-  postId: number;
-  commentId: number;
+  postId: string | number;
+  commentId: string | number;
   body: CommentReactionRequestBody;
 }
 
@@ -39,29 +34,58 @@ export interface PostReactionResponse extends ReactionResponse {}
 
 export interface CommentReactionResponse extends ReactionResponse {}
 
-// export interface ReactionRequest {
-//   // targetId: number;
-//   // targetType: "post" | "comment";
-//   // emoji: string;
-// }
-//
-// export interface ReactionsResponse {
-//   reactions: Record<string, number>;
-//   userReaction?: string;
-// }
-//
-// export interface ReactionStats {
-//   totalReactions: number;
-//   reactionBreakdown: Record<string, number>;
-//   topEmojis: Array<{
-//     emoji: string;
-//     count: number;
-//   }>;
-// }
+// API Contract 타입들
+export type PostReactionCreateContract = ApiContract<
+  { postId: IdType },
+  never,
+  { type: ReactionLabelType },
+  PostReactionResponse
+>;
 
-// export type ReactionTarget = "post" | "comment";
+export type PostReactionUpdateContract = ApiContract<
+  { postId: IdType },
+  never,
+  { type: ReactionLabelType },
+  PostReactionResponse
+>;
+
+export type PostReactionDeleteContract = ApiContract<
+  { postId: IdType },
+  never,
+  never,
+  PostReactionResponse
+>;
+
+export type CommentReactionCreateContract = ApiContract<
+  { postId: IdType; commentId: IdType },
+  never,
+  { type: ReactionLabelType },
+  CommentReactionResponse
+>;
+
+export type CommentReactionUpdateContract = ApiContract<
+  { postId: IdType; commentId: IdType },
+  never,
+  { type: ReactionLabelType },
+  CommentReactionResponse
+>;
+
+export type CommentReactionDeleteContract = ApiContract<
+  { postId: IdType; commentId: IdType },
+  never,
+  never,
+  CommentReactionResponse
+>;
 
 export type EmoticonType =
+  | "HAPPY"
+  | "SAD"
+  | "ANGRY"
+  | "EXCITED"
+  | "CONFUSED"
+  | "PROUD";
+
+export type ReactionLabelType =
   | "HAPPY"
   | "SAD"
   | "ANGRY"
@@ -81,13 +105,14 @@ export type ReactionEmojiType =
 export interface EmotionOption {
   label: string;
   emotionType: ReactionEmojiType;
-  value: EmoticonType;
+  value: ReactionLabelType;
   color: string;
 }
 
 export type ReactionDetailCountMap = {
-  [K in EmoticonType]: number;
+  [K in ReactionLabelType]: number;
 };
 
-// ✨ 방법 1: EmoticonType을 기반으로 한 Record 타입 (권장)
-// export type ReactionDetailCountMap = Record<EmoticonType, number>;
+export type ReactionLabelEmojiMap = {
+  [K in ReactionLabelType]: ReactionEmojiType;
+};

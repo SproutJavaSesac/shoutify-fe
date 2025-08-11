@@ -32,19 +32,13 @@ export function Navigation() {
               href={POST_ROUTES.LIST}
               className="text-gray-700 hover:text-gray-900 transition-colors"
             >
-              Posts
+              게시글 목록
             </Link>
             <Link
               href={RANKING_ROUTES.LIST}
               className="text-gray-700 hover:text-gray-900 transition-colors"
             >
-              Ranking
-            </Link>
-            <Link
-              href={MEMBER_ROUTES.MY_PAGE}
-              className="text-gray-700 hover:text-gray-900 transition-colors"
-            >
-              My Page
+              랭킹
             </Link>
           </nav>
 

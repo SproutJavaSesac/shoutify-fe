@@ -1,3 +1,5 @@
+import { ApiContract } from "@/types/apis";
+
 export interface Ranking {
   memberId: number;
   memberNickname: string;
@@ -29,9 +31,19 @@ export interface RankingCategoryOption {
   value: RankingCategoryType;
 }
 
-export type RankingPeriodType = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+export type RankingPeriodType = "DAILY" | "WEEKLY" | "MONTHLY";
 
 export interface RankingPeriodTypeOption {
   label: string;
   value: RankingPeriodType;
 }
+
+// ===== API Contract 정의 =====
+
+/** 랭킹 목록 조회 API 계약 */
+export type RankingListContract = ApiContract<
+  never,
+  RankingQueryParams,
+  never,
+  RankingListResponse
+>;

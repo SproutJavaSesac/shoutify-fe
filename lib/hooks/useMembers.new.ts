@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { useApi, useMutation } from "./useApi";
 import {
   getMemberInfo,
@@ -68,12 +67,10 @@ export function useMyPosts(
   params?: PaginationParams,
   options?: ApiOptions<MyPostListResponse>
 ) {
-  const apiCall = useCallback(
-    (args: any) => getMyPosts({ ...args, queries: params }),
-    [params?.page, params?.size]
+  return useApi<MyPostListContract>(
+    (args) => getMyPosts({ ...args, queries: params }),
+    options
   );
-
-  return useApi<MyPostListContract>(apiCall, options);
 }
 
 /**
@@ -97,12 +94,10 @@ export function useMyComments(
   params?: PaginationParams,
   options?: ApiOptions<MyCommentListResponse>
 ) {
-  const apiCall = useCallback(
-    (args: any) => getMyComments({ ...args, queries: params }),
-    [params?.page, params?.size]
+  return useApi<MyCommentListContract>(
+    (args) => getMyComments({ ...args, queries: params }),
+    options
   );
-
-  return useApi<MyCommentListContract>(apiCall, options);
 }
 
 /**

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { ko } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +10,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Award,
+  ChevronDown,
+  ChevronUp,
   ExternalLink,
+  ExternalLinkIcon,
   Eye,
+  EyeOff,
   Heart,
   Loader2,
   MessageCircle,
@@ -21,7 +26,21 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { useMyComments, useMyInfo, useMyPosts } from "@/lib/hooks/useMembers";
 import { MEMBER_ROUTES } from "@/constants/members";
-import type { Pagination } from "@/types/commons";
+import { POST_ROUTES } from "@/constants/posts";
+import type { Pagination } from "@/types/apis";
+import { deletePost, hidePost, unhidePost } from "@/apis/posts";
+import { toast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const bookmarkedPosts = [
   {
@@ -130,12 +149,29 @@ const badges = [
 ];
 
 const emotionTypeColors: { [key: string]: string } = {
+  기쁨: "bg-yellow-100 text-yellow-800",
+  슬픔: "bg-blue-100 text-blue-800",
+  분노: "bg-red-100 text-red-800",
+  흥미: "bg-orange-100 text-orange-800",
+  혼란: "bg-purple-100 text-purple-800",
+  자랑: "bg-green-100 text-green-800",
+  // 영어 키도 유지 (기존 데이터 호환성)
   HAPPY: "bg-yellow-100 text-yellow-800",
   SAD: "bg-blue-100 text-blue-800",
   ANGRY: "bg-red-100 text-red-800",
   EXCITED: "bg-orange-100 text-orange-800",
   CONFUSED: "bg-purple-100 text-purple-800",
   PROUD: "bg-green-100 text-green-800",
+};
+
+// 감정 타입 영어 → 한국어 변환 맵
+const emotionTypeTranslation: { [key: string]: string } = {
+  HAPPY: "기쁨",
+  SAD: "슬픔",
+  ANGRY: "분노",
+  EXCITED: "흥미",
+  CONFUSED: "혼란",
+  PROUD: "자랑",
 };
 
 interface PaginationProps {
@@ -155,7 +191,7 @@ function Pagination({ pagination, onPageChange }: Readonly<PaginationProps>) {
         onClick={() => onPageChange(currentPage - 1)}
         disabled={!hasPrevious}
       >
-        Previous
+        이전
       </Button>
       {pageNumbers.map((page) => (
         <Button
@@ -167,7 +203,7 @@ function Pagination({ pagination, onPageChange }: Readonly<PaginationProps>) {
         </Button>
       ))}
       <Button onClick={() => onPageChange(currentPage + 1)} disabled={!hasNext}>
-        Next
+        다음
       </Button>
     </div>
   );
@@ -177,25 +213,91 @@ export function MyPageTabs() {
   const [activeTab, setActiveTab] = useState("posts");
   const [postsPage, setPostsPage] = useState(0);
   const [commentsPage, setCommentsPage] = useState(0);
+  const [expandedPosts, setExpandedPosts] = useState<Set<number>>(new Set());
+  const [loadingActions, setLoadingActions] = useState<Set<number>>(new Set());
 
   const { user } = useAuth();
   const { data: myInfo, loading: infoLoading, error: infoError } = useMyInfo();
+
+  // 파라미터 객체를 메모이제이션하여 무한 렌더링 방지
+  const postsParams = useMemo(
+    () => ({ page: postsPage, size: 5 }),
+    [postsPage],
+  );
+  const commentsParams = useMemo(
+    () => ({ page: commentsPage, size: 10 }),
+    [commentsPage],
+  );
+
   const {
     data: postsData,
     loading: postsLoading,
     error: postsError,
-  } = useMyPosts({ page: postsPage, size: 5 });
+    refetch: refetchPosts,
+  } = useMyPosts(postsParams);
   const {
     data: commentsData,
     loading: commentsLoading,
     error: commentsError,
-  } = useMyComments({ page: commentsPage, size: 10 });
+  } = useMyComments(commentsParams);
+
+  const togglePostExpansion = (postId: number) => {
+    const newExpanded = new Set(expandedPosts);
+    if (newExpanded.has(postId)) {
+      newExpanded.delete(postId);
+    } else {
+      newExpanded.add(postId);
+    }
+    setExpandedPosts(newExpanded);
+  };
+
+  const handlePostAction = async (
+    postId: number,
+    action: "hide" | "unhide" | "delete",
+  ) => {
+    if (loadingActions.has(postId)) return;
+
+    setLoadingActions((prev) => new Set([...prev, postId]));
+
+    try {
+      switch (action) {
+        case "hide":
+          await hidePost(postId);
+          toast({ title: "성공", description: "게시글을 숨겼습니다." });
+          break;
+        case "unhide":
+          await unhidePost(postId);
+          toast({ title: "성공", description: "게시글을 공개했습니다." });
+          break;
+        case "delete":
+          await deletePost(postId);
+          toast({ title: "성공", description: "게시글을 삭제했습니다." });
+          break;
+      }
+
+      // 액션 후 데이터 새로고침
+      refetchPosts();
+    } catch (error) {
+      console.error("Post action error:", error);
+      toast({
+        title: "오류",
+        description: "작업 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingActions((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(postId);
+        return newSet;
+      });
+    }
+  };
 
   if (infoLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-        <span className="ml-2 text-gray-600">Loading my information...</span>
+        <span className="ml-2 text-gray-600">내 정보를 불러오는 중...</span>
       </div>
     );
   }
@@ -203,7 +305,7 @@ export function MyPageTabs() {
   if (infoError) {
     return (
       <div className="text-center py-12 text-red-600">
-        Failed to load information. Please try again later.
+        정보를 불러오는데 실패했습니다. 나중에 다시 시도해주세요.
       </div>
     );
   }
@@ -237,23 +339,23 @@ export function MyPageTabs() {
                   <div className="text-2xl font-bold text-gray-900">
                     {myInfo.postCount}
                   </div>
-                  <div className="text-sm text-gray-600">Posts</div>
+                  <div className="text-sm text-gray-600">게시글</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-gray-900">
                     {myInfo.reactionCount}
                   </div>
-                  <div className="text-sm text-gray-600">Reactions</div>
+                  <div className="text-sm text-gray-600">반응</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-gray-900">234</div>
-                  <div className="text-sm text-gray-600">Bookmarks</div>
+                  <div className="text-sm text-gray-600">북마크</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-gray-900">
                     {myInfo.commentCount}
                   </div>
-                  <div className="text-sm text-gray-600">Comments</div>
+                  <div className="text-sm text-gray-600">댓글</div>
                 </div>
               </div>
 
@@ -264,13 +366,13 @@ export function MyPageTabs() {
                     className="flex items-center space-x-2"
                   >
                     <Settings className="h-4 w-4" />
-                    <span>Edit Profile</span>
+                    <span>프로필 수정</span>
                   </Button>
                 </Link>
                 <Link href={MEMBER_ROUTES.MEMBER_PROFILE(myInfo.memberId)}>
                   <Button className="flex items-center space-x-2">
                     <ExternalLink className="h-4 w-4" />
-                    <span>Go to Public Profile</span>
+                    <span>공개 프로필 보기</span>
                   </Button>
                 </Link>
               </div>
@@ -281,10 +383,10 @@ export function MyPageTabs() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="posts">My Posts</TabsTrigger>
-          <TabsTrigger value="comments">Comments</TabsTrigger>
-          <TabsTrigger value="bookmarks">Bookmarks</TabsTrigger>
-          <TabsTrigger value="badges">Badges</TabsTrigger>
+          <TabsTrigger value="posts">내 게시글</TabsTrigger>
+          <TabsTrigger value="comments">댓글</TabsTrigger>
+          <TabsTrigger value="bookmarks">북마크</TabsTrigger>
+          <TabsTrigger value="badges">배지</TabsTrigger>
         </TabsList>
 
         <TabsContent value="posts" className="space-y-4">
@@ -295,86 +397,200 @@ export function MyPageTabs() {
           )}
           {postsError && (
             <div className="text-center py-10 text-red-500">
-              Failed to load posts.
+              게시글을 불러오는데 실패했습니다.
+            </div>
+          )}
+          {!postsLoading && !postsError && postsData?.posts?.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-gray-400 mb-2">✍️</div>
+              <p className="text-gray-500 mb-1">
+                아직 작성한 게시글이 없습니다
+              </p>
+              <p className="text-gray-400 text-sm">
+                첫 번째 게시글을 작성해보세요!
+              </p>
+              <Link href={POST_ROUTES.CREATE}>
+                <Button className="mt-4">게시글 작성하기</Button>
+              </Link>
             </div>
           )}
           {!postsLoading &&
             !postsError &&
-            postsData?.posts.map((post) => (
-              <Card key={post.postId}>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <Badge
-                          className={
-                            emotionTypeColors[post.emotionType] ||
-                            "bg-gray-100 text-gray-800"
+            postsData?.posts?.map((post) => {
+              const isExpanded = expandedPosts.has(post.postId);
+              const isLoading = loadingActions.has(post.postId);
+
+              return (
+                <Card key={post.postId}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2 flex-wrap">
+                          <Badge
+                            className={
+                              emotionTypeColors[
+                                emotionTypeTranslation[post.emotionType] ||
+                                  post.emotionType
+                              ] || "bg-gray-100 text-gray-800"
+                            }
+                          >
+                            {emotionTypeTranslation[post.emotionType] ||
+                              post.emotionType}
+                          </Badge>
+                          <Badge variant="outline">{post.conceptType}</Badge>
+                          <span className="text-sm text-gray-500">
+                            {formatDistanceToNow(new Date(post.createdAt), {
+                              addSuffix: true,
+                              locale: ko,
+                            })}
+                          </span>
+                          {post.isHidden && (
+                            <Badge variant="secondary">숨김</Badge>
+                          )}
+                        </div>
+
+                        <Link href={POST_ROUTES.DETAIL(post.postId)}>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600 cursor-pointer">
+                            {post.afterTitle || post.beforeTitle}
+                          </h3>
+                        </Link>
+
+                        <div className="space-y-3">
+                          {isExpanded ? (
+                            <>
+                              <div>
+                                <p className="text-sm font-medium text-gray-700 mb-1">
+                                  원문:
+                                </p>
+                                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                                  {post.beforeContent}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-sm font-medium text-gray-700 mb-1">
+                                  AI 변환:
+                                </p>
+                                <p className="text-sm text-gray-800 bg-blue-50 p-3 rounded">
+                                  {post.afterContent}
+                                </p>
+                              </div>
+                            </>
+                          ) : (
+                            <p className="text-sm text-gray-600 line-clamp-2">
+                              {post.afterContent || post.beforeContent}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between mt-4">
+                          <div className="flex items-center space-x-4 text-sm text-gray-500">
+                            <span className="flex items-center space-x-1">
+                              <Heart className="h-4 w-4" />
+                              <span>{post.reactionCount}</span>
+                            </span>
+                            <span className="flex items-center space-x-1">
+                              <MessageCircle className="h-4 w-4" />
+                              <span>{post.commentCount}</span>
+                            </span>
+                            <Link
+                              href={POST_ROUTES.DETAIL(post.postId)}
+                              className="flex items-center space-x-1 text-blue-600 hover:text-blue-800"
+                            >
+                              <ExternalLinkIcon className="h-4 w-4" />
+                              <span>게시글 보기</span>
+                            </Link>
+                          </div>
+
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => togglePostExpansion(post.postId)}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            {isExpanded ? (
+                              <>
+                                <ChevronUp className="h-4 w-4 mr-1" />
+                                간략히 보기
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="h-4 w-4 mr-1" />
+                                전체 보기
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-center space-y-2 ml-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isLoading}
+                          onClick={() =>
+                            handlePostAction(
+                              post.postId,
+                              post.isHidden ? "unhide" : "hide",
+                            )
                           }
                         >
-                          {post.emotionType}
-                        </Badge>
-                        <Badge variant="outline">{post.conceptType}</Badge>
-                        <span className="text-sm text-gray-500">
-                          {formatDistanceToNow(new Date(post.createdAt), {
-                            addSuffix: true,
-                          })}
-                        </span>
-                        {post.isHidden && (
-                          <Badge variant="secondary">Hidden</Badge>
-                        )}
-                      </div>
-
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        {post.afterTitle}
-                      </h3>
-
-                      <div className="space-y-3">
-                        <div>
-                          <p className="text-sm font-medium text-gray-700 mb-1">
-                            Original:
-                          </p>
-                          <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                            {post.beforeContent}
-                          </p>
-                        </div>
-
-                        <div>
-                          <p className="text-sm font-medium text-gray-700 mb-1">
-                            Transformed:
-                          </p>
-                          <p className="text-sm text-gray-800 bg-blue-50 p-2 rounded">
-                            {post.afterContent}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-4 mt-4 text-sm text-gray-500">
-                        <span className="flex items-center space-x-1">
-                          <Heart className="h-4 w-4" />
-                          <span>{post.reactionCount}</span>
-                        </span>
-                        <span className="flex items-center space-x-1">
-                          <MessageCircle className="h-4 w-4" />
-                          <span>{post.commentCount}</span>
-                        </span>
+                          {isLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : post.isHidden ? (
+                            <>
+                              <Eye className="h-4 w-4 mr-1" />
+                              공개
+                            </>
+                          ) : (
+                            <>
+                              <EyeOff className="h-4 w-4 mr-1" />
+                              숨김
+                            </>
+                          )}
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={isLoading}
+                              className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              삭제
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>게시글 삭제</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                정말로 이 게시글을 삭제하시겠습니까? 삭제된
+                                게시글은 복구할 수 없습니다.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>취소</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() =>
+                                  handlePostAction(post.postId, "delete")
+                                }
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                {isLoading ? (
+                                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                                ) : null}
+                                삭제
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
-
-                    <div className="flex items-center space-x-2 ml-4">
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4 mr-1" />
-                        {post.isHidden ? "Show" : "Hide"}
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           <Pagination
             pagination={postsData?.pagination}
             onPageChange={setPostsPage}
@@ -389,20 +605,33 @@ export function MyPageTabs() {
           )}
           {commentsError && (
             <div className="text-center py-10 text-red-500">
-              Failed to load comments.
+              댓글을 불러오는데 실패했습니다.
             </div>
           )}
           {!commentsLoading &&
             !commentsError &&
-            commentsData?.comments.map((comment) => (
+            commentsData?.comments?.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-gray-400 mb-2">💬</div>
+                <p className="text-gray-500 mb-1">
+                  아직 작성한 댓글이 없습니다
+                </p>
+                <p className="text-gray-400 text-sm">
+                  다른 사용자의 게시글에 댓글을 남겨보세요!
+                </p>
+              </div>
+            )}
+          {!commentsLoading &&
+            !commentsError &&
+            commentsData?.comments?.map((comment) => (
               <Card key={comment.commentId}>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-sm text-gray-500">on</span>
+                        <span className="text-sm text-gray-500">게시글:</span>
                         <Link
-                          href={`/post/${comment.postId}`}
+                          href={POST_ROUTES.DETAIL(comment.postId)}
                           className="text-sm font-medium text-blue-600 hover:text-blue-800"
                         >
                           {comment.postTitle}
@@ -410,6 +639,7 @@ export function MyPageTabs() {
                         <span className="text-sm text-gray-500">
                           {formatDistanceToNow(new Date(comment.createdAt), {
                             addSuffix: true,
+                            locale: ko,
                           })}
                         </span>
                       </div>
@@ -418,7 +648,7 @@ export function MyPageTabs() {
                       </p>
                       <div className="flex items-center space-x-1 text-sm text-gray-500">
                         <Heart className="h-4 w-4" />
-                        <span>{comment.reactionCount} reactions</span>
+                        <span>{comment.reactionCount} 반응</span>
                       </div>
                     </div>
                   </div>
@@ -432,42 +662,59 @@ export function MyPageTabs() {
         </TabsContent>
 
         <TabsContent value="bookmarks" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            {bookmarkedPosts.map((post) => (
-              <Card key={post.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <Badge
-                    className={`mb-2 ${
-                      emotionTypeColors[
-                        post.emotion as keyof typeof emotionTypeColors
-                      ]
-                    }`}
-                  >
-                    {post.emotion}
-                  </Badge>
+          {bookmarkedPosts.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-gray-400 mb-2">🔖</div>
+              <p className="text-gray-500 mb-1">
+                아직 북마크한 게시글이 없습니다
+              </p>
+              <p className="text-gray-400 text-sm">
+                마음에 드는 게시글에 북마크를 추가해보세요!
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {bookmarkedPosts.map((post) => (
+                <Card
+                  key={post.id}
+                  className="hover:shadow-md transition-shadow"
+                >
+                  <CardContent className="p-4">
+                    <Badge
+                      className={`mb-2 ${
+                        emotionTypeColors[
+                          post.emotion as keyof typeof emotionTypeColors
+                        ]
+                      }`}
+                    >
+                      {post.emotion}
+                    </Badge>
 
-                  <Link href={`/post/${post.id}`}>
-                    <h3 className="font-semibold text-gray-900 mb-2 hover:text-gray-700 cursor-pointer">
-                      {post.title}
-                    </h3>
-                  </Link>
+                    <Link href={POST_ROUTES.DETAIL(post.id)}>
+                      <h3 className="font-semibold text-gray-900 mb-2 hover:text-gray-700 cursor-pointer">
+                        {post.title}
+                      </h3>
+                    </Link>
 
-                  <p className="text-sm text-gray-600 mb-3">by {post.author}</p>
+                    <p className="text-sm text-gray-600 mb-3">
+                      작성자: {post.author}
+                    </p>
 
-                  <div className="flex items-center space-x-3 text-xs text-gray-500">
-                    <span className="flex items-center space-x-1">
-                      <Heart className="h-3 w-3" />
-                      <span>{post.reactions}</span>
-                    </span>
-                    <span className="flex items-center space-x-1">
-                      <MessageCircle className="h-3 w-3" />
-                      <span>{post.comments}</span>
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    <div className="flex items-center space-x-3 text-xs text-gray-500">
+                      <span className="flex items-center space-x-1">
+                        <Heart className="h-3 w-3" />
+                        <span>{post.reactions}</span>
+                      </span>
+                      <span className="flex items-center space-x-1">
+                        <MessageCircle className="h-3 w-3" />
+                        <span>{post.comments}</span>
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="badges">
@@ -501,7 +748,7 @@ export function MyPageTabs() {
                   </p>
                   {badge.earned && (
                     <Badge className="mt-2 bg-yellow-100 text-yellow-800">
-                      Earned
+                      획득함
                     </Badge>
                   )}
                 </CardContent>
@@ -513,7 +760,7 @@ export function MyPageTabs() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Award className="h-5 w-5" />
-                <span>Badge Progress</span>
+                <span>배지 진행도</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -521,7 +768,7 @@ export function MyPageTabs() {
                 <div className="text-3xl font-bold text-gray-900 mb-2">
                   {badges.filter((b) => b.earned).length} / {badges.length}
                 </div>
-                <p className="text-gray-600">Badges Earned</p>
+                <p className="text-gray-600">획득한 배지</p>
                 <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
                   <div
                     className="bg-yellow-500 h-2 rounded-full transition-all duration-300"

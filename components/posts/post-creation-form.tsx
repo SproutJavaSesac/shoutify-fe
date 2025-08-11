@@ -19,26 +19,47 @@ import { Sparkles, Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
-import { createPost } from "@/apis/posts";
-import { FetchError } from "@/apis/client";
+import { usePostCreate } from "@/lib/hooks/usePosts";
 import { ConceptType } from "@/types/posts";
 import {
   CONCEPT_OPTIONS,
   EMOTICON_OPTIONS,
   POST_ROUTES,
 } from "@/constants/posts";
-import { EmoticonType } from "@/types/reactions";
+import { ReactionLabelType } from "@/types/reactions";
 
 export function PostCreationForm() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [concept, setConcept] = useState<ConceptType | "">("");
-  const [emotion, setEmotion] = useState<EmoticonType | null>(null);
+  const [emotion, setEmotion] = useState<ReactionLabelType | null>(null);
   const [image, setImage] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const { user } = useAuth();
+
+  const {
+    mutate: createPost,
+    loading: isSubmitting,
+    error,
+  } = usePostCreate({
+    onSuccess: (response) => {
+      toast({
+        title: "게시글 작성 완료! 🎉",
+        description: `"${response?.afterTitle}" 게시글이 AI의 마법으로 탄생했습니다.`,
+      });
+      if (response?.postId) {
+        router.push(POST_ROUTES.DETAIL(response.postId));
+      }
+    },
+    onError: (errorMessage) => {
+      toast({
+        title: "작성 실패 😅",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -55,7 +76,7 @@ export function PostCreationForm() {
     setConcept(value as ConceptType);
   };
 
-  const handleEmotionClick = (emotionValue: EmoticonType) => {
+  const handleEmotionClick = (emotionValue: ReactionLabelType) => {
     setEmotion(emotionValue);
   };
 
@@ -66,7 +87,6 @@ export function PostCreationForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 필수 입력값 검증
     if (validateNecessaries()) {
       toast({
         title: "입력 오류",
@@ -76,7 +96,6 @@ export function PostCreationForm() {
       return;
     }
 
-    // 로그인 확인
     if (!user) {
       toast({
         title: "로그인 필요",
@@ -86,72 +105,20 @@ export function PostCreationForm() {
       return;
     }
 
-    setIsSubmitting(true);
-
-    try {
-      // 이미지 업로드 처리 (선택적)
-      let imageUrl: string | undefined;
-      if (image) {
-        // TODO: 이미지 업로드 API 호출
-        // const uploadResponse = await uploadImage(image);
-        // imageUrl = uploadResponse.url;
-        console.log("이미지 업로드 예정:", image.name);
-      }
-
-      // 게시글 생성 요청 데이터 준비
-      const postData = {
-        title: title.trim(),
-        content: content.trim(),
-        conceptType: concept,
-        emotionType: emotion,
-        ...(imageUrl && { imageUrl }), // 이미지가 있을 때만 포함
-      };
-
-      // API 요청 실행
-      const response = await createPost(postData);
-
-      // 성공 알림
-      toast({
-        title: "게시글 작성 완료! 🎉",
-        description: `"${response.afterTitle}" 게시글이 AI의 마법으로 탄생했습니다.`,
-      });
-
-      // 생성된 게시글로 이동
-      // DETAIL 이용
-      router.push(POST_ROUTES.DETAIL(response.postId));
-    } catch (error) {
-      console.error("게시글 작성 실패:", error);
-
-      let errorMessage = "게시글 작성 중 오류가 발생했습니다.";
-
-      if (error instanceof FetchError) {
-        // 서버에서 받은 구체적인 에러 메시지 사용
-        errorMessage = error.message || "서버 오류가 발생했습니다.";
-
-        // 특정 에러 코드에 따른 메시지 처리
-        if (error.status === 400) {
-          errorMessage = "입력한 정보를 다시 확인해주세요.";
-        } else if (error.status === 401) {
-          errorMessage = "로그인이 필요합니다.";
-        } else if (error.status === 403) {
-          errorMessage = "게시글 작성 권한이 없습니다.";
-        } else if (error.status === 500) {
-          errorMessage =
-            "서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.";
-        }
-      } else if (error instanceof Error) {
-        // 네트워크 오류 등
-        errorMessage = "네트워크 연결을 확인해주세요.";
-      }
-
-      toast({
-        title: "작성 실패 😅",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
+    // 이미지 업로드 로직 (필요 시)
+    let imageUrl: string | undefined;
+    if (image) {
+      // TODO: 이미지 업로드 API 연동
+      console.log("이미지 업로드 예정:", image.name);
     }
+
+    await createPost({
+      title: title.trim(),
+      content: content.trim(),
+      conceptType: concept as ConceptType,
+      emotionType: emotion ?? undefined,
+      imageUrl,
+    });
   };
 
   return (
@@ -196,7 +163,21 @@ export function PostCreationForm() {
               placeholder="게시글 제목을 입력해주세요..."
               maxLength={100}
             />
-            <p className="text-sm text-gray-500">{100 - title.length}자 남음</p>
+            <div className="flex justify-between items-center">
+              <p
+                className={`text-sm ${
+                  title.length > 85
+                    ? "text-red-500 font-medium"
+                    : title.length > 70
+                      ? "text-yellow-600"
+                      : "text-gray-500"
+                }`}
+              >
+                {100 - title.length}자 남음
+                {title.length > 85 && " (거의 다 찼어요!)"}
+              </p>
+              <p className="text-xs text-gray-400">{title.length}/100자</p>
+            </div>
           </div>
 
           {/* Content */}
@@ -208,11 +189,23 @@ export function PostCreationForm() {
               onChange={(e) => setContent(e.target.value)}
               placeholder="당신의 생각을 자유롭게 써보세요. AI가 아름다운 문학 작품으로 변화시켜 드립니다..."
               className="min-h-[200px]"
-              maxLength={2000}
+              maxLength={1000}
             />
-            <p className="text-sm text-gray-500">
-              {2000 - content.length}자 남음
-            </p>
+            <div className="flex justify-between items-center">
+              <p
+                className={`text-sm ${
+                  content.length > 900
+                    ? "text-red-500 font-medium"
+                    : content.length > 800
+                      ? "text-yellow-600"
+                      : "text-gray-500"
+                }`}
+              >
+                {1000 - content.length}자 남음
+                {content.length > 900 && " (거의 다 찼어요!)"}
+              </p>
+              <p className="text-xs text-gray-400">{content.length}/1000자</p>
+            </div>
           </div>
 
           {/* Emotion Selection */}

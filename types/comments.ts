@@ -1,17 +1,24 @@
-import { Pagination } from "@/types/commons";
+import {
+  ApiContract,
+  CommentsPaginationResponse,
+  Pagination,
+  PaginationParams,
+} from "@/types/apis";
 import { ReactionDetailCountMap } from "./reactions";
+
+export type CommentSortType = "createdAt" | "reactions" | "comments";
 
 // comment url 경로 파람 타입
 export type CommentPathParams = {
-  postId: number;
-  commentId: number;
+  postId: string | number;
+  commentId: string | number;
 };
 
 export interface Comment {
-  commentId: number;
-  commenterId: number | null;
+  commentId: string | number;
+  commenterId: string | number | null;
   commenterNickname: string;
-  parentId: number | null;
+  parentId: string | number | null;
   order: number;
   level: number;
   content: string;
@@ -20,13 +27,13 @@ export interface Comment {
   isDeleted: boolean;
   isReported: boolean;
   isMine?: boolean; // TODO isMine 추가 시 ? 제거하기
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CommentListRequest {
-  postId: number;
-  queryParams: CommentQueryParams;
+  postId: string | number;
+  paginationParams: PaginationParams;
 }
 
 export interface CommentQueryParams {
@@ -35,19 +42,45 @@ export interface CommentQueryParams {
 }
 
 export interface CommentListResponse {
-  postId: number;
+  postId: string | number;
   pagination: Pagination;
   comments: Comment[];
 }
 
 export interface CommentCreateRequest {
-  postId: number;
+  postId: string | number;
   body: CommentCreateResponseBody;
 }
 
 export interface CommentCreateResponseBody {
   content: string;
-  parentId?: number | null;
+  parentId?: string | number | null;
 }
 
 export type CommentCreateResponse = Comment;
+
+// ===== API Contract 정의 =====
+
+/** 댓글 목록 조회 API 계약 */
+export type CommentListContract = ApiContract<
+  { postId: string | number },
+  PaginationParams,
+  never,
+  CommentsPaginationResponse<Comment>
+>;
+
+/** 댓글 작성 API 계약 */
+export type CommentCreateContract = ApiContract<
+  CommentPathParams,
+  never,
+  CommentCreateResponseBody,
+  CommentCreateResponse
+>;
+
+/** 댓글 삭제 API 계약 */
+export type CommentDeleteContract = ApiContract<
+  CommentPathParams,
+  never,
+  never,
+  string
+>;
