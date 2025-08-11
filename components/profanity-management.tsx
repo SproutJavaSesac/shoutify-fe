@@ -7,19 +7,51 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertCircle, Edit, Filter, Plus, Search, Shield, Trash2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  AlertCircle,
+  Edit,
+  Filter,
+  Plus,
+  Search,
+  Shield,
+  Trash2,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   useCreateProfanity,
   useDeleteProfanity,
   useProfanityList,
-  useUpdateProfanity
+  useUpdateProfanity,
 } from "@/lib/hooks/useProfanities";
 import { PROFANITIES_CATEGORY_OPTIONS } from "@/constants/profanities";
-import { Profanity, ProfanityCategory, ProfanitySortType } from "@/types/profanities";
+import {
+  Profanity,
+  ProfanityCategory,
+  ProfanitySortType,
+} from "@/types/profanities";
+import { Pagination } from "@/components/commons";
 
 export function ProfanityManagement() {
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -440,43 +472,12 @@ export function ProfanityManagement() {
               </Table>
 
               {/* 페이지네이션 */}
-              {data?.pagination && data.pagination.totalPages > 1 && (
-                <div className="flex justify-center items-center space-x-2 mt-6">
-                  <Button
-                    onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
-                    disabled={currentPage === 0}
-                    variant="outline"
-                  >
-                    이전
-                  </Button>
-                  {Array.from(
-                    { length: Math.min(10, data.pagination.totalPages) },
-                    (_, i) => (
-                      <Button
-                        key={i}
-                        onClick={() => setCurrentPage(i)}
-                        variant={currentPage === i ? "default" : "outline"}
-                        size="sm"
-                      >
-                        {i + 1}
-                      </Button>
-                    )
-                  )}
-                  <Button
-                    onClick={() =>
-                      setCurrentPage(
-                        Math.min(
-                          data.pagination.totalPages - 1,
-                          currentPage + 1
-                        )
-                      )
-                    }
-                    disabled={currentPage >= data.pagination.totalPages - 1}
-                    variant="outline"
-                  >
-                    다음
-                  </Button>
-                </div>
+              {data?.pagination && (
+                <Pagination
+                  pagination={data.pagination}
+                  onPageChange={setCurrentPage}
+                  showFirstLastButtons={true}
+                />
               )}
             </div>
           ) : (

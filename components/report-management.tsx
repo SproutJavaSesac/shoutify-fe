@@ -62,6 +62,7 @@ import {
 } from "@/types/reports";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import { Pagination } from "@/components/commons";
 
 export function ReportManagement() {
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -293,7 +294,7 @@ export function ReportManagement() {
               value={selectedStatus ?? "__ALL__"}
               onValueChange={(value) =>
                 setSelectedStatus(
-                  value === "__ALL__" ? undefined : (value as ReportStatusType),
+                  value === "__ALL__" ? undefined : (value as ReportStatusType)
                 )
               }
             >
@@ -315,7 +316,7 @@ export function ReportManagement() {
               value={selectedReason ?? "__ALL__"}
               onValueChange={(value) =>
                 setSelectedReason(
-                  value === "__ALL__" ? undefined : (value as ReportReasonType),
+                  value === "__ALL__" ? undefined : (value as ReportReasonType)
                 )
               }
             >
@@ -583,10 +584,10 @@ export function ReportManagement() {
                                                 작성일:{" "}
                                                 {format(
                                                   new Date(
-                                                    originalContent.post.createdAt,
+                                                    originalContent.post.createdAt
                                                   ),
                                                   "yyyy-MM-dd HH:mm",
-                                                  { locale: ko },
+                                                  { locale: ko }
                                                 )}
                                               </div>
                                             </div>
@@ -624,10 +625,10 @@ export function ReportManagement() {
                                                     | 작성일:{" "}
                                                     {format(
                                                       new Date(
-                                                        originalContent.post.createdAt,
+                                                        originalContent.post.createdAt
                                                       ),
                                                       "yyyy-MM-dd HH:mm",
-                                                      { locale: ko },
+                                                      { locale: ko }
                                                     )}
                                                   </div>
                                                 </div>
@@ -668,10 +669,10 @@ export function ReportManagement() {
                                                   작성일:{" "}
                                                   {format(
                                                     new Date(
-                                                      originalContent.comment.createdAt,
+                                                      originalContent.comment.createdAt
                                                     ),
                                                     "yyyy-MM-dd HH:mm",
-                                                    { locale: ko },
+                                                    { locale: ko }
                                                   )}
                                                 </div>
                                               </div>
@@ -720,43 +721,12 @@ export function ReportManagement() {
               </Table>
 
               {/* 페이지네이션 */}
-              {data?.pagination && data.pagination.totalPages > 1 && (
-                <div className="flex justify-center items-center space-x-2 mt-6">
-                  <Button
-                    onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
-                    disabled={currentPage === 0}
-                    variant="outline"
-                  >
-                    이전
-                  </Button>
-                  {Array.from(
-                    { length: Math.min(10, data.pagination.totalPages) },
-                    (_, i) => (
-                      <Button
-                        key={i}
-                        onClick={() => setCurrentPage(i)}
-                        variant={currentPage === i ? "default" : "outline"}
-                        size="sm"
-                      >
-                        {i + 1}
-                      </Button>
-                    ),
-                  )}
-                  <Button
-                    onClick={() =>
-                      setCurrentPage(
-                        Math.min(
-                          data.pagination.totalPages - 1,
-                          currentPage + 1,
-                        ),
-                      )
-                    }
-                    disabled={currentPage >= data.pagination.totalPages - 1}
-                    variant="outline"
-                  >
-                    다음
-                  </Button>
-                </div>
+              {data?.pagination && (
+                <Pagination
+                  pagination={data.pagination}
+                  onPageChange={setCurrentPage}
+                  showFirstLastButtons={true}
+                />
               )}
             </div>
           ) : (

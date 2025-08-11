@@ -11,6 +11,7 @@ import { ConceptType, PostSortType } from "@/types/posts";
 import { CONCEPT_OPTIONS, POST_ROUTES } from "@/constants/posts";
 import { utcToLocaleDateString } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Pagination } from "@/components/commons";
 
 interface PostsListProps {
   initialSort?: PostSortType;
@@ -194,52 +195,18 @@ export default function PostsList({
 
       {/* 페이지네이션 */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center space-x-2 pt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={prevPage}
-            disabled={!hasPrevious}
-          >
-            이전
-          </Button>
-
-          <div className="flex items-center space-x-1">
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum;
-
-              if (totalPages <= 5) {
-                pageNum = i;
-              } else if (currentPage <= 2) {
-                pageNum = i;
-              } else if (currentPage >= totalPages - 3) {
-                pageNum = totalPages - 5 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-
-              return (
-                <Button
-                  key={pageNum}
-                  variant={currentPage === pageNum ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => goToPage(pageNum)}
-                >
-                  {pageNum + 1}
-                </Button>
-              );
-            })}
-          </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={nextPage}
-            disabled={!hasNext}
-          >
-            다음
-          </Button>
-        </div>
+        <Pagination
+          pagination={{
+            currentPage,
+            totalPages,
+            totalCount,
+            pageSize: limit,
+            hasNext,
+            hasPrevious,
+          }}
+          onPageChange={goToPage}
+          showFirstLastButtons={true}
+        />
       )}
     </div>
   );
