@@ -1,8 +1,10 @@
 export type ReactionActionType = "add" | "remove";
 
+import { ApiContract, IdType } from "./apis";
+
 export interface Reaction {
   status: ReactionActionType;
-  reaction: EmoticonType;
+  reaction: ReactionLabelType;
   reactionCount: number;
   reactionDetails: ReactionDetailCountMap;
 }
@@ -13,8 +15,7 @@ export interface PostReactionRequest {
 }
 
 interface ReactionRequestBody {
-  emotion: EmoticonType;
-  action: ReactionActionType;
+  type: ReactionLabelType;
 }
 
 export interface PostReactionRequestBody extends ReactionRequestBody {}
@@ -33,7 +34,58 @@ export interface PostReactionResponse extends ReactionResponse {}
 
 export interface CommentReactionResponse extends ReactionResponse {}
 
+// API Contract 타입들
+export type PostReactionCreateContract = ApiContract<
+  { postId: IdType },
+  never,
+  { type: ReactionLabelType },
+  PostReactionResponse
+>;
+
+export type PostReactionUpdateContract = ApiContract<
+  { postId: IdType },
+  never,
+  { type: ReactionLabelType },
+  PostReactionResponse
+>;
+
+export type PostReactionDeleteContract = ApiContract<
+  { postId: IdType },
+  never,
+  never,
+  PostReactionResponse
+>;
+
+export type CommentReactionCreateContract = ApiContract<
+  { postId: IdType; commentId: IdType },
+  never,
+  { type: ReactionLabelType },
+  CommentReactionResponse
+>;
+
+export type CommentReactionUpdateContract = ApiContract<
+  { postId: IdType; commentId: IdType },
+  never,
+  { type: ReactionLabelType },
+  CommentReactionResponse
+>;
+
+export type CommentReactionDeleteContract = ApiContract<
+  { postId: IdType; commentId: IdType },
+  never,
+  never,
+  CommentReactionResponse
+>;
+
 export type EmoticonType =
+  | "HAPPY"
+  | "SAD"
+  | "ANGRY"
+  | "EXCITED"
+  | "CONFUSED"
+  | "PROUD";
+
+export type ReactionLabelType =
   | "HAPPY"
   | "SAD"
   | "ANGRY"
@@ -53,10 +105,14 @@ export type ReactionEmojiType =
 export interface EmotionOption {
   label: string;
   emotionType: ReactionEmojiType;
-  value: EmoticonType;
+  value: ReactionLabelType;
   color: string;
 }
 
 export type ReactionDetailCountMap = {
-  [K in EmoticonType]: number;
+  [K in ReactionLabelType]: number;
+};
+
+export type ReactionLabelEmojiMap = {
+  [K in ReactionLabelType]: ReactionEmojiType;
 };

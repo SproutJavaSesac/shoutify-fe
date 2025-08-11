@@ -7,75 +7,126 @@ import type {
   MyInfoGetResponse,
   MyPostListResponse,
   MyRankingListResponse,
+  MyRankingQueryParams,
   PaginationParams,
+  MyInfoGetContract,
+  UserInfoGetContract,
+  MyInfoEditContract,
+  MyPostListContract,
+  UserPostListContract,
+  MyCommentListContract,
+  MyBadgeListContract,
+  UserBadgeListContract,
+  MyRankingListContract,
+  UserRankingListContract,
 } from "@/types/members";
 import { MEMBER_API_ENDPOINTS } from "@/constants/members";
+import { IdType, ApiQueryArgs, MutationArgs } from "@/types/apis";
 
 /**
  * 내 정보 조회
- * @returns 내 정보 데이터
  */
-export const getMemberInfo = async (): Promise<MyInfoGetResponse> => {
+export const getMemberInfo = async (
+  args?: ApiQueryArgs<MyInfoGetContract>
+): Promise<MyInfoGetResponse> => {
   return api.get<MyInfoGetResponse>(MEMBER_API_ENDPOINTS.MEMBER_INFO);
 };
 
 /**
+ * 사용자 정보 조회
+ */
+export const getUserInfo = async (
+  args: ApiQueryArgs<UserInfoGetContract>
+): Promise<MyInfoGetResponse> => {
+  return api.public.get<MyInfoGetResponse>(`/members/${args.paths?.memberId}`);
+};
+
+/**
  * 내 정보 수정
- * @param data 수정할 내 정보 데이터
- * @returns 수정된 내 정보 데이터
  */
 export async function updateMyInfo(
-  data: MyInfoEditRequest,
+  args: MutationArgs<MyInfoEditContract>
 ): Promise<MyInfoEditResponse> {
   return api.put<MyInfoEditResponse>(
     MEMBER_API_ENDPOINTS.MEMBER_INFO_UPDATE,
-    data,
+    args.body
   );
 }
 
 /**
  * 내 게시글 목록 조회
- * @param params 페이징 파라미터
- * @returns 내 게시글 목록 데이터
  */
 export async function getMyPosts(
-  params: PaginationParams,
+  args?: ApiQueryArgs<MyPostListContract>
 ): Promise<MyPostListResponse> {
-  return api.get<MyPostListResponse>(MEMBER_API_ENDPOINTS.MEMBER_POSTS, params);
+  return api.get<MyPostListResponse>(
+    MEMBER_API_ENDPOINTS.MEMBER_POSTS,
+    args?.queries
+  );
+}
+
+/**
+ * 사용자 게시글 목록 조회
+ */
+export async function getUserPosts(
+  args: ApiQueryArgs<UserPostListContract>
+): Promise<MyPostListResponse> {
+  return api.public.get<MyPostListResponse>(
+    `/members/${args.paths?.memberId}/posts`,
+    args.queries
+  );
 }
 
 /**
  * 내 댓글 목록 조회
- * @param params 페이징 파라미터
- * @returns 내 댓글 목록 데이터
  */
 export async function getMyComments(
-  params: PaginationParams,
+  args?: ApiQueryArgs<MyCommentListContract>
 ): Promise<MyCommentListResponse> {
   return api.get<MyCommentListResponse>(
     MEMBER_API_ENDPOINTS.MEMBER_COMMENTS,
-    params,
+    args?.queries
   );
 }
 
 /**
  * 내 배지 목록 조회
- * @param params 페이징 파라미터
- * @returns 내 배지 목록 데이터
  */
 export async function getMyBadges(
-  params: PaginationParams,
+  args?: ApiQueryArgs<MyBadgeListContract>
 ): Promise<MyBadgeListResponse> {
-  return api.get(MEMBER_API_ENDPOINTS.MEMBER_BADGES, params);
+  return api.get(MEMBER_API_ENDPOINTS.MEMBER_BADGES, args?.queries);
+}
+
+/**
+ * 사용자 배지 목록 조회
+ */
+export async function getUserBadges(
+  args: ApiQueryArgs<UserBadgeListContract>
+): Promise<MyBadgeListResponse> {
+  return api.public.get(
+    `/members/${args.paths?.memberId}/badges`,
+    args.queries
+  );
 }
 
 /**
  * 내 랭킹 조회
- * @param params 랭킹 조회 쿼리 파라미터
- * @returns 내 랭킹 목록 데이터
  */
 export async function getMyRanking(
-  params: MyRankingQueryParam,
+  args?: ApiQueryArgs<MyRankingListContract>
 ): Promise<MyRankingListResponse> {
-  return api.get(MEMBER_API_ENDPOINTS.MEMBER_RANKING, params);
+  return api.get(MEMBER_API_ENDPOINTS.MEMBER_RANKING, args?.queries);
+}
+
+/**
+ * 사용자 랭킹 조회
+ */
+export async function getUserRanking(
+  args: ApiQueryArgs<UserRankingListContract>
+): Promise<MyRankingListResponse> {
+  return api.public.get(
+    `/members/${args.paths?.memberId}/rankings`,
+    args.queries
+  );
 }

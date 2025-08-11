@@ -25,14 +25,14 @@ class ApiClient {
   async get<T>(
     url: string,
     params?: Record<string, any>,
-    authenticated = true,
+    authenticated = true
   ): Promise<T> {
-    // params에서 undefined, null 값 제거
+    // params에서 undefined, null, "all" 값 제거
     const queryString = params
       ? `?${new URLSearchParams(
           Object.entries(params).filter(
-            ([, value]) => value !== undefined && value !== null,
-          ),
+            ([, value]) => value !== undefined && value !== null
+          )
         )}`
       : "";
     return this.request<T>(`${url}${queryString}`, {
@@ -72,7 +72,7 @@ class ApiClient {
   // 기본 요청 함수
   private async request<T>(
     url: string,
-    options: RequestInit & { auth?: boolean },
+    options: RequestInit & { auth?: boolean }
   ): Promise<T> {
     const { auth = true, ...fetchOptions } = options; // 기본적으로 인증 필요한 요청으로 설정
 
@@ -118,7 +118,7 @@ class ApiClient {
             param: "알 수 없음",
             message: "서버에 문제가 발생했습니다.",
             timestamp: new Date().toISOString(),
-          },
+          }
         );
       }
 
@@ -133,7 +133,7 @@ class ApiClient {
             param: "알 수 없음",
             message: "요청 처리 중 오류가 발생했습니다.",
             timestamp: new Date().toISOString(),
-          },
+          }
         );
       }
 

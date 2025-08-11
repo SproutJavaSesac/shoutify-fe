@@ -6,6 +6,8 @@ export const COMMENT_API_ENDPOINTS = {
     `/posts/${postId}/comments`,
   COMMENT_CREATE: ({ postId }: { postId: string | number }) =>
     `/posts/${postId}/comments`,
+  COMMENT_DETAIL: (params: CommentPathParams) =>
+    `/posts/${params.postId}/comments/${params.commentId}`,
   COMMENT_DELETE: (params: CommentPathParams) =>
     `/posts/${params.postId}/comments/${params.commentId}`,
 } as const;

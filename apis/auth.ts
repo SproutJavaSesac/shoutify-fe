@@ -3,18 +3,27 @@ import type { LoginStatusResponse } from "@/types/auth";
 import { AUTH_API_ENDPOINTS } from "@/constants/auth";
 
 // OAuth2 로그인 시작
-export function loginWithGoogle(): void {
+export function loginWithGoogle(redirectUrl?: string): void {
   const backendUrl =
     process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") ??
     "http://localhost:8080";
-  window.location.href = `${backendUrl}${AUTH_API_ENDPOINTS.SOCIAL_LOGIN("google")}`;
+
+  let loginUrl = `${backendUrl}${AUTH_API_ENDPOINTS.SOCIAL_LOGIN("google")}`;
+
+  // 리다이렉트 URL이 있으면 state 파라미터로 전달
+  if (redirectUrl) {
+    const encodedRedirectUrl = encodeURIComponent(redirectUrl);
+    loginUrl += `?state=${encodedRedirectUrl}`;
+  }
+
+  window.location.href = loginUrl;
 }
 
 // 로그인 상태 확인
 export async function checkLoginStatus(): Promise<LoginStatusResponse> {
   try {
     return await api.get<LoginStatusResponse>(
-      AUTH_API_ENDPOINTS.CHECK_LOGIN_STATUS,
+      AUTH_API_ENDPOINTS.CHECK_LOGIN_STATUS
     );
   } catch (error: any) {
     // 500/401 에러는 로그인하지 않은 상태로 처리 (백엔드 NullPointerException)

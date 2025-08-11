@@ -1,5 +1,13 @@
-import { Pagination } from "@/types/apis";
+import {
+  ApiContract,
+  CommentsPaginationResponse,
+  Pagination,
+  PaginationOptions,
+  PaginationParams,
+} from "@/types/apis";
 import { ReactionDetailCountMap } from "./reactions";
+
+export type CommentSortType = "createdAt" | "reactions" | "comments";
 
 // comment url 경로 파람 타입
 export type CommentPathParams = {
@@ -26,7 +34,7 @@ export interface Comment {
 
 export interface CommentListRequest {
   postId: string | number;
-  queryParams: CommentQueryParams;
+  paginationParams: PaginationParams;
 }
 
 export interface CommentQueryParams {
@@ -51,3 +59,29 @@ export interface CommentCreateResponseBody {
 }
 
 export type CommentCreateResponse = Comment;
+
+// ===== API Contract 정의 =====
+
+/** 댓글 목록 조회 API 계약 */
+export type CommentListContract = ApiContract<
+  { postId: string | number },
+  PaginationParams,
+  never,
+  CommentsPaginationResponse<Comment>
+>;
+
+/** 댓글 작성 API 계약 */
+export type CommentCreateContract = ApiContract<
+  CommentPathParams,
+  never,
+  CommentCreateResponseBody,
+  CommentCreateResponse
+>;
+
+/** 댓글 삭제 API 계약 */
+export type CommentDeleteContract = ApiContract<
+  CommentPathParams,
+  never,
+  never,
+  string
+>;

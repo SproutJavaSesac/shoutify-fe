@@ -1,106 +1,46 @@
+import { useCallback } from "react";
+import { useMutation, usePagination } from "./useApi";
+import { createComment, deleteComment, getComments } from "@/apis/comments";
 import {
-  CommentCreateRequest,
-  CommentCreateResponse,
-  CommentListRequest,
-  CommentListResponse,
+  Comment,
+  CommentCreateContract,
+  CommentDeleteContract,
+  CommentListContract,
   CommentPathParams,
 } from "@/types/comments";
-import { useEffect, useState } from "react";
-import { createComment, deleteComment, getComments } from "@/apis/comments";
+import { ApiOptions, ExtractResponse, PaginationOptions } from "@/types/apis";
 
-/**
- * 댓글 조회 훅
- *
- * @param request 댓글 목록 조회 요청 객체
- * @return 댓글 목록 조회 결과와 상태
- */
-export function useCommentList({ postId, queryParams }: CommentListRequest) {
-  const [data, setData] = useState<CommentListResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+// 댓글 조회 - usePagination 사용
+export function useCommentList({
+  postId,
+  ...paginationOptions
+}: { postId: string | number } & PaginationOptions) {
+  const fetchFn = useCallback(
+    (args: any) => {
+      return getComments({
+        paths: { postId },
+        queries: args.queries,
+      });
+    },
+    [postId]
+  );
 
-  useEffect(() => {
-    async function fetchComments() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await getComments({ postId, queryParams });
-        setData(response);
-      } catch (err: any) {
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchComments();
-  }, [postId, queryParams]);
-
-  return { data, loading, error };
+  return usePagination<CommentListContract>(fetchFn, {
+    immediate: true,
+    ...paginationOptions,
+  });
 }
 
-/**
- * 댓글 작성 훅
- *
- * @returns 댓글 작성 함수와 성공, 로딩, 실패 상태 정보
- */
-export function useCreateComment() {
-  const [data, setData] = useState<CommentCreateResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  const createCommentHook = async ({
-    postId,
-    body,
-  }: CommentCreateRequest): Promise<CommentCreateResponse | null> => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await createComment({ postId, body });
-      setData(response);
-      return response;
-    } catch (err: any) {
-      setError(err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { createComment: createCommentHook, data, loading, error };
+// 댓글 작성 - 낙관적 업데이트 지원
+export function useCommentCreate(
+  options?: ApiOptions<ExtractResponse<CommentCreateContract>>
+) {
+  return useMutation<CommentCreateContract>(createComment, options);
 }
 
-/**
- * 댓글 삭제 훅
- *
- * @returns 댓글 삭제 함수와 상태 정보
- */
-export function useDeleteComment() {
-  const [data, setData] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  const deleteCommentHook = async ({
-    postId,
-    commentId,
-  }: CommentPathParams): Promise<string | null> => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await deleteComment({ postId, commentId });
-
-      setData(response);
-      return response;
-    } catch (err: any) {
-      setError(err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { deleteComment: deleteCommentHook, data, loading, error };
+// 댓글 삭제
+export function useCommentDelete(
+  options?: ApiOptions<ExtractResponse<CommentDeleteContract>>
+) {
+  return useMutation<CommentDeleteContract>(deleteComment, options);
 }

@@ -1,9 +1,10 @@
 import { POST_API_ENDPOINTS } from "@/constants/posts";
+import { ReactionLabelEmojiMap } from "@/types/reactions";
 
 /**
  * 반응하기 ENUM을 EMOJI로 매핑하는 상수입니다.
  */
-export const EMOTION_TO_EMOJI_MAP = {
+export const EMOTION_TO_EMOJI_MAP: ReactionLabelEmojiMap = {
   HAPPY: "❤️",
   SAD: "😢",
   ANGRY: "😠",

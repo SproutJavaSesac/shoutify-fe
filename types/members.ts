@@ -1,5 +1,5 @@
 // 내 정보 조회 응답
-import { Pagination } from "@/types/apis";
+import { Pagination, ApiContract, IdType } from "@/types/apis";
 import { RankingCategoryType, RankingPeriodType } from "@/types/rankings";
 
 export interface MyInfoGetResponse {
@@ -110,3 +110,85 @@ export interface PaginationParams {
   page?: number;
   size?: number;
 }
+
+// ===== API Contract 정의 =====
+
+/** 내 정보 조회 API 계약 */
+export type MyInfoGetContract = ApiContract<
+  never,
+  never,
+  never,
+  MyInfoGetResponse
+>;
+
+/** 사용자 정보 조회 API 계약 */
+export type UserInfoGetContract = ApiContract<
+  { memberId: IdType },
+  never,
+  never,
+  MyInfoGetResponse
+>;
+
+/** 내 정보 수정 API 계약 */
+export type MyInfoEditContract = ApiContract<
+  never,
+  never,
+  MyInfoEditRequest,
+  MyInfoEditResponse
+>;
+
+/** 내 게시글 목록 조회 API 계약 */
+export type MyPostListContract = ApiContract<
+  never,
+  PaginationParams,
+  never,
+  MyPostListResponse
+>;
+
+/** 사용자 게시글 목록 조회 API 계약 */
+export type UserPostListContract = ApiContract<
+  { memberId: IdType },
+  PaginationParams,
+  never,
+  MyPostListResponse
+>;
+
+/** 내 댓글 목록 조회 API 계약 */
+export type MyCommentListContract = ApiContract<
+  never,
+  PaginationParams,
+  never,
+  MyCommentListResponse
+>;
+
+/** 내 배지 목록 조회 API 계약 */
+export type MyBadgeListContract = ApiContract<
+  never,
+  PaginationParams,
+  never,
+  MyBadgeListResponse
+>;
+
+/** 사용자 배지 목록 조회 API 계약 */
+export type UserBadgeListContract = ApiContract<
+  { memberId: IdType },
+  PaginationParams,
+  never,
+  MyBadgeListResponse
+>;
+
+/** 내 랭킹 조회 API 계약 */
+export type MyRankingListContract = ApiContract<
+  never,
+  MyRankingQueryParams,
+  never,
+  MyRankingListResponse
+>;
+
+/** 사용자 랭킹 조회 API 계약 */
+export type UserRankingListContract = ApiContract<
+  { memberId: IdType },
+  MyRankingQueryParams,
+  never,
+  MyRankingListResponse
+>;
