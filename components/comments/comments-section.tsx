@@ -4,13 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Flag,
-  MessageCircle,
-  Trash2,
-} from "lucide-react";
+import { Flag, MessageCircle, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { CommentForm } from "@/components/comments/comment-form";
@@ -30,6 +24,7 @@ import { Comment, CommentSortType } from "@/types/comments";
 import { utcToLocaleDateString } from "@/lib/utils";
 import { EMOTION_TO_EMOJI_MAP } from "@/constants/reactions";
 import { ReactionLabelType } from "@/types/reactions";
+import { Pagination, ReactionButtons } from "@/components/commons";
 
 export function CommentsSection({
   postId,
@@ -50,7 +45,7 @@ export function CommentsSection({
   // 신고 모달 상태
   const [reportModal, setReportModal] = useState(false);
   const [reportingComment, setReportingComment] = useState<Comment | null>(
-    null,
+    null
   );
   const [authModal, setAuthModal] = useState(false);
 
@@ -143,6 +138,7 @@ export function CommentsSection({
         description: errorMessage,
         variant: "destructive",
       });
+      // 실패 시 상태 롤백은 필요없음 (미리 상태 업데이트하지 않으므로)
     },
   });
 
@@ -159,6 +155,7 @@ export function CommentsSection({
         description: errorMessage,
         variant: "destructive",
       });
+      // 실패 시 상태 롤백은 필요없음 (미리 상태 업데이트하지 않으므로)
     },
   });
 
@@ -175,13 +172,14 @@ export function CommentsSection({
         description: errorMessage,
         variant: "destructive",
       });
+      // 실패 시 상태 롤백은 필요없음 (미리 상태 업데이트하지 않으므로)
     },
   });
 
   // 댓글 리액션 핸들러 - 게시글과 동일한 로직
   const handleCommentReaction = (
     commentId: string | number,
-    reactionType: ReactionLabelType,
+    reactionType: ReactionLabelType
   ) => {
     // 로그인 체크
     if (!user) {
@@ -193,26 +191,41 @@ export function CommentsSection({
 
     // 현재 선택된 반응과 같은 반응을 다시 클릭한 경우 - 삭제
     if (currentReaction === reactionType) {
+      console.log("Deleting comment reaction:", {
+        postId,
+        commentId,
+        reactionType,
+      });
       deleteCommentReaction({
         paths: { postId, commentId },
       });
-      setMyReactions((prev) => ({ ...prev, [commentId]: null }));
+      // 성공 시에만 상태 업데이트 (onSuccess 콜백에서 처리)
     }
     // 처음 반응을 선택하는 경우 - 생성
     else if (!currentReaction) {
+      console.log("Creating comment reaction:", {
+        postId,
+        commentId,
+        reactionType,
+      });
       createCommentReaction({
         paths: { postId, commentId },
         body: { type: reactionType },
       });
-      setMyReactions((prev) => ({ ...prev, [commentId]: reactionType }));
+      // 성공 시에만 상태 업데이트 (onSuccess 콜백에서 처리)
     }
     // 다른 반응으로 변경하는 경우 - 수정
     else {
+      console.log("Updating comment reaction:", {
+        postId,
+        commentId,
+        reactionType,
+      });
       updateCommentReaction({
         paths: { postId, commentId },
         body: { type: reactionType },
       });
-      setMyReactions((prev) => ({ ...prev, [commentId]: reactionType }));
+      // 성공 시에만 상태 업데이트 (onSuccess 콜백에서 처리)
     }
   };
 
@@ -253,7 +266,7 @@ export function CommentsSection({
   // 대댓글 작성 핸들러
   const handleReplySubmit = async (
     content: string,
-    parentCommentId: string | number,
+    parentCommentId: string | number
   ) => {
     // 로그인 체크
     if (!user) {
@@ -376,81 +389,18 @@ export function CommentsSection({
         {/* 댓글 액션 (반응, 답글) */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            {/* 반응 버튼들 - 기존 반응만 표시 */}
-            {comment.reactions && (
-              <div className="flex items-center space-x-1">
-                {Object.entries(comment.reactions).map(
-                  ([reactionType, count]) => {
-                    if (count === 0) return null;
-
-                    // 사용자가 이 반응을 선택했는지 확인
-                    const isSelected =
-                      myReactions[comment.commentId] === reactionType;
-
-                    return (
-                      <div key={reactionType} className="flex items-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={`h-6 w-6 p-0 text-xs ${
-                            isSelected ? "bg-blue-100 ring-1 ring-blue-300" : ""
-                          } hover:bg-gray-100`}
-                          onClick={() =>
-                            handleCommentReaction(
-                              comment.commentId,
-                              reactionType as ReactionLabelType,
-                            )
-                          }
-                        >
-                          {
-                            EMOTION_TO_EMOJI_MAP[
-                              reactionType as ReactionLabelType
-                            ]
-                          }
-                        </Button>
-                        <span className="text-xs text-gray-500 ml-1">
-                          {count}
-                        </span>
-                      </div>
-                    );
-                  },
-                )}
-              </div>
-            )}
-
-            {/* 새 반응 추가 버튼 (로그인한 사용자만) */}
-            {user && (
-              <div className="flex items-center space-x-1">
-                {(Object.keys(EMOTION_TO_EMOJI_MAP) as ReactionLabelType[]).map(
-                  (reactionType) => {
-                    // 이미 표시된 반응은 제외
-                    if (comment.reactions?.[reactionType] > 0) return null;
-
-                    // 사용자가 이 반응을 선택했는지 확인
-                    const isSelected =
-                      myReactions[comment.commentId] === reactionType;
-
-                    return (
-                      <Button
-                        key={reactionType}
-                        variant="ghost"
-                        size="sm"
-                        className={`h-6 w-6 p-0 text-xs ${
-                          isSelected
-                            ? "bg-blue-100 ring-1 ring-blue-300 opacity-100"
-                            : "opacity-50 hover:opacity-100"
-                        } hover:bg-gray-100`}
-                        onClick={() =>
-                          handleCommentReaction(comment.commentId, reactionType)
-                        }
-                      >
-                        {EMOTION_TO_EMOJI_MAP[reactionType]}
-                      </Button>
-                    );
-                  },
-                )}
-              </div>
-            )}
+            {/* 반응 버튼들 */}
+            <ReactionButtons
+              reactions={comment.reactions || {}}
+              myReaction={myReactions[comment.commentId]}
+              onReactionClick={(reactionType) =>
+                handleCommentReaction(comment.commentId, reactionType)
+              }
+              isAuthenticated={!!user}
+              size="sm"
+              showAllReactions={true}
+              enableNewReactions={true}
+            />
           </div>
 
           {/* 답글 버튼 (대댓글까지 표시) */}
@@ -460,7 +410,7 @@ export function CommentsSection({
               size="sm"
               onClick={() => {
                 setReplyingTo(
-                  replyingTo === comment.commentId ? null : comment.commentId,
+                  replyingTo === comment.commentId ? null : comment.commentId
                 );
               }}
               className="text-xs"
@@ -545,59 +495,20 @@ export function CommentsSection({
 
           {/* 페이지네이션 */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center space-x-2 pt-4 border-t">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={prevPage}
-                disabled={!hasPrevious}
-                className="flex items-center gap-1"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                이전
-              </Button>
-
-              <div className="flex items-center space-x-1">
-                <span className="text-sm text-gray-600 px-2">
-                  {currentPage + 1} / {totalPages}
-                </span>
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-
-                  if (totalPages <= 5) {
-                    pageNum = i;
-                  } else if (currentPage <= 2) {
-                    pageNum = i;
-                  } else if (currentPage >= totalPages - 3) {
-                    pageNum = totalPages - 5 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-
-                  return (
-                    <Button
-                      key={pageNum}
-                      variant={currentPage === pageNum ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => goToPage(pageNum)}
-                      className="min-w-[2.5rem]"
-                    >
-                      {pageNum + 1}
-                    </Button>
-                  );
-                })}
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={nextPage}
-                disabled={!hasNext}
-                className="flex items-center gap-1"
-              >
-                다음
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+            <div className="pt-4 border-t">
+              <Pagination
+                pagination={{
+                  currentPage,
+                  totalPages,
+                  totalCount,
+                  pageSize: 10, // 댓글은 10개씩 페이징
+                  hasNext,
+                  hasPrevious,
+                }}
+                onPageChange={goToPage}
+                maxVisiblePages={5}
+                showFirstLastButtons={true}
+              />
             </div>
           )}
         </CardContent>

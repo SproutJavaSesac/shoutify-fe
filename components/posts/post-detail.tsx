@@ -34,6 +34,7 @@ import {
 } from "@/lib/hooks/useReactions";
 import { EMOTION_TO_EMOJI_MAP } from "@/constants/reactions";
 import { useAuth } from "@/lib/auth";
+import { ReactionButtons } from "@/components/commons";
 
 const postMockData = {
   author: "LiteraryMuse",
@@ -144,7 +145,7 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
       if (response.emotion) {
         // convertEmotionTypeToEmoticon 함수가 있다면 사용하거나, 직접 변환
         const emotionOption = EMOTICON_OPTIONS.find(
-          (option) => option.value === response.emotion,
+          (option) => option.value === response.emotion
         );
         setPostEmotion(emotionOption || null);
       }
@@ -161,7 +162,7 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
     } catch (err) {
       console.error("게시글 조회 실패:", err);
       setError(
-        err instanceof Error ? err.message : "게시글을 불러오는데 실패했습니다",
+        err instanceof Error ? err.message : "게시글을 불러오는데 실패했습니다"
       );
     } finally {
       setLoading(false);
@@ -407,36 +408,15 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
           {/* Actions */}
           <div className="flex items-center justify-between pt-6 border-t border-gray-200">
             <div className="flex items-center space-x-4">
-              {/* Reaction Buttons with individual counts */}
-              <div className="flex items-center space-x-2">
-                {Object.entries(EMOTION_TO_EMOJI_MAP).map(
-                  ([reactionType, emoji]) => {
-                    const count =
-                      reactions[reactionType as ReactionLabelType] || 0;
-                    const isSelected = myReaction === reactionType;
-
-                    return (
-                      <div key={reactionType} className="flex items-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={`h-8 w-8 p-0 ${
-                            isSelected ? "bg-blue-100 ring-2 ring-blue-300" : ""
-                          }`}
-                          onClick={() =>
-                            handleReaction(reactionType as ReactionLabelType)
-                          }
-                        >
-                          {emoji}
-                        </Button>
-                        <span className="text-sm text-gray-500 ml-1">
-                          {count}
-                        </span>
-                      </div>
-                    );
-                  },
-                )}
-              </div>
+              {/* Reaction Buttons */}
+              <ReactionButtons
+                reactions={reactions}
+                myReaction={myReaction}
+                onReactionClick={handleReaction}
+                isAuthenticated={!!user}
+                size="default"
+                showAllReactions={true}
+              />
 
               <Button
                 variant="ghost"

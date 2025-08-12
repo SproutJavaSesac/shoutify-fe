@@ -1,11 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { getComment } from "@/apis/comments";
+import { getPost } from "@/apis/posts";
+import {
+  FilterBar,
+  FilterSearchBar,
+  FilterSelect,
+  FilterSortSelect,
+  Pagination,
+} from "@/components/commons";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -15,13 +28,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   Table,
   TableBody,
   TableCell,
@@ -29,30 +35,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  Eye,
-  Filter,
-  Flag,
-  Loader2,
-  MessageSquare,
-  Search,
-  User,
-  XCircle,
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useProcessReport, useReportList } from "@/lib/hooks/useReports";
-import { getPost } from "@/apis/posts";
-import { getComment } from "@/apis/comments";
-import { Post } from "@/types/posts";
-import { Comment } from "@/types/comments";
+import { Textarea } from "@/components/ui/textarea";
 import {
   REPORT_ACTION_OPTIONS,
   REPORT_REASON_OPTIONS,
   REPORT_STATUS_OPTIONS,
 } from "@/constants/reports";
+import { useToast } from "@/hooks/use-toast";
+import { useProcessReport, useReportList } from "@/lib/hooks/useReports";
+import { Comment } from "@/types/comments";
+import { Post } from "@/types/posts";
 import {
   Report,
   ReportProcessActionType,
@@ -62,6 +54,18 @@ import {
 } from "@/types/reports";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Eye,
+  Flag,
+  Loader2,
+  MessageSquare,
+  User,
+  XCircle,
+} from "lucide-react";
+import { useState } from "react";
 
 export function ReportManagement() {
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -141,6 +145,23 @@ export function ReportManagement() {
     setCurrentPage(0);
     refetch();
   };
+
+  const handleResetFilters = () => {
+    setSearchKeyword("");
+    setSelectedStatus(undefined);
+    setSelectedReason(undefined);
+    setSortBy("createdAt");
+    setOrderBy("DESC");
+    setCurrentPage(0);
+    refetch();
+  };
+
+  // 정렬 옵션들
+  const sortOptions = [
+    { value: "createdAt-DESC", label: "최신순" },
+    { value: "createdAt-ASC", label: "등록순" },
+    { value: "updatedAt-DESC", label: "수정순" },
+  ];
 
   const handleProcessReport = async () => {
     if (!selectedReport || !processingAction) return;
@@ -273,92 +294,70 @@ export function ReportManagement() {
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="검색..."
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
-                  className="pl-10"
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                />
-              </div>
-            </div>
+      <FilterBar title="신고 필터" onReset={handleResetFilters}>
+        {/* 첫 번째 줄: 검색과 정렬 */}
+        <div className="flex gap-4 items-center w-full">
+          <FilterSearchBar
+            onSearch={(query) => {
+              setSearchKeyword(query);
+              handleSearch();
+            }}
+            placeholder="신고 내용 검색..."
+            initialValue={searchKeyword}
+            className="flex-1"
+          />
 
-            <Select
+          <FilterSortSelect
+            options={sortOptions}
+            value={`${sortBy}-${orderBy}`}
+            onValueChange={(value) => {
+              const [sort, order] = value.split("-") as [
+                ReportSortType,
+                "ASC" | "DESC",
+              ];
+              setSortBy(sort);
+              setOrderBy(order);
+              handleSearch();
+            }}
+            placeholder="정렬"
+            className="w-28"
+          />
+        </div>
+
+        {/* 두 번째 줄: 상태와 사유 필터 */}
+        <div className="flex gap-4 items-center">
+          <div className="flex gap-2 items-center">
+            <span className="text-sm text-gray-600 whitespace-nowrap">
+              필터:
+            </span>
+            <FilterSelect
+              options={REPORT_STATUS_OPTIONS}
               value={selectedStatus ?? "__ALL__"}
               onValueChange={(value) =>
                 setSelectedStatus(
-                  value === "__ALL__" ? undefined : (value as ReportStatusType),
+                  value === "__ALL__" ? undefined : (value as ReportStatusType)
                 )
               }
-            >
-              <SelectTrigger className="w-40">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="상태 필터" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__ALL__">전체</SelectItem>
-                {REPORT_STATUS_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder="상태"
+              className="w-24"
+              allOptionLabel="전체"
+            />
 
-            <Select
+            <FilterSelect
+              options={REPORT_REASON_OPTIONS}
               value={selectedReason ?? "__ALL__"}
               onValueChange={(value) =>
                 setSelectedReason(
-                  value === "__ALL__" ? undefined : (value as ReportReasonType),
+                  value === "__ALL__" ? undefined : (value as ReportReasonType)
                 )
               }
-            >
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="사유 필터" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__ALL__">전체</SelectItem>
-                {REPORT_REASON_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={`${sortBy}-${orderBy}`}
-              onValueChange={(value) => {
-                const [sort, order] = value.split("-") as [
-                  ReportSortType,
-                  "ASC" | "DESC",
-                ];
-                setSortBy(sort);
-                setOrderBy(order);
-              }}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="createdAt-DESC">최신순</SelectItem>
-                <SelectItem value="createdAt-ASC">등록순</SelectItem>
-                <SelectItem value="updatedAt-DESC">수정순</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button onClick={handleSearch} disabled={loading}>
-              검색
-            </Button>
+              placeholder="사유"
+              className="w-32"
+              allOptionLabel="전체"
+            />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </FilterBar>
 
       {/* Results */}
       <Card>
@@ -583,10 +582,10 @@ export function ReportManagement() {
                                                 작성일:{" "}
                                                 {format(
                                                   new Date(
-                                                    originalContent.post.createdAt,
+                                                    originalContent.post.createdAt
                                                   ),
                                                   "yyyy-MM-dd HH:mm",
-                                                  { locale: ko },
+                                                  { locale: ko }
                                                 )}
                                               </div>
                                             </div>
@@ -624,10 +623,10 @@ export function ReportManagement() {
                                                     | 작성일:{" "}
                                                     {format(
                                                       new Date(
-                                                        originalContent.post.createdAt,
+                                                        originalContent.post.createdAt
                                                       ),
                                                       "yyyy-MM-dd HH:mm",
-                                                      { locale: ko },
+                                                      { locale: ko }
                                                     )}
                                                   </div>
                                                 </div>
@@ -668,10 +667,10 @@ export function ReportManagement() {
                                                   작성일:{" "}
                                                   {format(
                                                     new Date(
-                                                      originalContent.comment.createdAt,
+                                                      originalContent.comment.createdAt
                                                     ),
                                                     "yyyy-MM-dd HH:mm",
-                                                    { locale: ko },
+                                                    { locale: ko }
                                                   )}
                                                 </div>
                                               </div>
@@ -720,43 +719,12 @@ export function ReportManagement() {
               </Table>
 
               {/* 페이지네이션 */}
-              {data?.pagination && data.pagination.totalPages > 1 && (
-                <div className="flex justify-center items-center space-x-2 mt-6">
-                  <Button
-                    onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
-                    disabled={currentPage === 0}
-                    variant="outline"
-                  >
-                    이전
-                  </Button>
-                  {Array.from(
-                    { length: Math.min(10, data.pagination.totalPages) },
-                    (_, i) => (
-                      <Button
-                        key={i}
-                        onClick={() => setCurrentPage(i)}
-                        variant={currentPage === i ? "default" : "outline"}
-                        size="sm"
-                      >
-                        {i + 1}
-                      </Button>
-                    ),
-                  )}
-                  <Button
-                    onClick={() =>
-                      setCurrentPage(
-                        Math.min(
-                          data.pagination.totalPages - 1,
-                          currentPage + 1,
-                        ),
-                      )
-                    }
-                    disabled={currentPage >= data.pagination.totalPages - 1}
-                    variant="outline"
-                  >
-                    다음
-                  </Button>
-                </div>
+              {data?.pagination && (
+                <Pagination
+                  pagination={data.pagination}
+                  onPageChange={setCurrentPage}
+                  showFirstLastButtons={true}
+                />
               )}
             </div>
           ) : (

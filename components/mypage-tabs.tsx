@@ -30,6 +30,7 @@ import { POST_ROUTES } from "@/constants/posts";
 import type { Pagination } from "@/types/apis";
 import { deletePost, hidePost, unhidePost } from "@/apis/posts";
 import { toast } from "@/hooks/use-toast";
+import { Pagination as CommonPagination } from "@/components/commons";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -174,40 +175,7 @@ const emotionTypeTranslation: { [key: string]: string } = {
   PROUD: "자랑",
 };
 
-interface PaginationProps {
-  pagination: Pagination | undefined;
-  onPageChange: (page: number) => void;
-}
-
-function Pagination({ pagination, onPageChange }: Readonly<PaginationProps>) {
-  if (!pagination || pagination.totalPages <= 1) return null;
-
-  const { totalPages, currentPage, hasPrevious, hasNext } = pagination;
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i);
-
-  return (
-    <div className="flex justify-center items-center space-x-2 mt-6">
-      <Button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={!hasPrevious}
-      >
-        이전
-      </Button>
-      {pageNumbers.map((page) => (
-        <Button
-          key={page}
-          onClick={() => onPageChange(page)}
-          variant={currentPage === page ? "default" : "outline"}
-        >
-          {page + 1}
-        </Button>
-      ))}
-      <Button onClick={() => onPageChange(currentPage + 1)} disabled={!hasNext}>
-        다음
-      </Button>
-    </div>
-  );
-}
+// 기존 로컬 Pagination 함수를 제거하고 CommonPagination 사용
 
 export function MyPageTabs() {
   const [activeTab, setActiveTab] = useState("posts");
@@ -222,11 +190,11 @@ export function MyPageTabs() {
   // 파라미터 객체를 메모이제이션하여 무한 렌더링 방지
   const postsParams = useMemo(
     () => ({ page: postsPage, size: 5 }),
-    [postsPage],
+    [postsPage]
   );
   const commentsParams = useMemo(
     () => ({ page: commentsPage, size: 10 }),
-    [commentsPage],
+    [commentsPage]
   );
 
   const {
@@ -253,7 +221,7 @@ export function MyPageTabs() {
 
   const handlePostAction = async (
     postId: number,
-    action: "hide" | "unhide" | "delete",
+    action: "hide" | "unhide" | "delete"
   ) => {
     if (loadingActions.has(postId)) return;
 
@@ -531,7 +499,7 @@ export function MyPageTabs() {
                           onClick={() =>
                             handlePostAction(
                               post.postId,
-                              post.isHidden ? "unhide" : "hide",
+                              post.isHidden ? "unhide" : "hide"
                             )
                           }
                         >
@@ -591,9 +559,10 @@ export function MyPageTabs() {
                 </Card>
               );
             })}
-          <Pagination
+          <CommonPagination
             pagination={postsData?.pagination}
             onPageChange={setPostsPage}
+            showFirstLastButtons={true}
           />
         </TabsContent>
 
@@ -655,9 +624,10 @@ export function MyPageTabs() {
                 </CardContent>
               </Card>
             ))}
-          <Pagination
+          <CommonPagination
             pagination={commentsData?.pagination}
             onPageChange={setCommentsPage}
+            showFirstLastButtons={true}
           />
         </TabsContent>
 

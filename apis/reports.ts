@@ -22,8 +22,6 @@ export async function getReports(
 ): Promise<ReportListResponse> {
   // 빈 문자열과 null/undefined 값을 제거
   const cleanParams = cleanApiParams(params);
-
-  console.log({ params, cleanParams });
   return api.get<ReportListResponse>(
     REPORTS_API_ENDPOINTS.ADMIN_REPORTS,
     cleanParams
