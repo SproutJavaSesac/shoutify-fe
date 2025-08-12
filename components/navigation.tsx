@@ -1,20 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { Menu, PenTool } from "lucide-react";
+import { AuthModal } from "@/components/auth-modal";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useAuth } from "@/lib/auth";
-import { AuthModal } from "@/components/auth-modal";
 import { UserMenu } from "@/components/user-menu";
+import { MEMBER_ROUTES } from "@/constants/members";
 import { POST_ROUTES } from "@/constants/posts";
 import { RANKING_ROUTES } from "@/constants/rankings";
-import { MEMBER_ROUTES } from "@/constants/members";
+import { useAuth } from "@/lib/auth";
+import { Menu, PenTool } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 export function Navigation() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const { user, loading } = useAuth();
+  const { user, loading, roleType } = useAuth();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
@@ -40,6 +40,14 @@ export function Navigation() {
             >
               랭킹
             </Link>
+            {roleType === "ADMIN" && (
+              <Link
+                href="/admin"
+                className="text-red-600 hover:text-red-700 transition-colors font-medium"
+              >
+                관리자
+              </Link>
+            )}
           </nav>
 
           {/* Authentication Section */}
@@ -96,6 +104,14 @@ export function Navigation() {
                       >
                         Write
                       </Link>
+                      {roleType === "ADMIN" && (
+                        <Link
+                          href="/admin"
+                          className="text-lg font-medium text-red-600"
+                        >
+                          관리자
+                        </Link>
+                      )}
                     </>
                   ) : (
                     <Button
