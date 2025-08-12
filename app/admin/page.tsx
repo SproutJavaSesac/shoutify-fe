@@ -1,10 +1,10 @@
-import { AdminProtectedRoute } from "@/components/admin-protected-route";
 import { AdminPanel } from "@/components/admin/admin-panel";
+import { AdminOnlyRoute } from "@/components/guards";
 
 export default function AdminPage() {
   return (
-    <AdminProtectedRoute>
+    <AdminOnlyRoute>
       <AdminPanel />
-    </AdminProtectedRoute>
+    </AdminOnlyRoute>
   );
 }

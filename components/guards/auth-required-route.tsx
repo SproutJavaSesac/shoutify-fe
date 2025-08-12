@@ -7,12 +7,12 @@ import { useAuth } from "@/lib/auth";
 import { AuthModal } from "@/components/auth-modal";
 import { Loader2, PenTool } from "lucide-react";
 
-interface ProtectedRouteProps {
+interface AuthRequiredRouteProps {
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }
 
-export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
+export function AuthRequiredRoute({ children, fallback }: AuthRequiredRouteProps) {
   const { user, loading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
 

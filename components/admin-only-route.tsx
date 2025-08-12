@@ -7,11 +7,11 @@ import { AlertTriangle, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 
-interface AdminProtectedRouteProps {
+interface AdminOnlyRouteProps {
   children: ReactNode;
 }
 
-export function AdminProtectedRoute({ children }: AdminProtectedRouteProps) {
+export function AdminOnlyRoute({ children }: AdminOnlyRouteProps) {
   const { isAuthenticated, user, loading, roleType } = useAuth();
   const router = useRouter();
 
