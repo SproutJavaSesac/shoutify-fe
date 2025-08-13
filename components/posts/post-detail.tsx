@@ -1,40 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { getPost } from "@/apis/posts";
 import {
-  Bookmark,
-  Eye,
-  Flag,
-  MessageCircle,
-  Share2,
-  Trash2,
-} from "lucide-react";
-import Image from "next/image";
-import { useToast } from "@/hooks/use-toast";
+  ReactionButtons,
+  BookmarkButton,
+  DeleteButton,
+  HideButton,
+  ReportButton,
+  ShareButton,
+} from "@/components/commons";
 import { ReportModal } from "@/components/report-modal";
 import { ShareModal } from "@/components/share-modal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { UserProfileModal } from "@/components/user-profile-modal";
-import { AuthModal } from "@/components/auth-modal";
-import { getPost } from "@/apis/posts";
+import { EMOTICON_OPTIONS } from "@/constants/posts";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
+import {
+  usePostReactionCreate,
+  usePostReactionDelete,
+  usePostReactionUpdate,
+} from "@/lib/hooks/useReactions";
+import { utcToLocaleDateString } from "@/lib/utils";
 import { Post } from "@/types/posts";
 import {
   EmotionOption,
   ReactionDetailCountMap,
   ReactionLabelType,
 } from "@/types/reactions";
-import { utcToLocaleDateString } from "@/lib/utils";
-import { EMOTICON_OPTIONS } from "@/constants/posts";
-import {
-  usePostReactionCreate,
-  usePostReactionDelete,
-  usePostReactionUpdate,
-} from "@/lib/hooks/useReactions";
-import { EMOTION_TO_EMOJI_MAP } from "@/constants/reactions";
-import { useAuth } from "@/lib/auth";
-import { ReactionButtons } from "@/components/commons";
+import { Eye, MessageCircle } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
 const postMockData = {
   author: "LiteraryMuse",
@@ -74,7 +72,6 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
   const [reportModal, setReportModal] = useState(false);
   const [shareModal, setShareModal] = useState(false);
   const [userProfileModal, setUserProfileModal] = useState(false);
-  const [authModal, setAuthModal] = useState(false);
 
   const { toast } = useToast();
   const { user } = useAuth();
@@ -170,12 +167,6 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
   };
 
   const handleReaction = (reactionType: ReactionLabelType) => {
-    // 로그인 체크
-    if (!user) {
-      setAuthModal(true);
-      return;
-    }
-
     if (!postData) return;
 
     // 현재 선택된 반응과 같은 반응을 다시 클릭한 경우 - 삭제
@@ -204,8 +195,8 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
     setIsBookmarked(!isBookmarked);
     toast({
       description: isBookmarked
-        ? "Removed from bookmarks"
-        : "Added to bookmarks",
+        ? "북마크에서 제거되었습니다"
+        : "북마크에 추가되었습니다",
     });
   };
 
@@ -217,12 +208,6 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
   };
 
   const handleReport = () => {
-    // 로그인 체크
-    if (!user) {
-      setAuthModal(true);
-      return;
-    }
-
     setReportModal(true);
   };
 
@@ -313,24 +298,11 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
                   {postData.afterTitle}
                 </h1>
                 <div className="flex items-center space-x-1 ml-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`h-8 w-8 p-0 ${isBookmarked ? "text-blue-600" : ""}`}
+                  <BookmarkButton
+                    isBookmarked={isBookmarked}
                     onClick={handleBookmark}
-                  >
-                    <Bookmark
-                      className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`}
-                    />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={handleShare}
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </Button>
+                  />
+                  <ShareButton onClick={handleShare} />
                 </div>
               </div>
 
@@ -352,34 +324,17 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
                 <div className="flex items-center space-x-2">
                   {postData.isMine && (
                     <>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2 text-xs"
-                        onClick={handleHide}
+                      <HideButton isHidden={isHidden} onClick={handleHide} />
+                      <DeleteButton
+                        onClick={() => {
+                          /* TODO: 삭제 로직 구현 */
+                        }}
                       >
-                        <Eye className="h-3 w-3 mr-1" />
-                        Hide
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2 text-xs"
-                      >
-                        <Trash2 className="h-3 w-3 mr-1" />
                         Delete
-                      </Button>
+                      </DeleteButton>
                     </>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-xs"
-                    onClick={handleReport}
-                  >
-                    <Flag className="h-3 w-3 mr-1" />
-                    Report
-                  </Button>
+                  <ReportButton onClick={handleReport}>Report</ReportButton>
                 </div>
               </div>
             </div>
@@ -413,7 +368,6 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
                 reactions={reactions}
                 myReaction={myReaction}
                 onReactionClick={handleReaction}
-                isAuthenticated={!!user}
                 size="default"
                 showAllReactions={true}
               />
@@ -449,7 +403,6 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
         onClose={() => setUserProfileModal(false)}
         userData={userMockData}
       />
-      <AuthModal isOpen={authModal} onClose={() => setAuthModal(false)} />
     </article>
   );
 }

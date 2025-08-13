@@ -1,15 +1,18 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { CommentForm } from "@/components/comments/comment-form";
+import {
+  ReactionButtons,
+  DeleteButton,
+  Pagination,
+  ReportButton,
+} from "@/components/commons";
+import { ReportModal } from "@/components/report-modal";
 import { Badge } from "@/components/ui/badge";
-import { Flag, MessageCircle, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
-import { CommentForm } from "@/components/comments/comment-form";
-import { ReportModal } from "@/components/report-modal";
-import { AuthModal } from "@/components/auth-modal";
 import {
   useCommentCreate,
   useCommentDelete,
@@ -20,11 +23,11 @@ import {
   useCommentReactionDelete,
   useCommentReactionUpdate,
 } from "@/lib/hooks/useReactions";
-import { Comment, CommentSortType } from "@/types/comments";
 import { utcToLocaleDateString } from "@/lib/utils";
-import { EMOTION_TO_EMOJI_MAP } from "@/constants/reactions";
+import { Comment, CommentSortType } from "@/types/comments";
 import { ReactionLabelType } from "@/types/reactions";
-import { Pagination, ReactionButtons } from "@/components/commons";
+import { MessageCircle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 export function CommentsSection({
   postId,
@@ -47,8 +50,6 @@ export function CommentsSection({
   const [reportingComment, setReportingComment] = useState<Comment | null>(
     null
   );
-  const [authModal, setAuthModal] = useState(false);
-
   const { toast } = useToast();
   const { user } = useAuth();
   const highlightRef = useRef<HTMLDivElement>(null);
@@ -181,12 +182,6 @@ export function CommentsSection({
     commentId: string | number,
     reactionType: ReactionLabelType
   ) => {
-    // 로그인 체크
-    if (!user) {
-      setAuthModal(true);
-      return;
-    }
-
     const currentReaction = myReactions[commentId];
 
     // 현재 선택된 반응과 같은 반응을 다시 클릭한 경우 - 삭제
@@ -248,12 +243,6 @@ export function CommentsSection({
 
   // 댓글 작성 핸들러
   const handleCommentSubmit = async (content: string) => {
-    // 로그인 체크
-    if (!user) {
-      setAuthModal(true);
-      return;
-    }
-
     setIsSubmitting(true);
     await createComment({
       paths: { postId },
@@ -268,12 +257,6 @@ export function CommentsSection({
     content: string,
     parentCommentId: string | number
   ) => {
-    // 로그인 체크
-    if (!user) {
-      setAuthModal(true);
-      return;
-    }
-
     await createComment({
       paths: { postId },
       body: {
@@ -295,12 +278,6 @@ export function CommentsSection({
 
   // 댓글 신고 핸들러
   const handleReportComment = (comment: Comment) => {
-    // 로그인 체크
-    if (!user) {
-      setAuthModal(true);
-      return;
-    }
-
     setReportingComment(comment);
     setReportModal(true);
   };
@@ -357,26 +334,24 @@ export function CommentsSection({
           <div className="flex items-center gap-2">
             {/* 신고 버튼 - 내 댓글이 아닌 경우에만 표시 */}
             {!comment.isMine && (
-              <Button
-                variant="ghost"
-                size="sm"
+              <ReportButton
                 onClick={() => handleReportComment(comment)}
                 className="h-6 w-6 p-0 text-gray-500 hover:text-red-500"
+                size="sm"
               >
-                <Flag className="h-3 w-3" />
-              </Button>
+                신고
+              </ReportButton>
             )}
 
             {/* 삭제 버튼 - 내 댓글인 경우에만 표시 */}
             {comment.isMine && (
-              <Button
-                variant="ghost"
-                size="sm"
+              <DeleteButton
                 onClick={() => handleDeleteComment(comment.commentId)}
                 className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                size="sm"
               >
-                <Trash2 className="h-3 w-3" />
-              </Button>
+                삭제
+              </DeleteButton>
             )}
           </div>
         </div>
@@ -399,7 +374,6 @@ export function CommentsSection({
               isAuthenticated={!!user}
               size="sm"
               showAllReactions={true}
-              enableNewReactions={true}
             />
           </div>
 
@@ -525,7 +499,6 @@ export function CommentsSection({
         targetId={reportingComment?.commentId || ""}
         targetContent={reportingComment?.content || ""}
       />
-      <AuthModal isOpen={authModal} onClose={() => setAuthModal(false)} />
     </>
   );
 }

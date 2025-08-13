@@ -1,11 +1,11 @@
 "use client";
 
-import type React from "react";
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AuthTextarea } from "@/components/commons";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -13,20 +13,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Sparkles, Upload, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/auth";
-import { usePostCreate } from "@/lib/hooks/usePosts";
-import { ConceptType } from "@/types/posts";
 import {
   CONCEPT_OPTIONS,
   EMOTICON_OPTIONS,
   POST_ROUTES,
 } from "@/constants/posts";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
+import { usePostCreate } from "@/lib/hooks/usePosts";
+import { ConceptType } from "@/types/posts";
 import { ReactionLabelType } from "@/types/reactions";
+import { Sparkles, Upload, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useState } from "react";
 
 export function PostCreationForm() {
   const [title, setTitle] = useState("");
@@ -91,15 +91,6 @@ export function PostCreationForm() {
       toast({
         title: "입력 오류",
         description: "컨셉 카테고리, 제목, 내용은 필수 입력 항목입니다.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!user) {
-      toast({
-        title: "로그인 필요",
-        description: "글을 작성하려면 먼저 로그인해주세요.",
         variant: "destructive",
       });
       return;
@@ -183,7 +174,7 @@ export function PostCreationForm() {
           {/* Content */}
           <div className="space-y-2">
             <Label htmlFor="content">내용 *</Label>
-            <Textarea
+            <AuthTextarea
               id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}

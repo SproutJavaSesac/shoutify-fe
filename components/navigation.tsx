@@ -1,6 +1,7 @@
 "use client";
 
 import { AuthModal } from "@/components/auth-modal";
+import { PostWriteButton } from "@/components/commons";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { UserMenu } from "@/components/user-menu";
@@ -10,11 +11,13 @@ import { RANKING_ROUTES } from "@/constants/rankings";
 import { useAuth } from "@/lib/auth";
 import { Menu, PenTool } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function Navigation() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { user, loading, roleType } = useAuth();
+  const router = useRouter();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
@@ -56,11 +59,12 @@ export function Navigation() {
               <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse" />
             ) : user ? (
               <>
-                <Link href={POST_ROUTES.CREATE}>
-                  <Button className="bg-gray-800 hover:bg-gray-900">
-                    Write
-                  </Button>
-                </Link>
+                <PostWriteButton
+                  onClick={() => router.push(POST_ROUTES.CREATE)}
+                  className="bg-gray-800 hover:bg-gray-900"
+                >
+                  글 쓰기
+                </PostWriteButton>
                 <UserMenu />
               </>
             ) : (
@@ -98,12 +102,13 @@ export function Navigation() {
                       >
                         My Page
                       </Link>
-                      <Link
-                        href={POST_ROUTES.CREATE}
-                        className="text-lg font-medium"
+                      <PostWriteButton
+                        onClick={() => router.push(POST_ROUTES.CREATE)}
+                        className="text-lg font-medium bg-transparent hover:bg-gray-100 text-gray-900 p-0 justify-start h-auto"
+                        variant="ghost"
                       >
                         Write
-                      </Link>
+                      </PostWriteButton>
                       {roleType === "ADMIN" && (
                         <Link
                           href="/admin"

@@ -1,36 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Award,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-  ExternalLinkIcon,
-  Eye,
-  EyeOff,
-  Heart,
-  Loader2,
-  MessageCircle,
-  Settings,
-  Trash2,
-} from "lucide-react";
-import Link from "next/link";
-import { useAuth } from "@/lib/auth";
-import { useMyComments, useMyInfo, useMyPosts } from "@/lib/hooks/useMembers";
-import { MEMBER_ROUTES } from "@/constants/members";
-import { POST_ROUTES } from "@/constants/posts";
-import type { Pagination } from "@/types/apis";
 import { deletePost, hidePost, unhidePost } from "@/apis/posts";
-import { toast } from "@/hooks/use-toast";
-import { Pagination as CommonPagination } from "@/components/commons";
+import {
+  Pagination as CommonPagination,
+  HideButton,
+  PostWriteButton,
+} from "@/components/commons";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +17,33 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MEMBER_ROUTES } from "@/constants/members";
+import { POST_ROUTES } from "@/constants/posts";
+import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
+import { useMyComments, useMyInfo, useMyPosts } from "@/lib/hooks/useMembers";
+import { formatDistanceToNow } from "date-fns";
+import { ko } from "date-fns/locale";
+import {
+  Award,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  ExternalLinkIcon,
+  Heart,
+  Loader2,
+  MessageCircle,
+  Settings,
+  Trash2,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 
 const bookmarkedPosts = [
   {
@@ -185,6 +187,7 @@ export function MyPageTabs() {
   const [loadingActions, setLoadingActions] = useState<Set<number>>(new Set());
 
   const { user } = useAuth();
+  const router = useRouter();
   const { data: myInfo, loading: infoLoading, error: infoError } = useMyInfo();
 
   // 파라미터 객체를 메모이제이션하여 무한 렌더링 방지
@@ -377,9 +380,12 @@ export function MyPageTabs() {
               <p className="text-gray-400 text-sm">
                 첫 번째 게시글을 작성해보세요!
               </p>
-              <Link href={POST_ROUTES.CREATE}>
-                <Button className="mt-4">게시글 작성하기</Button>
-              </Link>
+              <PostWriteButton
+                onClick={() => router.push(POST_ROUTES.CREATE)}
+                className="mt-4"
+              >
+                게시글 작성하기
+              </PostWriteButton>
             </div>
           )}
           {!postsLoading &&
@@ -492,31 +498,22 @@ export function MyPageTabs() {
                       </div>
 
                       <div className="flex flex-col items-center space-y-2 ml-4">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={isLoading}
+                        <HideButton
+                          isHidden={post.isHidden}
                           onClick={() =>
                             handlePostAction(
                               post.postId,
                               post.isHidden ? "unhide" : "hide"
                             )
                           }
+                          disabled={isLoading}
+                          size="sm"
                         >
                           {isLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : post.isHidden ? (
-                            <>
-                              <Eye className="h-4 w-4 mr-1" />
-                              공개
-                            </>
-                          ) : (
-                            <>
-                              <EyeOff className="h-4 w-4 mr-1" />
-                              숨김
-                            </>
-                          )}
-                        </Button>
+                            <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                          ) : null}
+                          {post.isHidden ? "공개" : "숨김"}
+                        </HideButton>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
