@@ -323,14 +323,18 @@ export function MyPageTabs() {
                 <Link href={MEMBER_ROUTES.MY_INFO_EDIT}>
                   <Button
                     variant="outline"
-                    className="flex items-center space-x-2"
+                    className="flex items-center space-x-2 text-sm px-3 py-1.5 h-8"
+                    size="sm"
                   >
                     <Settings className="h-4 w-4" />
                     <span>프로필 수정</span>
                   </Button>
                 </Link>
                 <Link href={MEMBER_ROUTES.MEMBER_PROFILE(myInfo.memberId)}>
-                  <Button className="flex items-center space-x-2">
+                  <Button
+                    className="flex items-center space-x-2 text-sm px-3 py-1.5 h-8"
+                    size="sm"
+                  >
                     <ExternalLink className="h-4 w-4" />
                     <span>공개 프로필 보기</span>
                   </Button>
@@ -371,7 +375,7 @@ export function MyPageTabs() {
               </p>
               <PostWriteButton
                 onClick={() => router.push(POST_ROUTES.CREATE)}
-                className="mt-4"
+                className="mt-4 text-sm px-3 py-1.5 h-8"
               >
                 게시글 작성하기
               </PostWriteButton>
@@ -469,7 +473,7 @@ export function MyPageTabs() {
                             variant="ghost"
                             size="sm"
                             onClick={() => togglePostExpansion(post.postId)}
-                            className="text-blue-600 hover:text-blue-800"
+                            className="text-blue-600 hover:text-blue-800 text-sm px-3 py-1.5 h-8"
                           >
                             {isExpanded ? (
                               <>
@@ -498,6 +502,7 @@ export function MyPageTabs() {
                           }
                           disabled={isLoading}
                           size="sm"
+                          className="text-sm px-3 py-1.5 h-8 min-w-[60px]"
                         />
                         <DeleteButton
                           isMine={true}
@@ -506,6 +511,7 @@ export function MyPageTabs() {
                           }
                           disabled={isLoading}
                           size="sm"
+                          className="text-sm px-3 py-1.5 h-8 min-w-[60px]"
                           confirmDescription="정말로 이 게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다."
                         />
                       </div>

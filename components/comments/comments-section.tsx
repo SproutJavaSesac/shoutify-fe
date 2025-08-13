@@ -312,31 +312,31 @@ export function CommentsSection({
         } ${isHighlighted ? "ring-2 ring-blue-300 bg-blue-50" : ""}`}
       >
         {/* 댓글 헤더 */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center space-x-2">
-            <span className="font-medium text-gray-900">
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-center space-x-2 flex-1 min-w-0">
+            <span className="font-medium text-gray-900 truncate">
               {comment.commenterNickname}
             </span>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 whitespace-nowrap">
               {utcToLocaleDateString(comment.createdAt)}
             </span>
             {comment.isMine && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs whitespace-nowrap">
                 내 댓글
               </Badge>
             )}
             {/* level 표시 (개발용 - 나중에 제거) */}
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-gray-400 whitespace-nowrap">
               level: {comment.level}
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center space-x-2 flex-shrink-0 ml-4">
             {/* 신고 버튼 - 내 댓글이 아닌 경우에만 표시 */}
             {!comment.isMine && (
               <ReportButton
                 onClick={() => handleReportComment(comment)}
-                className="h-6 w-6 p-0 text-gray-500 hover:text-red-500"
+                className="text-xs px-2 py-1 h-6 min-w-[40px] text-gray-500 hover:text-red-500"
                 size="sm"
               >
                 신고
@@ -349,8 +349,9 @@ export function CommentsSection({
                 comment.commenterId ? comment.commenterId === user?.id : false
               }
               onClick={() => handleDeleteComment(comment.commentId)}
-              className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+              className="text-xs px-2 py-1 h-6 min-w-[40px] text-red-500 hover:text-red-700"
               size="sm"
+              variant="ghost"
               confirmDescription="이 댓글을 삭제하시겠습니까?"
             />
           </div>

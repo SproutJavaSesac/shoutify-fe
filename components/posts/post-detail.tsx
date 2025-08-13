@@ -344,18 +344,28 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
                 </div>
 
                 {/* Action buttons - right aligned */}
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
                   <HideButton
                     isHidden={isHidden}
                     onClick={handleHide}
                     isMine={postData.isMine ? postData.isMine : false}
+                    className="flex-shrink-0 text-sm px-3 py-1.5 h-8"
+                    size="sm"
                   />
                   <DeleteButton
                     onClick={handleDelete}
                     isMine={postData.isMine ? postData.isMine : false}
                     confirmDescription="이 게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다."
+                    className="flex-shrink-0 text-sm px-3 py-1.5 h-8"
+                    size="sm"
                   />
-                  <ReportButton onClick={handleReport}>Report</ReportButton>
+                  <ReportButton
+                    onClick={handleReport}
+                    className="flex-shrink-0 text-sm px-3 py-1.5 h-8"
+                    size="sm"
+                  >
+                    신고
+                  </ReportButton>
                 </div>
               </div>
             </div>
