@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { withAuth } from "@/lib/hoc/withAuth";
+import { withOwnership } from "@/lib/hoc/withOwnership";
 import { Eye, EyeOff } from "lucide-react";
 
 interface HideButtonProps {
@@ -17,7 +17,10 @@ interface HideButtonProps {
   size?: "default" | "sm" | "lg";
   children?: React.ReactNode;
   disabled?: boolean;
-  executeWithAuth?: (action: () => void) => void;
+  isMine?: boolean; // 소유권 확인용
+  // HOC에서 주입되는 props
+  executeWithOwnership?: (action: () => void) => void;
+  isOwner?: boolean;
   isAuthenticated?: boolean;
 }
 
@@ -28,12 +31,14 @@ const BaseHideButton = ({
   size = "sm",
   children,
   disabled = false,
-  executeWithAuth,
+  isMine,
+  executeWithOwnership,
+  isOwner,
   isAuthenticated,
 }: HideButtonProps) => {
   const handleClick = () => {
-    if (executeWithAuth) {
-      executeWithAuth(onClick);
+    if (executeWithOwnership) {
+      executeWithOwnership(onClick);
     } else {
       onClick();
     }
@@ -45,6 +50,12 @@ const BaseHideButton = ({
   ) : (
     <Eye className="h-3 w-3 mr-1" />
   );
+
+  const getTooltipMessage = () => {
+    if (!isAuthenticated) return "로그인이 필요합니다";
+    if (!isOwner) return "본인의 콘텐츠만 숨길 수 있습니다";
+    return isHidden ? "다시 표시합니다" : "숨깁니다";
+  };
 
   return (
     <TooltipProvider>
@@ -62,17 +73,14 @@ const BaseHideButton = ({
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>
-            {isAuthenticated
-              ? isHidden
-                ? "게시글을 다시 표시합니다"
-                : "게시글을 숨깁니다"
-              : "로그인이 필요합니다"}
-          </p>
+          <p>{getTooltipMessage()}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
 };
 
-export const HideButton = withAuth(BaseHideButton);
+export const HideButton = withOwnership(BaseHideButton, {
+  resourceName: "콘텐츠",
+  showOwnershipModal: true,
+});

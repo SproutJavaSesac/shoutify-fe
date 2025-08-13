@@ -1,8 +1,15 @@
-# 인증 컴포넌트 사용법
+# 인증 및 권한 컴포넌트 사용법
 
-`withAuth` HOC를 활용해서 만들어진 공통 인증 컴포넌트들의 사용법입니다.
+`withAuth` HOC와 `withOwnership` HOC를 활용해서 만들어진 공통 인증 및 권한 확인 컴포넌트들의 사용법입니다.
 
 ## 개요
+
+두 가지 HOC 패턴을 제공합니다:
+
+- **withAuth**: 로그인 여부만 확인 (인증)
+- **withOwnership**: 로그인 + 소유권 확인 (인증 + 인가)
+
+## 인증 컴포넌트 (withAuth 기반)
 
 - 모든 인증 컴포넌트들은 `withAuth` HOC로 래핑되어 자동으로 인증 상태를 체크합니다
 - 인증이 필요한 동작 시 자동으로 인증 모달이 표시됩니다
@@ -165,3 +172,173 @@ const handleBookmark = () => {
 ```
 
 인증 처리, 모달 관리, 에러 처리 등이 모두 컴포넌트 내부에서 자동으로 처리됩니다.
+
+## 권한 확인 컴포넌트 (withOwnership 기반)
+
+### 1. OwnerDeleteButton - 소유자만 삭제 가능한 버튼
+
+```tsx
+import { OwnerDeleteButton } from "@/components/commons";
+
+function PostActions({ post }) {
+  const handleDelete = () => {
+    // 삭제 로직
+  };
+
+  return (
+    <OwnerDeleteButton
+      onClick={handleDelete}
+      authorId={post.authorId} // 게시글 작성자 ID
+      size="sm"
+    >
+      삭제
+    </OwnerDeleteButton>
+  );
+}
+```
+
+### 2. OwnerHideButton - 소유자만 숨김 가능한 버튼
+
+```tsx
+import { OwnerHideButton } from "@/components/commons";
+
+function PostActions({ post }) {
+  const handleHide = () => {
+    // 숨김/해제 로직
+  };
+
+  return (
+    <OwnerHideButton
+      isHidden={post.isHidden}
+      onClick={handleHide}
+      authorId={post.authorId}
+      size="sm"
+    />
+  );
+}
+```
+
+### 3. OwnerCommentDeleteButton - 댓글 소유자만 삭제 가능한 버튼
+
+```tsx
+import { OwnerCommentDeleteButton } from "@/components/commons";
+
+function CommentActions({ comment }) {
+  const handleDelete = () => {
+    // 댓글 삭제 로직
+  };
+
+  return (
+    <OwnerCommentDeleteButton
+      onClick={handleDelete}
+      authorId={comment.authorId} // 댓글 작성자 ID
+    />
+  );
+}
+```
+
+## HOC 옵션
+
+### withOwnership 옵션
+
+```tsx
+export const CustomOwnerButton = withOwnership(BaseButton, {
+  // 소유권 확인 함수 (기본값: user.id === props.authorId || user.id === props.ownerId)
+  checkOwnership: (user, props) => user.id === props.customAuthorId,
+
+  // 권한이 없을 때 표시할 컴포넌트
+  fallbackComponent: () => <div>권한이 없습니다</div>,
+
+  // 권한이 없을 때 모달 표시 여부 (기본값: true)
+  showOwnershipModal: true,
+
+  // 리소스 이름 (모달 메시지에 사용, 기본값: "리소스")
+  resourceName: "게시글",
+
+  // 커스텀 권한 없음 메시지
+  ownershipModalMessage: "본인의 게시글만 수정할 수 있습니다.",
+});
+```
+
+## 사용 패턴 비교
+
+### 기존 방식 (권장하지 않음)
+
+```tsx
+// ❌ 수동 조건부 렌더링
+{
+  postData.isMine && <Button onClick={handleDelete}>삭제</Button>;
+}
+```
+
+### 새로운 방식 (권장)
+
+```tsx
+// ✅ 자동 권한 확인 + 사용자 친화적 피드백
+<OwnerDeleteButton onClick={handleDelete} authorId={post.authorId}>
+  삭제
+</OwnerDeleteButton>
+```
+
+## 확장된 장점
+
+1. **자동 권한 확인**: HOC가 자동으로 로그인 및 소유권 확인
+2. **사용자 친화적**: 권한이 없을 때 적절한 모달과 메시지 표시
+3. **코드 중복 제거**: 반복적인 조건문과 모달 관리 코드 제거
+4. **타입 안전성**: TypeScript로 props 타입 검증
+5. **일관성**: 모든 권한 확인 로직이 동일한 패턴으로 작동
+6. **확장성**: 새로운 권한 확인 컴포넌트를 쉽게 추가 가능
+
+## 권한 확인 패턴 비교
+
+### Before (기존 방식)
+
+```tsx
+const PostDetail = ({ post }) => {
+  const { user } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const handleDelete = () => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+    if (user.id !== post.authorId) {
+      alert("권한이 없습니다");
+      return;
+    }
+    // 실제 삭제 로직
+  };
+
+  return (
+    <div>
+      {user && user.id === post.authorId && (
+        <Button onClick={handleDelete}>삭제</Button>
+      )}
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
+    </div>
+  );
+};
+```
+
+### After (새로운 방식)
+
+```tsx
+const PostDetail = ({ post }) => {
+  const handleDelete = () => {
+    // 실제 삭제 로직만 작성
+  };
+
+  return (
+    <div>
+      <OwnerDeleteButton onClick={handleDelete} authorId={post.authorId}>
+        삭제
+      </OwnerDeleteButton>
+    </div>
+  );
+};
+```

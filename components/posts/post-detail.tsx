@@ -1,11 +1,11 @@
 "use client";
 
-import { getPost } from "@/apis/posts";
+import { deletePost, getPost } from "@/apis/posts";
 import {
-  ReactionButtons,
   BookmarkButton,
   DeleteButton,
   HideButton,
+  ReactionButtons,
   ReportButton,
   ShareButton,
 } from "@/components/commons";
@@ -32,6 +32,7 @@ import {
 } from "@/types/reactions";
 import { Eye, MessageCircle } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const postMockData = {
@@ -75,6 +76,7 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
 
   const { toast } = useToast();
   const { user } = useAuth();
+  const router = useRouter();
 
   // 게시글 리액션 훅들
   const { mutate: createReaction } = usePostReactionCreate({
@@ -207,6 +209,27 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
     });
   };
 
+  const handleDelete = async () => {
+    if (!postData) return;
+
+    try {
+      await deletePost(postData.postId);
+      toast({
+        title: "삭제 완료",
+        description: "게시글이 성공적으로 삭제되었습니다.",
+      });
+      // 삭제 후 메인 페이지로 이동
+      router.push("/");
+    } catch (error) {
+      console.error("게시글 삭제 실패:", error);
+      toast({
+        title: "삭제 실패",
+        description: "게시글 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleReport = () => {
     setReportModal(true);
   };
@@ -322,18 +345,16 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
 
                 {/* Action buttons - right aligned */}
                 <div className="flex items-center space-x-2">
-                  {postData.isMine && (
-                    <>
-                      <HideButton isHidden={isHidden} onClick={handleHide} />
-                      <DeleteButton
-                        onClick={() => {
-                          /* TODO: 삭제 로직 구현 */
-                        }}
-                      >
-                        Delete
-                      </DeleteButton>
-                    </>
-                  )}
+                  <HideButton
+                    isHidden={isHidden}
+                    onClick={handleHide}
+                    isMine={postData.isMine ? postData.isMine : false}
+                  />
+                  <DeleteButton
+                    onClick={handleDelete}
+                    isMine={postData.isMine ? postData.isMine : false}
+                    confirmDescription="이 게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다."
+                  />
                   <ReportButton onClick={handleReport}>Report</ReportButton>
                 </div>
               </div>

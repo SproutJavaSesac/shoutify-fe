@@ -2,9 +2,9 @@
 
 import { CommentForm } from "@/components/comments/comment-form";
 import {
-  ReactionButtons,
   DeleteButton,
   Pagination,
+  ReactionButtons,
   ReportButton,
 } from "@/components/commons";
 import { ReportModal } from "@/components/report-modal";
@@ -343,16 +343,16 @@ export function CommentsSection({
               </ReportButton>
             )}
 
-            {/* 삭제 버튼 - 내 댓글인 경우에만 표시 */}
-            {comment.isMine && (
-              <DeleteButton
-                onClick={() => handleDeleteComment(comment.commentId)}
-                className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                size="sm"
-              >
-                삭제
-              </DeleteButton>
-            )}
+            {/* 삭제 버튼 */}
+            <DeleteButton
+              isMine={
+                comment.commenterId ? comment.commenterId === user?.id : false
+              }
+              onClick={() => handleDeleteComment(comment.commentId)}
+              className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+              size="sm"
+              confirmDescription="이 댓글을 삭제하시겠습니까?"
+            />
           </div>
         </div>
 

@@ -3,20 +3,10 @@
 import { deletePost, hidePost, unhidePost } from "@/apis/posts";
 import {
   Pagination as CommonPagination,
+  DeleteButton,
   HideButton,
   PostWriteButton,
 } from "@/components/commons";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,7 +29,6 @@ import {
   Loader2,
   MessageCircle,
   Settings,
-  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -499,6 +488,7 @@ export function MyPageTabs() {
 
                       <div className="flex flex-col items-center space-y-2 ml-4">
                         <HideButton
+                          isMine={true}
                           isHidden={post.isHidden}
                           onClick={() =>
                             handlePostAction(
@@ -508,48 +498,16 @@ export function MyPageTabs() {
                           }
                           disabled={isLoading}
                           size="sm"
-                        >
-                          {isLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                          ) : null}
-                          {post.isHidden ? "공개" : "숨김"}
-                        </HideButton>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={isLoading}
-                              className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              삭제
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>게시글 삭제</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                정말로 이 게시글을 삭제하시겠습니까? 삭제된
-                                게시글은 복구할 수 없습니다.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>취소</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() =>
-                                  handlePostAction(post.postId, "delete")
-                                }
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                {isLoading ? (
-                                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                                ) : null}
-                                삭제
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        />
+                        <DeleteButton
+                          isMine={true}
+                          onClick={() =>
+                            handlePostAction(post.postId, "delete")
+                          }
+                          disabled={isLoading}
+                          size="sm"
+                          confirmDescription="정말로 이 게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다."
+                        />
                       </div>
                     </div>
                   </CardContent>
