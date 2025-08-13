@@ -1,40 +1,39 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { deletePost, getPost, hidePost, unhidePost } from "@/apis/posts";
 import {
-  Bookmark,
-  Eye,
-  Flag,
-  MessageCircle,
-  Share2,
-  Trash2,
-} from "lucide-react";
-import Image from "next/image";
-import { useToast } from "@/hooks/use-toast";
+  BookmarkButton,
+  DeleteButton,
+  HideButton,
+  ReactionButtons,
+  ReportButton,
+  ShareButton,
+} from "@/components/commons";
 import { ReportModal } from "@/components/report-modal";
 import { ShareModal } from "@/components/share-modal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { UserProfileModal } from "@/components/user-profile-modal";
-import { AuthModal } from "@/components/auth-modal";
-import { getPost } from "@/apis/posts";
+import { EMOTICON_OPTIONS } from "@/constants/posts";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
+import {
+  usePostReactionCreate,
+  usePostReactionDelete,
+  usePostReactionUpdate,
+} from "@/lib/hooks/useReactions";
+import { utcToLocaleDateString } from "@/lib/utils";
 import { Post } from "@/types/posts";
 import {
   EmotionOption,
   ReactionDetailCountMap,
   ReactionLabelType,
 } from "@/types/reactions";
-import { utcToLocaleDateString } from "@/lib/utils";
-import { EMOTICON_OPTIONS } from "@/constants/posts";
-import {
-  usePostReactionCreate,
-  usePostReactionDelete,
-  usePostReactionUpdate,
-} from "@/lib/hooks/useReactions";
-import { EMOTION_TO_EMOJI_MAP } from "@/constants/reactions";
-import { useAuth } from "@/lib/auth";
-import { ReactionButtons } from "@/components/commons";
+import { Eye, MessageCircle } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const postMockData = {
   author: "LiteraryMuse",
@@ -74,10 +73,15 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
   const [reportModal, setReportModal] = useState(false);
   const [shareModal, setShareModal] = useState(false);
   const [userProfileModal, setUserProfileModal] = useState(false);
-  const [authModal, setAuthModal] = useState(false);
+
+  // 로딩 상태들
+  const [isHideLoading, setIsHideLoading] = useState(false);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+  const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
 
   const { toast } = useToast();
   const { user } = useAuth();
+  const router = useRouter();
 
   // 게시글 리액션 훅들
   const { mutate: createReaction } = usePostReactionCreate({
@@ -170,12 +174,6 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
   };
 
   const handleReaction = (reactionType: ReactionLabelType) => {
-    // 로그인 체크
-    if (!user) {
-      setAuthModal(true);
-      return;
-    }
-
     if (!postData) return;
 
     // 현재 선택된 반응과 같은 반응을 다시 클릭한 경우 - 삭제
@@ -200,29 +198,93 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
     }
   };
 
-  const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
-    toast({
-      description: isBookmarked
-        ? "Removed from bookmarks"
-        : "Added to bookmarks",
-    });
+  const handleBookmark = async () => {
+    if (isBookmarkLoading) return;
+
+    setIsBookmarkLoading(true);
+    try {
+      // TODO: 북마크 API 호출 (아직 구현되지 않음)
+      // if (isBookmarked) {
+      //   await removeBookmark(postData.postId);
+      // } else {
+      //   await addBookmark(postData.postId);
+      // }
+
+      setIsBookmarked(!isBookmarked);
+      toast({
+        description: isBookmarked
+          ? "북마크에서 제거되었습니다"
+          : "북마크에 추가되었습니다",
+      });
+    } catch (error) {
+      console.error("북마크 처리 실패:", error);
+      toast({
+        title: "오류",
+        description: "북마크 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsBookmarkLoading(false);
+    }
   };
 
-  const handleHide = () => {
-    setIsHidden(true);
-    toast({
-      description: "게시글이 숨겨졌습니다.",
-    });
+  const handleHide = async () => {
+    if (!postData || isHideLoading) return;
+
+    setIsHideLoading(true);
+    try {
+      if (isHidden) {
+        // 현재 숨겨진 상태라면 공개하기
+        await unhidePost(postData.postId);
+        setIsHidden(false);
+        toast({
+          description: "게시글이 공개되었습니다.",
+        });
+      } else {
+        // 현재 공개된 상태라면 숨기기
+        await hidePost(postData.postId);
+        setIsHidden(true);
+        toast({
+          description: "게시글이 숨겨졌습니다.",
+        });
+      }
+    } catch (error) {
+      console.error("게시글 숨김/공개 실패:", error);
+      toast({
+        title: "오류",
+        description: "작업 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsHideLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!postData || isDeleteLoading) return;
+
+    setIsDeleteLoading(true);
+    try {
+      await deletePost(postData.postId);
+      toast({
+        title: "삭제 완료",
+        description: "게시글이 성공적으로 삭제되었습니다.",
+      });
+      // 삭제 후 메인 페이지로 이동
+      router.push("/");
+    } catch (error) {
+      console.error("게시글 삭제 실패:", error);
+      toast({
+        title: "삭제 실패",
+        description: "게시글 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleteLoading(false);
+    }
   };
 
   const handleReport = () => {
-    // 로그인 체크
-    if (!user) {
-      setAuthModal(true);
-      return;
-    }
-
     setReportModal(true);
   };
 
@@ -313,24 +375,11 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
                   {postData.afterTitle}
                 </h1>
                 <div className="flex items-center space-x-1 ml-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`h-8 w-8 p-0 ${isBookmarked ? "text-blue-600" : ""}`}
+                  <BookmarkButton
+                    isBookmarked={isBookmarked}
                     onClick={handleBookmark}
-                  >
-                    <Bookmark
-                      className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`}
-                    />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={handleShare}
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </Button>
+                  />
+                  <ShareButton onClick={handleShare} />
                 </div>
               </div>
 
@@ -349,37 +398,30 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
                 </div>
 
                 {/* Action buttons - right aligned */}
-                <div className="flex items-center space-x-2">
-                  {postData.isMine && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2 text-xs"
-                        onClick={handleHide}
-                      >
-                        <Eye className="h-3 w-3 mr-1" />
-                        Hide
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2 text-xs"
-                      >
-                        <Trash2 className="h-3 w-3 mr-1" />
-                        Delete
-                      </Button>
-                    </>
-                  )}
-                  <Button
-                    variant="ghost"
+                <div className="flex items-center space-x-3">
+                  <HideButton
+                    isHidden={isHidden}
+                    onClick={handleHide}
+                    isMine={postData.isMine ? postData.isMine : false}
+                    className="flex-shrink-0 text-sm px-3 py-1.5 h-8"
                     size="sm"
-                    className="h-7 px-2 text-xs"
+                    disabled={isHideLoading}
+                  />
+                  <DeleteButton
+                    onClick={handleDelete}
+                    isMine={postData.isMine ? postData.isMine : false}
+                    confirmDescription="이 게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다."
+                    className="flex-shrink-0 text-sm px-3 py-1.5 h-8"
+                    size="sm"
+                    disabled={isDeleteLoading}
+                  />
+                  <ReportButton
                     onClick={handleReport}
+                    className="flex-shrink-0 text-sm px-3 py-1.5 h-8"
+                    size="sm"
                   >
-                    <Flag className="h-3 w-3 mr-1" />
-                    Report
-                  </Button>
+                    신고
+                  </ReportButton>
                 </div>
               </div>
             </div>
@@ -413,7 +455,6 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
                 reactions={reactions}
                 myReaction={myReaction}
                 onReactionClick={handleReaction}
-                isAuthenticated={!!user}
                 size="default"
                 showAllReactions={true}
               />
@@ -449,7 +490,6 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
         onClose={() => setUserProfileModal(false)}
         userData={userMockData}
       />
-      <AuthModal isOpen={authModal} onClose={() => setAuthModal(false)} />
     </article>
   );
 }

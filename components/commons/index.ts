@@ -14,4 +14,16 @@ export type { FilterConfig, FilterState } from "./integrated-filter";
 
 export { Pagination } from "./pagination";
 
-export { ReactionButtons } from "./reaction-buttons";
+export { AuthTextarea } from "./auth-textarea";
+export { ReactionButtons } from "./buttons/reaction-buttons";
+
+// Auth-enabled components
+export {
+  BookmarkButton,
+  CommentWriteButton,
+  DeleteButton,
+  HideButton,
+  PostWriteButton,
+  ReportButton,
+  ShareButton,
+} from "./buttons";

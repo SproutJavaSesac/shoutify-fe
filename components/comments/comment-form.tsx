@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import { AuthTextarea, CommentWriteButton } from "@/components/commons";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Send } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { AuthModal } from "@/components/auth-modal";
+import React, { useState } from "react";
 
 interface CommentFormProps {
   placeholder?: string;
@@ -29,16 +27,10 @@ export function CommentForm({
   submitLabel = "댓글 등록",
 }: CommentFormProps) {
   const [content, setContent] = useState("");
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
 
     if (!content.trim()) {
       return;
@@ -48,10 +40,13 @@ export function CommentForm({
     setContent("");
   };
 
-  const handleTextareaInteraction = () => {
-    if (!user) {
-      setShowAuthModal(true);
+  const handleCommentSubmit = async () => {
+    if (!content.trim()) {
+      return;
     }
+
+    await onSubmit(content.trim());
+    setContent("");
   };
 
   const handleCancel = () => {
@@ -62,20 +57,10 @@ export function CommentForm({
   return (
     <>
       <form onSubmit={handleSubmit} className={`space-y-4 ${className}`}>
-        <Textarea
+        <AuthTextarea
           value={content}
-          onChange={(e) => {
-            if (!user) {
-              setShowAuthModal(true);
-              return;
-            }
-            setContent(e.target.value);
-          }}
-          onFocus={handleTextareaInteraction}
-          onClick={handleTextareaInteraction}
-          placeholder={
-            user ? placeholder : "로그인 후 댓글을 작성할 수 있습니다."
-          }
+          onChange={(e) => setContent(e.target.value)}
+          placeholder={placeholder}
           className={minHeight}
           maxLength={500}
           disabled={isSubmitting}
@@ -106,29 +91,16 @@ export function CommentForm({
                 취소
               </Button>
             )}
-            <Button
-              type="submit"
-              disabled={!user || !content.trim() || isSubmitting}
-              size={showCancel ? "sm" : "default"}
+            <CommentWriteButton
+              onClick={handleCommentSubmit}
+              disabled={!content.trim() || isSubmitting}
+              className={showCancel ? "h-9 px-3" : ""}
             >
-              {isSubmitting ? (
-                <>등록 중...</>
-              ) : (
-                <>
-                  <Send className="h-4 w-4 mr-2" />
-                  {submitLabel}
-                </>
-              )}
-            </Button>
+              {isSubmitting ? "등록 중..." : submitLabel}
+            </CommentWriteButton>
           </div>
         </div>
       </form>
-
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        defaultMode="login"
-      />
     </>
   );
 }

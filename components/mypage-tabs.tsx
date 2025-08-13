@@ -1,47 +1,38 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { deletePost, hidePost, unhidePost } from "@/apis/posts";
+import {
+  Pagination as CommonPagination,
+  DeleteButton,
+  HideButton,
+  PostWriteButton,
+} from "@/components/commons";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MEMBER_ROUTES } from "@/constants/members";
+import { POST_ROUTES } from "@/constants/posts";
+import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
+import { useMyComments, useMyInfo, useMyPosts } from "@/lib/hooks/useMembers";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Award,
   ChevronDown,
   ChevronUp,
   ExternalLink,
   ExternalLinkIcon,
-  Eye,
-  EyeOff,
   Heart,
   Loader2,
   MessageCircle,
   Settings,
-  Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "@/lib/auth";
-import { useMyComments, useMyInfo, useMyPosts } from "@/lib/hooks/useMembers";
-import { MEMBER_ROUTES } from "@/constants/members";
-import { POST_ROUTES } from "@/constants/posts";
-import type { Pagination } from "@/types/apis";
-import { deletePost, hidePost, unhidePost } from "@/apis/posts";
-import { toast } from "@/hooks/use-toast";
-import { Pagination as CommonPagination } from "@/components/commons";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 
 const bookmarkedPosts = [
   {
@@ -185,6 +176,7 @@ export function MyPageTabs() {
   const [loadingActions, setLoadingActions] = useState<Set<number>>(new Set());
 
   const { user } = useAuth();
+  const router = useRouter();
   const { data: myInfo, loading: infoLoading, error: infoError } = useMyInfo();
 
   // 파라미터 객체를 메모이제이션하여 무한 렌더링 방지
@@ -331,14 +323,18 @@ export function MyPageTabs() {
                 <Link href={MEMBER_ROUTES.MY_INFO_EDIT}>
                   <Button
                     variant="outline"
-                    className="flex items-center space-x-2"
+                    className="flex items-center space-x-2 text-sm px-3 py-1.5 h-8"
+                    size="sm"
                   >
                     <Settings className="h-4 w-4" />
                     <span>프로필 수정</span>
                   </Button>
                 </Link>
                 <Link href={MEMBER_ROUTES.MEMBER_PROFILE(myInfo.memberId)}>
-                  <Button className="flex items-center space-x-2">
+                  <Button
+                    className="flex items-center space-x-2 text-sm px-3 py-1.5 h-8"
+                    size="sm"
+                  >
                     <ExternalLink className="h-4 w-4" />
                     <span>공개 프로필 보기</span>
                   </Button>
@@ -377,9 +373,12 @@ export function MyPageTabs() {
               <p className="text-gray-400 text-sm">
                 첫 번째 게시글을 작성해보세요!
               </p>
-              <Link href={POST_ROUTES.CREATE}>
-                <Button className="mt-4">게시글 작성하기</Button>
-              </Link>
+              <PostWriteButton
+                onClick={() => router.push(POST_ROUTES.CREATE)}
+                className="mt-4 text-sm px-3 py-1.5 h-8"
+              >
+                게시글 작성하기
+              </PostWriteButton>
             </div>
           )}
           {!postsLoading &&
@@ -474,7 +473,7 @@ export function MyPageTabs() {
                             variant="ghost"
                             size="sm"
                             onClick={() => togglePostExpansion(post.postId)}
-                            className="text-blue-600 hover:text-blue-800"
+                            className="text-blue-600 hover:text-blue-800 text-sm px-3 py-1.5 h-8"
                           >
                             {isExpanded ? (
                               <>
@@ -492,67 +491,29 @@ export function MyPageTabs() {
                       </div>
 
                       <div className="flex flex-col items-center space-y-2 ml-4">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={isLoading}
+                        <HideButton
+                          isMine={true}
+                          isHidden={post.isHidden}
                           onClick={() =>
                             handlePostAction(
                               post.postId,
                               post.isHidden ? "unhide" : "hide"
                             )
                           }
-                        >
-                          {isLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : post.isHidden ? (
-                            <>
-                              <Eye className="h-4 w-4 mr-1" />
-                              공개
-                            </>
-                          ) : (
-                            <>
-                              <EyeOff className="h-4 w-4 mr-1" />
-                              숨김
-                            </>
-                          )}
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={isLoading}
-                              className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              삭제
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>게시글 삭제</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                정말로 이 게시글을 삭제하시겠습니까? 삭제된
-                                게시글은 복구할 수 없습니다.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>취소</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() =>
-                                  handlePostAction(post.postId, "delete")
-                                }
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                {isLoading ? (
-                                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                                ) : null}
-                                삭제
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                          disabled={loadingActions.has(post.postId)}
+                          size="sm"
+                          className="text-sm px-3 py-1.5 h-8 min-w-[60px]"
+                        />
+                        <DeleteButton
+                          isMine={true}
+                          onClick={() =>
+                            handlePostAction(post.postId, "delete")
+                          }
+                          disabled={loadingActions.has(post.postId)}
+                          size="sm"
+                          className="text-sm px-3 py-1.5 h-8 min-w-[60px]"
+                          confirmDescription="정말로 이 게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다."
+                        />
                       </div>
                     </div>
                   </CardContent>

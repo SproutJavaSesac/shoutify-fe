@@ -5,17 +5,22 @@ export interface AuthUser {
   email: string;
   nickname: string;
   provider?: OAuth2Provider;
+  roleType: RoleType;
 }
 
 export interface LoginStatusResponse {
   isAuthenticated: boolean;
-  memberId?: number;
-  nickname?: string;
-  email?: string;
+  memberId: number;
+  nickname: string;
+  email: string;
+  roleType: RoleType;
 }
+
+export type RoleType = "USER" | "ADMIN" | "GUEST";
 
 export interface AuthState {
   isAuthenticated: boolean;
   user: AuthUser | null;
   loading: boolean;
+  roleType: RoleType;
 }

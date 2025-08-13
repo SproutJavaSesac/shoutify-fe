@@ -1,20 +1,20 @@
 "use client";
 
 import {
+  logout as authLogout,
+  checkLoginStatus,
+  deleteAccount,
+  loginWithGoogle,
+} from "@/apis/auth";
+import { useToast } from "@/hooks/use-toast";
+import type { AuthState, AuthUser, OAuth2Provider } from "@/types/auth";
+import {
   createContext,
   type ReactNode,
   useContext,
   useEffect,
   useState,
 } from "react";
-import {
-  checkLoginStatus,
-  deleteAccount,
-  loginWithGoogle,
-  logout as authLogout,
-} from "@/apis/auth";
-import type { AuthState, AuthUser, OAuth2Provider } from "@/types/auth";
-import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextValue extends AuthState {
   login: (provider: OAuth2Provider, redirectUrl?: string) => void;
@@ -41,6 +41,7 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
     isAuthenticated: false,
     user: null,
     loading: true,
+    roleType: "GUEST",
   });
   const [wasLoggedOut, setWasLoggedOut] = useState(false); // 로그아웃 상태에서 로그인 성공 감지용
   const { toast } = useToast();
@@ -50,94 +51,22 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
     try {
       setState((prev) => ({ ...prev, loading: true }));
 
-      // 개발 환경에서 JSESSIONID 기반 임시 인증 처리
-      if (process.env.NODE_ENV === "development") {
-        const hasJSessionId = document.cookie
-          .split("; ")
-          .some((cookie) => cookie.startsWith("JSESSIONID="));
-
-        if (hasJSessionId) {
-          console.log(
-            "🔧 개발 모드: JSESSIONID 감지됨, 하드코딩된 회원 정보 사용",
-          );
-
-          // 백엔드 더미 데이터와 동일한 회원 정보 (sesac1@gmail.com)
-          const mockUser: AuthUser = {
-            id: 1,
-            email: "sesac1@gmail.com",
-            nickname: "행복한 코알라",
-            provider: "google",
-          };
-
-          setState({
-            isAuthenticated: true,
-            user: mockUser,
-            loading: false,
-          });
-
-          // 로그아웃 상태에서 로그인 성공 시 토스트 표시 (개발 모드)
-          if (wasLoggedOut || !state.isAuthenticated) {
-            toast({
-              description: `환영합니다, ${mockUser.nickname}님! (개발 모드)`,
-            });
-            setWasLoggedOut(false);
-
-            // URL 쿼리 파라미터에서 리다이렉트 URL 확인 (개발 모드)
-            if (typeof window !== "undefined") {
-              const urlParams = new URLSearchParams(window.location.search);
-              const redirectFromUrl = urlParams.get("redirect");
-              const redirectFromStorage =
-                localStorage.getItem("auth_redirect_url");
-
-              console.log("🔄 리다이렉트 확인 (개발모드):", {
-                fromUrl: redirectFromUrl,
-                fromStorage: redirectFromStorage,
-                currentUrl: window.location.href,
-              });
-
-              const redirectUrl = redirectFromUrl || redirectFromStorage;
-
-              if (redirectUrl) {
-                localStorage.removeItem("auth_redirect_url");
-                // URL 파라미터 정리
-                if (urlParams.has("redirect")) {
-                  const newUrl = new URL(window.location.href);
-                  newUrl.searchParams.delete("redirect");
-                  window.history.replaceState({}, "", newUrl.toString());
-                }
-
-                console.log("🚀 리다이렉트 실행 (개발모드):", redirectUrl);
-
-                // 약간의 지연을 두어 토스트가 표시된 후 리다이렉트
-                setTimeout(() => {
-                  window.location.href = redirectUrl;
-                }, 1000);
-              }
-            }
-          }
-          return;
-        }
-      }
-
       // 실제 API 호출 (프로덕션 또는 JSESSIONID 없는 경우)
       const authData = await checkLoginStatus();
 
-      if (
-        authData.isAuthenticated &&
-        authData.memberId &&
-        authData.email &&
-        authData.nickname
-      ) {
+      if (authData.isAuthenticated) {
         const user: AuthUser = {
           id: authData.memberId,
           email: authData.email,
           nickname: authData.nickname,
+          roleType: authData.roleType,
         };
 
         setState({
           isAuthenticated: true,
           user,
           loading: false,
+          roleType: authData.roleType,
         });
 
         // 로그아웃 상태에서 로그인 성공 시 토스트 표시
@@ -185,6 +114,7 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
           isAuthenticated: false,
           user: null,
           loading: false,
+          roleType: "GUEST",
         });
         if (state.isAuthenticated) {
           setWasLoggedOut(true); // 로그인 상태에서 로그아웃된 경우
@@ -196,6 +126,7 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
         isAuthenticated: false,
         user: null,
         loading: false,
+        roleType: "GUEST",
       });
       if (state.isAuthenticated) {
         setWasLoggedOut(true); // 로그인 상태에서 오류가 발생한 경우
@@ -206,7 +137,6 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
   const login = (provider: OAuth2Provider, redirectUrl?: string) => {
     // 리다이렉트 URL이 제공되면 localStorage에도 저장 (백업용)
     if (redirectUrl && typeof window !== "undefined") {
-      console.log("💾 리다이렉트 URL 저장:", redirectUrl);
       localStorage.setItem("auth_redirect_url", redirectUrl);
     }
 
@@ -238,6 +168,7 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
         isAuthenticated: false,
         user: null,
         loading: false,
+        roleType: "GUEST",
       });
       setWasLoggedOut(true); // 로그아웃 표시
     }
@@ -257,6 +188,7 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
         isAuthenticated: false,
         user: null,
         loading: false,
+        roleType: "GUEST",
       });
     } catch (error) {
       console.error("회원 탈퇴에 실패했습니다:", error);
@@ -285,6 +217,7 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
     isAuthenticated: state.isAuthenticated,
     user: state.user,
     loading: state.loading,
+    roleType: state.roleType,
     login,
     logout,
     checkAuthStatus,
