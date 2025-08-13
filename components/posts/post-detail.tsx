@@ -1,6 +1,6 @@
 "use client";
 
-import { deletePost, getPost } from "@/apis/posts";
+import { deletePost, getPost, hidePost, unhidePost } from "@/apis/posts";
 import {
   BookmarkButton,
   DeleteButton,
@@ -202,11 +202,33 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
     });
   };
 
-  const handleHide = () => {
-    setIsHidden(true);
-    toast({
-      description: "게시글이 숨겨졌습니다.",
-    });
+  const handleHide = async () => {
+    if (!postData) return;
+
+    try {
+      if (isHidden) {
+        // 현재 숨겨진 상태라면 공개하기
+        await unhidePost(postData.postId);
+        setIsHidden(false);
+        toast({
+          description: "게시글이 공개되었습니다.",
+        });
+      } else {
+        // 현재 공개된 상태라면 숨기기
+        await hidePost(postData.postId);
+        setIsHidden(true);
+        toast({
+          description: "게시글이 숨겨졌습니다.",
+        });
+      }
+    } catch (error) {
+      console.error("게시글 숨김/공개 실패:", error);
+      toast({
+        title: "오류",
+        description: "작업 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDelete = async () => {
