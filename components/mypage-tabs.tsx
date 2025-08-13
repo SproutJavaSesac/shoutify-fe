@@ -500,7 +500,7 @@ export function MyPageTabs() {
                               post.isHidden ? "unhide" : "hide"
                             )
                           }
-                          disabled={isLoading}
+                          disabled={loadingActions.has(post.postId)}
                           size="sm"
                           className="text-sm px-3 py-1.5 h-8 min-w-[60px]"
                         />
@@ -509,7 +509,7 @@ export function MyPageTabs() {
                           onClick={() =>
                             handlePostAction(post.postId, "delete")
                           }
-                          disabled={isLoading}
+                          disabled={loadingActions.has(post.postId)}
                           size="sm"
                           className="text-sm px-3 py-1.5 h-8 min-w-[60px]"
                           confirmDescription="정말로 이 게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다."

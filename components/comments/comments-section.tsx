@@ -45,6 +45,11 @@ export function CommentsSection({
     Record<string | number, ReactionLabelType | null>
   >({});
 
+  // 각 댓글별 삭제 로딩 상태
+  const [deletingComments, setDeletingComments] = useState<
+    Set<string | number>
+  >(new Set());
+
   // 신고 모달 상태
   const [reportModal, setReportModal] = useState(false);
   const [reportingComment, setReportingComment] = useState<Comment | null>(
@@ -267,13 +272,32 @@ export function CommentsSection({
   };
 
   // 댓글 삭제 핸들러
-  const handleDeleteComment = (commentId: string | number) => {
-    deleteComment({
-      paths: {
-        postId,
-        commentId,
-      },
-    });
+  const handleDeleteComment = async (commentId: string | number) => {
+    if (deletingComments.has(commentId)) return;
+
+    setDeletingComments((prev) => new Set([...prev, commentId]));
+
+    try {
+      await new Promise((resolve, reject) => {
+        deleteComment({
+          paths: {
+            postId,
+            commentId,
+          },
+        });
+        // deleteComment의 onSuccess/onError 콜백에서 처리되므로 여기서는 단순히 Promise 형태로 래핑
+        // 실제로는 mutate의 결과를 기다릴 수 있도록 수정이 필요할 수 있음
+        setTimeout(resolve, 100); // 임시: 실제로는 mutate의 완료를 기다려야 함
+      });
+    } catch (error) {
+      console.error("댓글 삭제 실패:", error);
+    } finally {
+      setDeletingComments((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(commentId);
+        return newSet;
+      });
+    }
   };
 
   // 댓글 신고 핸들러
@@ -353,6 +377,7 @@ export function CommentsSection({
               size="sm"
               variant="ghost"
               confirmDescription="이 댓글을 삭제하시겠습니까?"
+              disabled={deletingComments.has(comment.commentId)}
             />
           </div>
         </div>

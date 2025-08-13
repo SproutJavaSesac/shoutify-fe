@@ -74,6 +74,11 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
   const [shareModal, setShareModal] = useState(false);
   const [userProfileModal, setUserProfileModal] = useState(false);
 
+  // 로딩 상태들
+  const [isHideLoading, setIsHideLoading] = useState(false);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+  const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
+
   const { toast } = useToast();
   const { user } = useAuth();
   const router = useRouter();
@@ -193,18 +198,40 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
     }
   };
 
-  const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
-    toast({
-      description: isBookmarked
-        ? "북마크에서 제거되었습니다"
-        : "북마크에 추가되었습니다",
-    });
+  const handleBookmark = async () => {
+    if (isBookmarkLoading) return;
+
+    setIsBookmarkLoading(true);
+    try {
+      // TODO: 북마크 API 호출 (아직 구현되지 않음)
+      // if (isBookmarked) {
+      //   await removeBookmark(postData.postId);
+      // } else {
+      //   await addBookmark(postData.postId);
+      // }
+
+      setIsBookmarked(!isBookmarked);
+      toast({
+        description: isBookmarked
+          ? "북마크에서 제거되었습니다"
+          : "북마크에 추가되었습니다",
+      });
+    } catch (error) {
+      console.error("북마크 처리 실패:", error);
+      toast({
+        title: "오류",
+        description: "북마크 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsBookmarkLoading(false);
+    }
   };
 
   const handleHide = async () => {
-    if (!postData) return;
+    if (!postData || isHideLoading) return;
 
+    setIsHideLoading(true);
     try {
       if (isHidden) {
         // 현재 숨겨진 상태라면 공개하기
@@ -228,12 +255,15 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
         description: "작업 중 오류가 발생했습니다.",
         variant: "destructive",
       });
+    } finally {
+      setIsHideLoading(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!postData) return;
+    if (!postData || isDeleteLoading) return;
 
+    setIsDeleteLoading(true);
     try {
       await deletePost(postData.postId);
       toast({
@@ -249,6 +279,8 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
         description: "게시글 삭제 중 오류가 발생했습니다.",
         variant: "destructive",
       });
+    } finally {
+      setIsDeleteLoading(false);
     }
   };
 
@@ -373,6 +405,7 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
                     isMine={postData.isMine ? postData.isMine : false}
                     className="flex-shrink-0 text-sm px-3 py-1.5 h-8"
                     size="sm"
+                    disabled={isHideLoading}
                   />
                   <DeleteButton
                     onClick={handleDelete}
@@ -380,6 +413,7 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
                     confirmDescription="이 게시글을 삭제하시겠습니까? 삭제된 게시글은 복구할 수 없습니다."
                     className="flex-shrink-0 text-sm px-3 py-1.5 h-8"
                     size="sm"
+                    disabled={isDeleteLoading}
                   />
                   <ReportButton
                     onClick={handleReport}
