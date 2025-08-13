@@ -1,24 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { ReportConfirmModal } from "@/components/report-confirm-modal";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
+import { REPORT_REASON_OPTIONS } from "@/constants/reports";
 import { useToast } from "@/hooks/use-toast";
-import { AlertTriangle, Flag } from "lucide-react";
 import {
   useCreateCommentReport,
   useCreatePostReport,
 } from "@/lib/hooks/useReports";
-import { REPORT_REASON_OPTIONS } from "@/constants/reports";
 import { ReportReasonType } from "@/types/reports";
+import { AlertTriangle, Flag } from "lucide-react";
+import { useState } from "react";
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -38,9 +39,10 @@ export function ReportModal({
   targetContent,
 }: ReportModalProps) {
   const [selectedReason, setSelectedReason] = useState<ReportReasonType | "">(
-    "",
+    ""
   );
   const [customReason, setCustomReason] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
   const { toast } = useToast();
 
   const { mutate: reportPost, loading: postLoading } = useCreatePostReport();
@@ -67,6 +69,14 @@ export function ReportModal({
       });
       return;
     }
+
+    // 확인 모달 표시
+    setShowConfirm(true);
+  };
+
+  const handleConfirmReport = async () => {
+    // 이미 validation을 통과했으므로 selectedReason은 ReportReasonType임이 확실
+    if (!selectedReason) return;
 
     try {
       const reportData = {
@@ -100,6 +110,8 @@ export function ReportModal({
           "신고 접수 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
         variant: "destructive",
       });
+    } finally {
+      setShowConfirm(false);
     }
   };
 
@@ -108,6 +120,7 @@ export function ReportModal({
     // Reset form
     setSelectedReason("");
     setCustomReason("");
+    setShowConfirm(false);
   };
 
   const getReasonLabel = (value: ReportReasonType) => {
@@ -218,6 +231,16 @@ export function ReportModal({
           </div>
         </div>
       </DialogContent>
+
+      {/* 신고 확인 모달 */}
+      <ReportConfirmModal
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmReport}
+        type={type}
+        targetTitle={targetTitle}
+        loading={isSubmitting}
+      />
     </Dialog>
   );
 }
