@@ -76,38 +76,6 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
           });
           setWasLoggedOut(false);
 
-          // URL 쿼리 파라미터에서 리다이렉트 URL 확인
-          if (typeof window !== "undefined") {
-            const urlParams = new URLSearchParams(window.location.search);
-            const redirectFromUrl = urlParams.get("redirect");
-            const redirectFromStorage =
-              localStorage.getItem("auth_redirect_url");
-
-            console.log("🔄 리다이렉트 확인:", {
-              fromUrl: redirectFromUrl,
-              fromStorage: redirectFromStorage,
-              currentUrl: window.location.href,
-            });
-
-            const redirectUrl = redirectFromUrl || redirectFromStorage;
-
-            if (redirectUrl) {
-              localStorage.removeItem("auth_redirect_url");
-              // URL 파라미터 정리
-              if (urlParams.has("redirect")) {
-                const newUrl = new URL(window.location.href);
-                newUrl.searchParams.delete("redirect");
-                window.history.replaceState({}, "", newUrl.toString());
-              }
-
-              console.log("🚀 리다이렉트 실행:", redirectUrl);
-
-              // 약간의 지연을 두어 토스트가 표시된 후 리다이렉트
-              setTimeout(() => {
-                window.location.href = redirectUrl;
-              }, 1000);
-            }
-          }
         }
       } else {
         setState({
