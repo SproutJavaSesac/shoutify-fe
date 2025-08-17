@@ -38,7 +38,7 @@ export function AuthModal({
     try {
       // redirectUrl이 제공되면 사용하고, 그렇지 않으면 현재 페이지 URL 사용
       // 홈페이지("/")에서는 리다이렉트하지 않음
-      let targetUrl = "";
+      let targetUrl = "/";
       if (redirectUrl) {
         targetUrl = redirectUrl;
       } else if (pathname && pathname !== "/") {
