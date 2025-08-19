@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { EMOTION_TO_EMOJI_MAP } from "@/constants/reactions";
-import { ReactionLabelType, ReactionDetailCountMap } from "@/types/reactions";
+import { ReactionDetailCountMap, ReactionLabelType } from "@/types/reactions";
 
 interface ReactionButtonsProps {
   // 현재 반응 상태
@@ -13,6 +13,8 @@ interface ReactionButtonsProps {
   onReactionClick: (reactionType: ReactionLabelType) => void;
   // 로그인 여부
   isAuthenticated: boolean;
+  // 로딩 상태
+  isLoading?: boolean;
   // 스타일 옵션
   size?: "sm" | "default" | "lg";
   className?: string;
@@ -27,6 +29,7 @@ export function ReactionButtons({
   myReaction = null,
   onReactionClick,
   isAuthenticated,
+  isLoading = false,
   size = "sm",
   className = "",
   showAllReactions = true,
@@ -100,9 +103,11 @@ export function ReactionButtons({
                 size="sm"
                 className={`${getButtonSize()} ${
                   isSelected ? "bg-blue-100 ring-1 ring-blue-300" : ""
-                } hover:bg-gray-100`}
+                } hover:bg-gray-100 ${
+                  isLoading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
                 onClick={() => onReactionClick(reactionType)}
-                disabled={!isAuthenticated}
+                disabled={!isAuthenticated || isLoading}
               >
                 {emoji}
               </Button>
@@ -131,8 +136,11 @@ export function ReactionButtons({
                   key={`new-${reactionType}`}
                   variant="ghost"
                   size="sm"
-                  className={`${getButtonSize()} opacity-50 hover:opacity-100 hover:bg-gray-100`}
+                  className={`${getButtonSize()} opacity-50 hover:opacity-100 hover:bg-gray-100 ${
+                    isLoading ? "cursor-not-allowed" : ""
+                  }`}
                   onClick={() => onReactionClick(reactionType)}
+                  disabled={isLoading}
                 >
                   {emoji}
                 </Button>

@@ -1,10 +1,10 @@
-import { ReactionDetailCountMap } from "@/types/reactions";
 import {
   ApiContract,
   IdType,
   Pagination,
   PaginationParams,
 } from "@/types/apis";
+import { ReactionDetailCountMap, ReactionLabelType } from "@/types/reactions";
 
 export type PostSortType = "createdAt" | "reactions" | "comments";
 // 게시글 작성 관련 타입 정의만 포함
@@ -33,6 +33,7 @@ export interface CategoryOption {
 
 export interface Post {
   postId: IdType;
+  authorId?: IdType; // TODO authorId 확정되면 ? 없애기.
   nickname: string;
   afterTitle: string;
   afterContent: string;
@@ -45,6 +46,7 @@ export interface Post {
   isHidden?: boolean;
   isMine?: boolean;
   reactionDetailCount?: ReactionDetailCountMap;
+  reaction?: ReactionLabelType | null; // 내 반응 정보 추가
 }
 
 export type PaginationParamsType = {
@@ -91,6 +93,21 @@ export type PostCreateResponse = {
   afterContent: string;
 };
 
+export type PostPreviewBodyRequest = {
+  title: string;
+  content: string;
+  conceptType: string;
+  emotionType: string | null;
+  imageUrl?: string;
+};
+
+export type PostPreviewResponse = {
+  beforeTitle: string;
+  afterTitle: string;
+  beforeContent: string;
+  afterContent: string;
+};
+
 /** 게시글 상세 조회 */
 
 // API Contract 타입 정의 (올바른 제네릭 순서: P, Q, B, R)
@@ -113,6 +130,13 @@ export type PostCreateContract = ApiContract<
   undefined, // queries
   PostCreateBodyRequest, // body
   PostCreateResponse // response
+>;
+
+export type PostPreviewContract = ApiContract<
+  undefined, // paths
+  undefined, // queries
+  PostPreviewBodyRequest, // body
+  PostPreviewResponse // response
 >;
 
 export type PostDeleteContract = ApiContract<

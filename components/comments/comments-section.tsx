@@ -18,11 +18,6 @@ import {
   useCommentDelete,
   useCommentList,
 } from "@/lib/hooks/useComments";
-import {
-  useCommentReactionCreate,
-  useCommentReactionDelete,
-  useCommentReactionUpdate,
-} from "@/lib/hooks/useReactions";
 import { utcToLocaleDateString } from "@/lib/utils";
 import { Comment, CommentSortType } from "@/types/comments";
 import { ReactionLabelType } from "@/types/reactions";
@@ -43,6 +38,11 @@ export function CommentsSection({
   // 각 댓글별 내 반응 상태 (commentId -> ReactionLabelType)
   const [myReactions, setMyReactions] = useState<
     Record<string | number, ReactionLabelType | null>
+  >({});
+
+  // 각 댓글별 반응 로딩 상태 (commentId -> boolean)
+  const [reactionLoadingStates, setReactionLoadingStates] = useState<
+    Record<string | number, boolean>
   >({});
 
   // 각 댓글별 삭제 로딩 상태
@@ -130,106 +130,125 @@ export function CommentsSection({
     },
   });
 
-  // 댓글 리액션 훅들
-  const { mutate: createCommentReaction } = useCommentReactionCreate({
-    onSuccess: () => {
-      toast({
-        description: "반응을 표시했습니다.",
-      });
-      refetch(); // 댓글 목록 새로고침하여 최신 반응 상태 반영
-    },
-    onError: (errorMessage) => {
-      toast({
-        title: "반응 실패",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      // 실패 시 상태 롤백은 필요없음 (미리 상태 업데이트하지 않으므로)
-    },
-  });
+  // 댓글별 반응 상태 관리 (메모리 최적화를 위해 실제로 사용되는 댓글만 관리)
+  const [commentReactions, setCommentReactions] = useState<
+    Record<
+      string | number,
+      {
+        reactions: Record<ReactionLabelType, number>;
+        myReaction: ReactionLabelType | null;
+      }
+    >
+  >({});
 
-  const { mutate: updateCommentReaction } = useCommentReactionUpdate({
-    onSuccess: () => {
-      toast({
-        description: "반응을 변경했습니다.",
-      });
-      refetch();
-    },
-    onError: (errorMessage) => {
-      toast({
-        title: "반응 변경 실패",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      // 실패 시 상태 롤백은 필요없음 (미리 상태 업데이트하지 않으므로)
-    },
-  });
-
-  const { mutate: deleteCommentReaction } = useCommentReactionDelete({
-    onSuccess: () => {
-      toast({
-        description: "반응을 취소했습니다.",
-      });
-      refetch();
-    },
-    onError: (errorMessage) => {
-      toast({
-        title: "반응 취소 실패",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      // 실패 시 상태 롤백은 필요없음 (미리 상태 업데이트하지 않으므로)
-    },
-  });
-
-  // 댓글 리액션 핸들러 - 게시글과 동일한 로직
-  const handleCommentReaction = (
+  // 개별 댓글 반응 핸들러 (POST → GET / PUT → GET / DELETE → GET 패턴)
+  const handleCommentReaction = async (
     commentId: string | number,
-    reactionType: ReactionLabelType
+    reactionType: ReactionLabelType,
+    currentCommentReactions: Record<ReactionLabelType, number>
   ) => {
-    const currentReaction = myReactions[commentId];
+    if (reactionLoadingStates[commentId]) return; // 이미 처리 중이면 무시
 
-    // 현재 선택된 반응과 같은 반응을 다시 클릭한 경우 - 삭제
-    if (currentReaction === reactionType) {
-      console.log("Deleting comment reaction:", {
-        postId,
-        commentId,
-        reactionType,
-      });
-      deleteCommentReaction({
-        paths: { postId, commentId },
-      });
-      // 성공 시에만 상태 업데이트 (onSuccess 콜백에서 처리)
-    }
-    // 처음 반응을 선택하는 경우 - 생성
-    else if (!currentReaction) {
-      console.log("Creating comment reaction:", {
-        postId,
-        commentId,
-        reactionType,
-      });
-      createCommentReaction({
-        paths: { postId, commentId },
-        body: { type: reactionType },
-      });
-      // 성공 시에만 상태 업데이트 (onSuccess 콜백에서 처리)
-    }
-    // 다른 반응으로 변경하는 경우 - 수정
-    else {
-      console.log("Updating comment reaction:", {
-        postId,
-        commentId,
-        reactionType,
-      });
-      updateCommentReaction({
-        paths: { postId, commentId },
-        body: { type: reactionType },
-      });
-      // 성공 시에만 상태 업데이트 (onSuccess 콜백에서 처리)
-    }
-  };
+    const currentMyReaction = myReactions[commentId];
 
-  // 하이라이트된 댓글로 스크롤
+    // 로딩 상태 설정
+    setReactionLoadingStates((prev) => ({ ...prev, [commentId]: true }));
+
+    // 액션 결정
+    let action: "create" | "update" | "delete"; // 함수 상단으로 이동하여 catch 블록에서도 접근 가능하게 함
+
+    if (!currentMyReaction) {
+      // 첫 반응 → POST (생성)
+      action = "create";
+    } else if (currentMyReaction === reactionType) {
+      // 같은 반응 클릭 → DELETE (삭제)
+      action = "delete";
+    } else {
+      // 다른 반응으로 변경 → PUT (수정)
+      action = "update";
+    }
+
+    try {
+      // CUD 작업 수행
+      const {
+        createCommentReaction,
+        updateCommentReaction,
+        deleteCommentReaction,
+        fetchCommentReaction,
+      } = await import("@/apis/reactions");
+
+      switch (action) {
+        case "create":
+          await createCommentReaction({
+            paths: { postId, commentId },
+            body: { type: reactionType },
+          });
+          break;
+        case "update":
+          await updateCommentReaction({
+            paths: { postId, commentId },
+            body: { type: reactionType },
+          });
+          break;
+        case "delete":
+          await deleteCommentReaction({
+            paths: { postId, commentId },
+          });
+          break;
+      }
+
+      // CUD 작업 성공 후 최신 데이터를 GET으로 가져오기
+      const latestReactionData = await fetchCommentReaction({
+        postId,
+        commentId,
+      });
+
+      // 해당 댓글의 반응 정보만 업데이트
+      setCommentReactions((prev) => ({
+        ...prev,
+        [commentId]: {
+          reactions: latestReactionData.reactionDetails,
+          myReaction: latestReactionData.reaction,
+        },
+      }));
+
+      setMyReactions((prev) => ({
+        ...prev,
+        [commentId]: latestReactionData.reaction,
+      }));
+
+      // 성공 메시지
+      const actionText =
+        action === "create"
+          ? "반응을 표시했습니다."
+          : action === "update"
+            ? "반응을 변경했습니다."
+            : "반응을 취소했습니다.";
+
+      toast({
+        description: actionText,
+      });
+    } catch (error) {
+      const errorText =
+        action === "create"
+          ? "반응 실패"
+          : action === "update"
+            ? "반응 변경 실패"
+            : "반응 취소 실패";
+
+      toast({
+        title: errorText,
+        description:
+          error instanceof Error
+            ? error.message
+            : "반응 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      // 로딩 상태 해제
+      setReactionLoadingStates((prev) => ({ ...prev, [commentId]: false }));
+    }
+  }; // 하이라이트된 댓글로 스크롤
   useEffect(() => {
     if (highlightedCommentId && highlightRef.current) {
       highlightRef.current.scrollIntoView({
@@ -245,6 +264,27 @@ export function CommentsSection({
       return () => clearTimeout(timer);
     }
   }, [highlightedCommentId, comments]);
+
+  // 댓글 목록이 변경될 때 초기 내 반응 상태 설정
+  useEffect(() => {
+    if (comments) {
+      const initialMyReactions: Record<
+        string | number,
+        ReactionLabelType | null
+      > = {};
+      comments.forEach((comment) => {
+        if (comment.reaction !== undefined) {
+          initialMyReactions[comment.commentId] = comment.reaction;
+        }
+      });
+
+      // 기존 myReactions와 병합하되, 서버에서 온 데이터를 우선시
+      setMyReactions((prev) => ({
+        ...prev,
+        ...initialMyReactions,
+      }));
+    }
+  }, [comments]);
 
   // 댓글 작성 핸들러
   const handleCommentSubmit = async (content: string) => {
@@ -392,12 +432,25 @@ export function CommentsSection({
           <div className="flex items-center space-x-4">
             {/* 반응 버튼들 */}
             <ReactionButtons
-              reactions={comment.reactions || {}}
-              myReaction={myReactions[comment.commentId]}
+              reactions={
+                commentReactions[comment.commentId]?.reactions ||
+                comment.reactions ||
+                {}
+              }
+              myReaction={
+                commentReactions[comment.commentId]?.myReaction !== undefined
+                  ? commentReactions[comment.commentId]?.myReaction
+                  : myReactions[comment.commentId]
+              }
               onReactionClick={(reactionType) =>
-                handleCommentReaction(comment.commentId, reactionType)
+                handleCommentReaction(
+                  comment.commentId,
+                  reactionType,
+                  comment.reactions || {}
+                )
               }
               isAuthenticated={!!user}
+              isLoading={reactionLoadingStates[comment.commentId] || false}
               size="sm"
               showAllReactions={true}
             />

@@ -4,7 +4,7 @@ import {
   Pagination,
   PaginationParams,
 } from "@/types/apis";
-import { ReactionDetailCountMap } from "./reactions";
+import { ReactionDetailCountMap, ReactionLabelType } from "./reactions";
 
 export type CommentSortType = "createdAt" | "reactions" | "comments";
 
@@ -24,6 +24,7 @@ export interface Comment {
   content: string;
   reactionCount: number;
   reactions: ReactionDetailCountMap;
+  reaction?: ReactionLabelType | null; // 내 반응 정보 추가
   isDeleted: boolean;
   isReported: boolean;
   isMine?: boolean; // TODO isMine 추가 시 ? 제거하기
