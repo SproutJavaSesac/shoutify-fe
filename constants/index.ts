@@ -25,7 +25,7 @@ export const API_ENDPOINTS = {
 
   // 댓글 관련
   COMMENTS: "/comments",
-  COMMENT_DETAIL: "/comments/:id",
+  COMMENT_DETAIL_FOR_ADMIN: "/comments/:id",
   COMMENT_REACTIONS: "/comments/:id/reactions",
   POST_COMMENTS: "/posts/:id/comments",
 

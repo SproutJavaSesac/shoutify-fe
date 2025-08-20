@@ -1,10 +1,10 @@
-import { ReactionDetailCountMap } from "@/types/reactions";
 import {
   ApiContract,
   IdType,
   Pagination,
   PaginationParams,
 } from "@/types/apis";
+import { ReactionDetailCountMap } from "@/types/reactions";
 
 export type PostSortType = "createdAt" | "reactions" | "comments";
 // 게시글 작성 관련 타입 정의만 포함
@@ -42,6 +42,7 @@ export interface Post {
   commentCount: number;
   emotion: EmotionType;
   conceptType: ConceptType;
+  isDeleted?: boolean;
   isHidden?: boolean;
   isMine?: boolean;
   reactionDetailCount?: ReactionDetailCountMap;

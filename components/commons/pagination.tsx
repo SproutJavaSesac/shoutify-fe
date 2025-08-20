@@ -1,13 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Pagination as PaginationType } from "@/types/apis";
 import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import { Pagination as PaginationType } from "@/types/apis";
 
 interface PaginationProps {
   pagination?: PaginationType; // optional로 변경
@@ -28,8 +28,8 @@ export function Pagination({
   size = "sm",
   showFirstLastButtons = true,
 }: Readonly<PaginationProps>) {
-  // pagination이 없거나 totalPages가 1 이하면 렌더링하지 않음
-  if (!pagination || pagination.totalPages <= 1) {
+  // pagination이 없으면 렌더링하지 않음
+  if (!pagination) {
     return null;
   }
 

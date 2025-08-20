@@ -1,4 +1,10 @@
 import {
+  createCommentReport,
+  createPostReport,
+  getReports,
+  processReport,
+} from "@/apis/reports";
+import {
   ReportCommentCreateRequest,
   ReportCommentCreateResponse,
   ReportListResponse,
@@ -6,10 +12,9 @@ import {
   ReportPostCreateResponse,
   ReportProcessRequest,
   ReportProcessResponse,
-  ReportQueryParams
+  ReportQueryParams,
 } from "@/types/reports";
 import { useEffect, useState } from "react";
-import { createCommentReport, createPostReport, getReports, processReport } from "@/apis/reports";
 
 /**
  * 신고 목록을 조회하는 훅
@@ -152,6 +157,7 @@ export function useCreateCommentReport() {
     } catch (err: any) {
       const errorMessage = err.message || "댓글 신고 중 오류가 발생했습니다.";
       setError(errorMessage);
+      console.log({ error });
       return null;
     } finally {
       setLoading(false);
