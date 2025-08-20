@@ -613,6 +613,33 @@ export function ReportManagement() {
                                       </p>
                                     </div>
                                   )}
+                                  {/* Original content 삭제 여부 */}
+                                  <div className="mt-3">
+                                    <span className="font-medium">
+                                      원본 삭제 여부:
+                                    </span>{" "}
+                                    {report.reportType === "POST" ? (
+                                      originalContent.post &&
+                                      originalContent.post.isDeleted ? (
+                                        <span className="text-red-600">
+                                          삭제됨
+                                        </span>
+                                      ) : (
+                                        <span className="text-green-600">
+                                          활성
+                                        </span>
+                                      )
+                                    ) : originalContent.comment &&
+                                      originalContent.comment.isDeleted ? (
+                                      <span className="text-red-600">
+                                        삭제됨
+                                      </span>
+                                    ) : (
+                                      <span className="text-green-600">
+                                        활성
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                                 {/* 원본 내용 */}
                                 <div className="mt-4">
