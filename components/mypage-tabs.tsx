@@ -294,6 +294,96 @@ export function MyPageTabs() {
               </h1>
               <p className="text-gray-600 mb-4">{myInfo.email}</p>
 
+              {/* Bio */}
+              {myInfo.bio && (
+                <div className="mb-4">
+                  <p className="text-gray-700">{myInfo.bio}</p>
+                </div>
+              )}
+
+              {/* Onboarding Profile */}
+              {myInfo.profile ? (
+                <div className="mb-4 space-y-3">
+                  {/* Purpose */}
+                  <div>
+                    <span className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-medium rounded-full">
+                      {myInfo.profile.purpose === "학업" && "📚 학업"}
+                      {myInfo.profile.purpose === "자기계발" && "🚀 자기계발"}
+                      {myInfo.profile.purpose === "소셜" && "👥 소셜"}
+                    </span>
+                  </div>
+
+                  {/* Tone */}
+                  {myInfo.profile.tone && myInfo.profile.tone.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2">
+                        선호하는 글 스타일:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {myInfo.profile.tone.map((tone) => (
+                          <span
+                            key={tone}
+                            className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full"
+                          >
+                            {tone}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Audience */}
+                  <div>
+                    <p className="text-sm text-gray-600">
+                      주요 대상:{" "}
+                      <span className="font-medium text-gray-800">
+                        {myInfo.profile.audience}
+                      </span>
+                    </p>
+                  </div>
+
+                  {/* Favorite Author */}
+                  {myInfo.profile.favoriteAuthor && (
+                    <div>
+                      <p className="text-sm text-gray-600">
+                        좋아하는 작가:{" "}
+                        <span className="font-medium text-gray-800">
+                          {myInfo.profile.favoriteAuthor}
+                        </span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800 mb-2">
+                    🤖 AI 글쓰기 도우미를 활용하려면 프로필을 설정해주세요!
+                  </p>
+                  <Link href="/auth/onboarding">
+                    <Button size="sm" className="text-xs">
+                      프로필 설정하기
+                    </Button>
+                  </Link>
+                </div>
+              )}
+
+              {/* Interests (기존 방식) */}
+              {myInfo.interests && myInfo.interests.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-sm text-gray-600 mb-2">관심사:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {myInfo.interests.map((interest) => (
+                      <span
+                        key={interest}
+                        className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-full"
+                      >
+                        {interest}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-gray-900">

@@ -1,17 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/lib/auth";
-import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
-import { Upload, User } from "lucide-react";
-import { useMyInfo, useUpdateMyInfo } from "@/lib/hooks/useMembers";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +11,65 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
+import { useMyInfo, useUpdateMyInfo } from "@/lib/hooks/useMembers";
+import type { AudienceType, ToneType } from "@/types/auth";
+import { Upload, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
+const interests = [
+  "시",
+  "소설",
+  "에세이",
+  "일기",
+  "여행",
+  "음식",
+  "운동",
+  "영화",
+  "음악",
+  "책",
+  "예술",
+  "사진",
+  "게임",
+  "기술",
+  "자기계발",
+  "취미",
+  "반려동물",
+  "패션",
+  "뷰티",
+  "건강",
+];
+
+const toneOptions: { value: ToneType; label: string }[] = [
+  { value: "간결하고 명료한", label: "간결하고 명료한" },
+  { value: "친근하고 유머러스한", label: "친근하고 유머러스한" },
+  { value: "진지하고 논리적인", label: "진지하고 논리적인" },
+  { value: "감성적이고 시적인", label: "감성적이고 시적인" },
+];
+
+const audienceOptions: {
+  value: AudienceType;
+  label: string;
+  description: string;
+}[] = [
+  { value: "나 자신", label: "나 자신", description: "일기, 메모" },
+  { value: "친구나 동료", label: "친구나 동료", description: "SNS, 메신저" },
+  {
+    value: "불특정 다수",
+    label: "불특정 다수",
+    description: "블로그, 커뮤니티",
+  },
+  { value: "교수님, 상사", label: "교수님, 상사", description: "과제, 보고서" },
+];
 
 export function ProfileEditForm() {
   const { user, logout } = useAuth();
@@ -52,6 +99,14 @@ export function ProfileEditForm() {
   const [formData, setFormData] = useState({
     nickname: "",
     email: "",
+    bio: "",
+    interests: [] as string[],
+    profile: {
+      tone: [] as ToneType[],
+      audience: "나 자신" as AudienceType,
+      favoriteAuthor: [] as string[],
+      exclusions: [] as string[],
+    },
   });
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -61,12 +116,95 @@ export function ProfileEditForm() {
       setFormData({
         nickname: myInfo.nickname || "",
         email: myInfo.email || "",
+        bio: myInfo.bio || "",
+        interests: myInfo.interests || [],
+        profile: {
+          tone: myInfo.profile?.tone || [],
+          audience: myInfo.profile?.audience || "나 자신",
+          favoriteAuthor: myInfo.profile?.favoriteAuthor || [],
+          exclusions: myInfo.profile?.exclusions || [],
+        },
       });
     }
   }, [myInfo]);
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | string[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleInterestToggle = (interest: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      interests: prev.interests.includes(interest)
+        ? prev.interests.filter((i) => i !== interest)
+        : [...prev.interests, interest],
+    }));
+  };
+
+  const handleToneToggle = (tone: ToneType) => {
+    setFormData((prev) => ({
+      ...prev,
+      profile: {
+        ...prev.profile,
+        tone: prev.profile.tone.includes(tone)
+          ? prev.profile.tone.filter((t) => t !== tone)
+          : [...prev.profile.tone, tone],
+      },
+    }));
+  };
+
+  const handleFavoriteAuthorAdd = (author: string) => {
+    if (!author.trim()) return;
+
+    // 추가: 5개 제한 로직
+    if ((formData.profile.favoriteAuthor?.length || 0) >= 5) {
+      toast({
+        title: "알림",
+        description: "좋아하는 작가는 최대 5명까지 추가할 수 있습니다.",
+      });
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      profile: {
+        ...prev.profile,
+        favoriteAuthor: [...(prev.profile.favoriteAuthor || []), author.trim()],
+      },
+    }));
+  };
+
+  const handleFavoriteAuthorRemove = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      profile: {
+        ...prev.profile,
+        favoriteAuthor:
+          prev.profile.favoriteAuthor?.filter((_, i) => i !== index) || [],
+      },
+    }));
+  };
+
+  const handleExclusionAdd = (exclusion: string) => {
+    if (!exclusion.trim()) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      profile: {
+        ...prev.profile,
+        exclusions: [...prev.profile.exclusions, exclusion.trim()],
+      },
+    }));
+  };
+
+  const handleExclusionRemove = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      profile: {
+        ...prev.profile,
+        exclusions: prev.profile.exclusions.filter((_, i) => i !== index),
+      },
+    }));
   };
 
   const handleSaveProfile = async () => {
@@ -75,6 +213,14 @@ export function ProfileEditForm() {
     await updateInfo({
       body: {
         nickname: formData.nickname,
+        bio: formData.bio,
+        interests: formData.interests,
+        profile: {
+          tone: formData.profile.tone,
+          audience: formData.profile.audience,
+          favoriteAuthor: formData.profile.favoriteAuthor,
+          exclusions: formData.profile.exclusions,
+        },
       },
     });
   };
@@ -145,6 +291,7 @@ export function ProfileEditForm() {
                 value={formData.nickname}
                 onChange={(e) => handleInputChange("nickname", e.target.value)}
                 placeholder="닉네임을 입력하세요"
+                maxLength={20}
               />
             </div>
 
@@ -162,6 +309,297 @@ export function ProfileEditForm() {
                 알림 및 계정 복구에 사용됩니다. (읽기 전용)
               </p>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bio">자기소개</Label>
+              <Textarea
+                id="bio"
+                value={formData.bio}
+                onChange={(e) => handleInputChange("bio", e.target.value)}
+                placeholder="간단한 자기소개를 작성해보세요"
+                className="h-24 resize-none"
+                maxLength={200}
+              />
+              <p className="text-xs text-gray-500">{formData.bio.length}/200</p>
+            </div>
+
+            <div className="space-y-3">
+              <Label>관심사</Label>
+              <p className="text-sm text-gray-500">
+                관심있는 주제들을 선택해주세요 (최대 5개)
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {interests.map((interest) => (
+                  <button
+                    key={interest}
+                    type="button"
+                    onClick={() => handleInterestToggle(interest)}
+                    disabled={
+                      formData.interests.length >= 5 &&
+                      !formData.interests.includes(interest)
+                    }
+                    className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                      formData.interests.includes(interest)
+                        ? "bg-blue-100 border-blue-500 text-blue-700"
+                        : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
+                    } ${
+                      formData.interests.length >= 5 &&
+                      !formData.interests.includes(interest)
+                        ? "opacity-50 cursor-not-allowed"
+                        : "cursor-pointer"
+                    }`}
+                  >
+                    {interest}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500">
+                선택된 관심사: {formData.interests.length}/5
+              </p>
+            </div>
+
+            {/* 글쓰기 프로필 설정 */}
+            <Separator />
+            {myInfo?.profile ? (
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-lg font-medium text-gray-900">
+                    AI 글쓰기 설정
+                  </h3>
+                </div>
+
+                {/* Purpose - Read Only */}
+                <div className="space-y-2">
+                  <Label>글쓰기 목적</Label>
+                  <div className="p-3 bg-gray-50 rounded-lg border">
+                    <div className="flex items-center space-x-2">
+                      <span className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-medium rounded-full">
+                        {myInfo.profile.purpose === "학업" && "📚 학업"}
+                        {myInfo.profile.purpose === "자기계발" && "🚀 자기계발"}
+                        {myInfo.profile.purpose === "소셜" && "👥 소셜"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      목적은 최초 설정 후 변경할 수 없습니다.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Tone */}
+                <div className="space-y-3">
+                  <Label>선호하는 글 스타일 (복수 선택 가능)</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {toneOptions.map((option) => (
+                      <label
+                        key={option.value}
+                        className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
+                          formData.profile.tone.includes(option.value)
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.profile.tone.includes(option.value)}
+                          onChange={() => handleToneToggle(option.value)}
+                          className="sr-only"
+                        />
+                        <div className="text-sm font-medium text-gray-900">
+                          {option.label}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Audience */}
+                <div className="space-y-3">
+                  <Label>주요 대상</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {audienceOptions.map((option) => (
+                      <label
+                        key={option.value}
+                        className={`flex flex-col p-3 border rounded-lg cursor-pointer transition-colors ${
+                          formData.profile.audience === option.value
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="audience"
+                          value={option.value}
+                          checked={formData.profile.audience === option.value}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              profile: {
+                                ...prev.profile,
+                                audience: e.target.value as AudienceType,
+                              },
+                            }))
+                          }
+                          className="sr-only"
+                        />
+                        <div className="font-medium text-gray-900 text-sm">
+                          {option.label}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          {option.description}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Favorite Author */}
+
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="favoriteAuthor"
+                    className="text-sm font-medium"
+                  >
+                    좋아하는 작가/인플루언서
+                  </Label>
+
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {formData.profile.favoriteAuthor?.map((author, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full"
+                      >
+                        {author}
+                        <button
+                          type="button"
+                          onClick={() => handleFavoriteAuthorRemove(index)}
+                          className="ml-1 text-red-600 hover:text-red-800"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder="예: 한강, 김초엽, 김애란, 김영하, 유시민..."
+                      className="flex-1"
+                      disabled={
+                        (formData.profile.favoriteAuthor?.length || 0) >= 5
+                      }
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const value = (e.target as HTMLInputElement).value;
+                          handleFavoriteAuthorAdd(value);
+                          (e.target as HTMLInputElement).value = "";
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={
+                        (formData.profile.favoriteAuthor?.length || 0) >= 5
+                      }
+                      onClick={(e) => {
+                        const input = (
+                          e.target as HTMLElement
+                        ).parentElement?.querySelector(
+                          "input"
+                        ) as HTMLInputElement;
+                        if (input) {
+                          handleFavoriteAuthorAdd(input.value);
+                          input.value = "";
+                        }
+                      }}
+                    >
+                      추가
+                    </Button>
+                  </div>
+                  {/* 추가: 카운터 텍스트 */}
+                  <p className="text-xs text-gray-500">
+                    선택된 작가: {formData.profile.favoriteAuthor?.length || 0}
+                    /5
+                  </p>
+                </div>
+
+                {/* Exclusions */}
+                <div className="space-y-2">
+                  <Label>사용하지 않을 표현</Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {formData.profile.exclusions.map((exclusion, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full"
+                      >
+                        {exclusion}
+                        <button
+                          type="button"
+                          onClick={() => handleExclusionRemove(index)}
+                          className="ml-1 text-red-600 hover:text-red-800"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder="예: 어려운 한자어, 과도한 유행어..."
+                      className="flex-1"
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const value = (e.target as HTMLInputElement).value;
+                          handleExclusionAdd(value);
+                          (e.target as HTMLInputElement).value = "";
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        const input = (
+                          e.target as HTMLElement
+                        ).parentElement?.querySelector(
+                          "input"
+                        ) as HTMLInputElement;
+                        if (input) {
+                          handleExclusionAdd(input.value);
+                          input.value = "";
+                        }
+                      }}
+                    >
+                      추가
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-lg font-medium text-gray-900">
+                    AI 글쓰기 설정
+                  </h3>
+                </div>
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
+                  <p className="text-sm text-blue-800 mb-3">
+                    🤖 AI 글쓰기 도우미를 활용하려면 프로필을 설정해주세요!
+                  </p>
+                  <Button
+                    onClick={() => router.push("/auth/onboarding")}
+                    size="sm"
+                  >
+                    프로필 설정하기
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end space-x-4">

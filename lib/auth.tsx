@@ -60,6 +60,8 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
           email: authData.email,
           nickname: authData.nickname,
           roleType: authData.roleType,
+          profileImageUrl: authData.profileImageUrl,
+          isNewUser: authData.isNewUser,
         };
 
         setState({
@@ -69,13 +71,12 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
           roleType: authData.roleType,
         });
 
-        // 로그아웃 상태에서 로그인 성공 시 토스트 표시
-        if (wasLoggedOut || !state.isAuthenticated) {
+        // 로그아웃 상태에서 로그인 성공 시 토스트 표시 (신규 회원이 아닌 경우에만)
+        if ((wasLoggedOut || !state.isAuthenticated) && !authData.isNewUser) {
           toast({
             description: `환영합니다, ${user.nickname}님!`,
           });
           setWasLoggedOut(false);
-
         }
       } else {
         setState({

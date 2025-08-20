@@ -1,13 +1,13 @@
 "use client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Award, BarChart } from "lucide-react";
 
 interface UserProfileModalProps {
@@ -20,6 +20,8 @@ interface UserData {
   name: string;
   avatar?: string;
   joinedDate: string;
+  bio?: string;
+  interests?: string[];
   stats: {
     followers: number;
     following: number;
@@ -66,6 +68,29 @@ export function UserProfileModal({
               </p>
             </div>
           </div>
+
+          {/* Bio */}
+          {userData.bio && (
+            <div className="mt-4">
+              <p className="text-gray-700">{userData.bio}</p>
+            </div>
+          )}
+
+          {/* Interests */}
+          {userData.interests && userData.interests.length > 0 && (
+            <div className="mt-4">
+              <div className="flex flex-wrap gap-2">
+                {userData.interests.map((interest) => (
+                  <span
+                    key={interest}
+                    className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-full"
+                  >
+                    {interest}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Stats */}
           <div className="mt-6 grid grid-cols-3 gap-4 text-center">

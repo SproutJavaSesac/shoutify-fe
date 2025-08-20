@@ -19,4 +19,9 @@ export const AUTH_API_ENDPOINTS = {
    * 회원 탈퇴 API 엔드포인트
    */
   WITHDRAW: "/members",
+
+  /**
+   * 온보딩 프로필 설정 API 엔드포인트
+   */
+  COMPLETE_ONBOARDING: "/auth/onboarding",
 };
