@@ -14,7 +14,7 @@ export interface Report {
   reasonDetail: string; // 신고 상세 사유
   statusType: ReportStatusType; // 처리 상태
   createdAt: string;
-  updatedAt?: string;
+  updatedAt: string;
   reportCount: number;
 }
 
@@ -143,6 +143,7 @@ export interface ReportListResponse {
     pending: number;
     approved: number;
     rejected: number;
+    postpone: number;
   };
 }
 
@@ -153,12 +154,9 @@ export interface ReportListResponse {
  */
 export type ReportReasonType =
   | "SPAM" // 스팸/광고
-  | "ABUSIVE_LANGUAGE" // 욕설/비방
-  | "SEXUAL_CONTENT" // 성적인 내용
-  | "HATE_SPEECH" // 혐오 표현
-  | "PRIVACY_VIOLATION" // 개인정보 노출
-  | "COPYRIGHT_VIOLATION" // 저작권 침해
-  | "MISINFORMATION" // 거짓 정보
+  | "INAPPROPRIATE_CONTENT" // 부적절한 콘텐츠
+  | "PORNOGRAPHIC_CONTENT" // 음란물
+  | "ILLEGAL_FILMING" // 불법 촬영
   | "OTHER"; // 기타
 
 export type ReportReasonTypeOption = {
@@ -184,7 +182,8 @@ export type ReportSortTypeOption = {
 export type ReportStatusType =
   | "PENDING" // 대기 중
   | "ACCEPTED" // 승인됨
-  | "REJECTED"; // 거부됨
+  | "REJECTED" // 거부됨
+  | "POSTPONE"; // 보류됨
 
 export type ReportStatusTypeOption = {
   label: string;

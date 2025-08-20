@@ -52,6 +52,11 @@ export interface CommentCreateRequest {
   body: CommentCreateResponseBody;
 }
 
+export interface CommentFetchResponse {
+  postId: string | number;
+  comment: Comment;
+}
+
 export interface CommentCreateResponseBody {
   content: string;
   parentId?: string | number | null;

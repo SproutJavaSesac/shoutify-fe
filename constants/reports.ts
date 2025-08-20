@@ -39,12 +39,9 @@ export const REPORTS_API_ENDPOINTS = {
  */
 export const REPORT_REASON_OPTIONS: ReportReasonTypeOption[] = [
   { label: "스팸/광고", value: "SPAM" },
-  { label: "욕설/비방", value: "ABUSIVE_LANGUAGE" },
-  { label: "성적인 내용", value: "SEXUAL_CONTENT" },
-  { label: "혐오 표현", value: "HATE_SPEECH" },
-  { label: "개인정보 노출", value: "PRIVACY_VIOLATION" },
-  { label: "저작권 침해", value: "COPYRIGHT_VIOLATION" },
-  { label: "거짓 정보", value: "MISINFORMATION" },
+  { label: "부적절한 콘텐츠", value: "INAPPROPRIATE_CONTENT" },
+  { label: "음란물", value: "PORNOGRAPHIC_CONTENT" },
+  { label: "불법 촬영", value: "ILLEGAL_FILMING" },
   { label: "기타", value: "OTHER" },
 ];
 
@@ -55,6 +52,7 @@ export const REPORT_STATUS_OPTIONS: ReportStatusTypeOption[] = [
   { label: "대기 중", value: "PENDING" },
   { label: "승인됨", value: "ACCEPTED" },
   { label: "거부됨", value: "REJECTED" },
+  { label: "보류됨", value: "POSTPONE" },
 ];
 
 /**
