@@ -48,7 +48,7 @@ export async function createPostReaction(
 export async function updatePostReaction(
   args: MutationArgs<PostReactionUpdateContract>
 ): Promise<PostReactionResponse> {
-  return api.patch<PostReactionResponse>(
+  return api.put<PostReactionResponse>(
     REACTION_API_ENDPOINTS.POST_REACTION({ postId: args.paths.postId }),
     args.body
   );
@@ -61,7 +61,10 @@ export async function deletePostReaction(
   args: MutationArgs<PostReactionDeleteContract>
 ): Promise<PostReactionResponse> {
   return api.delete<PostReactionResponse>(
-    REACTION_API_ENDPOINTS.POST_REACTION_DELETE({ postId: args.paths.postId, type: args.paths.type })
+    REACTION_API_ENDPOINTS.POST_REACTION_DELETE({
+      postId: args.paths.postId,
+      type: args.paths.type,
+    })
   );
 }
 
@@ -108,7 +111,7 @@ export async function createCommentReaction(
 export async function updateCommentReaction(
   args: MutationArgs<CommentReactionUpdateContract>
 ): Promise<CommentReactionResponse> {
-  return api.patch<CommentReactionResponse>(
+  return api.put<CommentReactionResponse>(
     REACTION_API_ENDPOINTS.COMMENT_REACTION({
       postId: args.paths.postId,
       commentId: args.paths.commentId,
@@ -127,7 +130,7 @@ export async function deleteCommentReaction(
     REACTION_API_ENDPOINTS.COMMENT_REACTION_DELETE({
       postId: args.paths.postId,
       commentId: args.paths.commentId,
-      type: args.paths.type
+      type: args.paths.type,
     })
   );
 }
