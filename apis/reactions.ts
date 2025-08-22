@@ -61,7 +61,7 @@ export async function deletePostReaction(
   args: MutationArgs<PostReactionDeleteContract>
 ): Promise<PostReactionResponse> {
   return api.delete<PostReactionResponse>(
-    REACTION_API_ENDPOINTS.POST_REACTION({ postId: args.paths.postId })
+    REACTION_API_ENDPOINTS.POST_REACTION_DELETE({ postId: args.paths.postId, type: args.paths.type })
   );
 }
 
@@ -124,9 +124,10 @@ export async function deleteCommentReaction(
   args: MutationArgs<CommentReactionDeleteContract>
 ): Promise<CommentReactionResponse> {
   return api.delete<CommentReactionResponse>(
-    REACTION_API_ENDPOINTS.COMMENT_REACTION({
+    REACTION_API_ENDPOINTS.COMMENT_REACTION_DELETE({
       postId: args.paths.postId,
       commentId: args.paths.commentId,
+      type: args.paths.type
     })
   );
 }

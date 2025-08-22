@@ -46,7 +46,7 @@ export interface Post {
   isHidden?: boolean;
   isMine?: boolean;
   reactionDetailCount?: ReactionDetailCountMap;
-  reaction?: ReactionLabelType | null; // 내 반응 정보 추가
+  myReaction?: ReactionLabelType | null; // 내 반응 정보 추가
 }
 
 export type PaginationParamsType = {

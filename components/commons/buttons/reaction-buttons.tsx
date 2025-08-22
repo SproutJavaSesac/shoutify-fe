@@ -119,7 +119,7 @@ export function BaseReactionButtons({
                   isLoading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 onClick={() => handleReactionClick(reactionType)}
-                disabled={!isAuthenticated || isLoading}
+                disabled={isLoading}
               >
                 {emoji}
               </Button>
