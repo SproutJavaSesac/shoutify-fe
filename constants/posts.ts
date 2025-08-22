@@ -57,6 +57,7 @@ export const POST_API_ENDPOINTS = {
   // 기본 엔드포인트들
   POSTS: "/posts",
   POSTS_CREATE: "/posts",
+  POSTS_PREVIEW: "/posts/preview",
 
   // 동적 파라미터를 받는 함수들
   POST_DETAIL: (id: number | string): string => `/posts/${id}`,
