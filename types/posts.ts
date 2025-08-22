@@ -46,6 +46,15 @@ export interface Post {
   isHidden?: boolean;
   isMine?: boolean;
   reactionDetailCount?: ReactionDetailCountMap;
+  // AI 점수 필드들 (옵셔널)
+  aiScore?: {
+    conceptScore?: number;
+    writingScore?: number;
+    creativityScore?: number;
+    emotionScore?: number;
+    genreScore?: number;
+    totalScore?: number;
+  };
 }
 
 export type PaginationParamsType = {

@@ -46,15 +46,6 @@ export const createPost = async (
   );
 };
 
-// export const previewPost = async (
-//   data: MutationArgs<PostPreviewContract>
-// ): Promise<ExtractResponse<PostPreviewContract>> => {
-//   return api.post<ExtractResponse<PostPreviewContract>>(
-//     POST_API_ENDPOINTS.POSTS_PREVIEW,
-//     data
-//   );
-// };
-
 // 게시글 삭제
 export async function deletePost(postId: IdType): Promise<string> {
   return api.delete<ExtractResponse<PostDeleteContract>>(

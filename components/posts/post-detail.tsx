@@ -9,6 +9,7 @@ import {
   ReportButton,
   ShareButton,
 } from "@/components/commons";
+import { PostAiScore } from "@/components/posts/post-ai-score";
 import { ReportModal } from "@/components/report-modal";
 import { ShareModal } from "@/components/share-modal";
 import { Badge } from "@/components/ui/badge";
@@ -445,6 +446,11 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
             <div className="whitespace-pre-line text-gray-800 leading-relaxed">
               {postData.afterContent}
             </div>
+          </div>
+
+          {/* AI Score - 항상 표시하되, 없으면 준비중 상태 */}
+          <div className="mb-6">
+            <PostAiScore post={postData} />
           </div>
 
           {/* Actions */}
