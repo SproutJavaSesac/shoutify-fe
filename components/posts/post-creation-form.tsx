@@ -141,7 +141,7 @@ export function PostCreationForm() {
   };
 
   const validateForm = () => {
-    return !title.trim() || !content.trim() || !concept;
+    return !title.trim() || !content.trim() || !concept || !genre.trim();
   };
 
   // AI 첨삭 미리보기 요청
@@ -149,7 +149,7 @@ export function PostCreationForm() {
     if (validateForm()) {
       toast({
         title: "입력 오류",
-        description: "컨셉 카테고리, 제목, 내용은 필수 입력 항목입니다.",
+        description: "컨셉 카테고리, 장르, 제목, 내용은 필수 입력 항목입니다.",
         variant: "destructive",
       });
       return;
@@ -158,6 +158,7 @@ export function PostCreationForm() {
     await createProofread({
       title: title.trim(),
       conceptType: concept as ConceptType,
+      genreType: genre,
       emotionType: emotion || undefined,
       content: content.trim(),
       taskUuid: proofreadResult?.taskUuid, // 재시도 시 기존 taskUuid 사용
@@ -171,7 +172,7 @@ export function PostCreationForm() {
     if (validateForm()) {
       toast({
         title: "입력 오류",
-        description: "컨셉 카테고리, 제목, 내용은 필수 입력 항목입니다.",
+        description: "컨셉 카테고리, 장르, 제목, 내용은 필수 입력 항목입니다.",
         variant: "destructive",
       });
       return;
@@ -188,6 +189,7 @@ export function PostCreationForm() {
       title: title.trim(),
       content: content.trim(),
       conceptType: concept as ConceptType,
+      genreType: genre,
       emotionType: emotion ?? undefined,
       imageUrl,
     });
@@ -205,6 +207,7 @@ export function PostCreationForm() {
     await createProofread({
       title: title.trim(),
       conceptType: concept as ConceptType,
+      genreType: genre,
       emotionType: emotion || undefined,
       content: content.trim(),
       taskUuid: proofreadResult.taskUuid, // 기존 taskUuid로 재시도
@@ -222,9 +225,13 @@ export function PostCreationForm() {
       console.log("이미지 업로드 예정:", image.name);
     }
 
-    await publishProofread(proofreadResult.taskUuid, {
-      chosenAttemptId: proofreadResult.attemptId,
-      imageUrl,
+    await publishProofread({
+      paths: { taskUuid: proofreadResult.taskUuid },
+      body: {
+        taskUuid: proofreadResult.taskUuid,
+        chosenAttemptId: proofreadResult.attemptId,
+        imageUrl,
+      },
     });
   };
 
@@ -236,6 +243,7 @@ export function PostCreationForm() {
         originalTitle={title}
         originalContent={content}
         conceptType={concept as ConceptType}
+        genreType={genre}
         onBackToEdit={handleBackToEdit}
         onRetryProofread={handleRetryProofread}
         onPublishProofread={handlePublishProofread}
@@ -263,58 +271,60 @@ export function PostCreationForm() {
 
         <CardContent className="space-y-6">
           {/* Concept Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="concept">컨셉 카테고리 *</Label>
-            <Select value={concept} onValueChange={handleConceptChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="컨셉 카테고리를 선택해주세요" />
-              </SelectTrigger>
-              <SelectContent>
-                {AI_CONCEPT_CATEGORIES.map((category) => (
-                  <SelectItem key={category.value} value={category.value}>
-                    <div>
-                      <div className="font-medium">{category.label}</div>
-                      <div className="text-xs text-gray-500">
-                        {category.description}
-                      </div>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Genre Selection */}
-          {concept && availableGenres.length > 0 && (
-            <div className="space-y-2">
-              <Label htmlFor="genre">글 장르 (선택사항)</Label>
-              <Select value={genre} onValueChange={handleGenreChange}>
+          <div className="flex flex-col sm:flex-row sm:gap-4">
+            <div className="flex-1 space-y-2 mb-4 sm:mb-0">
+              <Label htmlFor="concept">컨셉 카테고리 *</Label>
+              <Select value={concept} onValueChange={handleConceptChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="장르를 선택해주세요" />
+                  <SelectValue placeholder="컨셉 카테고리를 선택해주세요" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableGenres.map((genreOption) => (
-                    <SelectItem
-                      key={genreOption.value}
-                      value={genreOption.value}
-                    >
+                  {AI_CONCEPT_CATEGORIES.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
                       <div>
-                        <div className="font-medium">{genreOption.label}</div>
+                        <div className="font-medium">{category.label}</div>
                         <div className="text-xs text-gray-500">
-                          {genreOption.description}
+                          {category.description}
                         </div>
-                        {genreOption.targetAudience && (
-                          <div className="text-xs text-blue-500">
-                            👥 {genreOption.targetAudience}
-                          </div>
-                        )}
                       </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          )}
+
+            {/* Genre Selection */}
+            {
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="genre">글 장르 *</Label>
+                <Select value={genre} onValueChange={handleGenreChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="장르를 선택해주세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableGenres.map((genreOption) => (
+                      <SelectItem
+                        key={genreOption.value}
+                        value={genreOption.value}
+                      >
+                        <div>
+                          <div className="font-medium">{genreOption.label}</div>
+                          <div className="text-xs text-gray-500">
+                            {genreOption.description}
+                          </div>
+                          {genreOption.targetAudience && (
+                            <div className="text-xs text-blue-500">
+                              👥 {genreOption.targetAudience}
+                            </div>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            }
+          </div>
 
           {/* Title */}
           <div className="space-y-2">

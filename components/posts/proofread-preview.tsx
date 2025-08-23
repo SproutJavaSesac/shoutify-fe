@@ -14,6 +14,7 @@ interface ProofreadPreviewProps {
   originalTitle: string;
   originalContent: string;
   conceptType: ConceptType;
+  genreType?: string;
   onBackToEdit: () => void;
   onRetryProofread: () => void;
   onPublishProofread: () => void;
@@ -26,6 +27,7 @@ export function ProofreadPreview({
   originalTitle,
   originalContent,
   conceptType,
+  genreType,
   onBackToEdit,
   onRetryProofread,
   onPublishProofread,
@@ -88,14 +90,16 @@ export function ProofreadPreview({
             첨삭 완료
           </Badge>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onBackToEdit}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />글 수정하기
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onBackToEdit}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />글 수정하기
+          </Button>
+        </div>
       </div>
 
       {/* 점수 및 통계 대시보드 */}

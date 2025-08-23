@@ -1,15 +1,28 @@
 // 게시글 관련 상수 정의
-import { CategoryOption } from "@/types/posts";
+import { CategoryOption, GenreTypeOption } from "@/types/posts";
 import { EmotionOption } from "@/types/reactions";
 
 // 카테고리 옵션 (화면 표시용 한국어 → API 통신용 영어)
+export const GENRE_OPTIONS: GenreTypeOption[] = [
+  { label: "현대 문학", value: "MODERN_LITERATURE" },
+  { label: "고전 문학", value: "CLASSICAL_LITERATURE" },
+  { label: "논평", value: "COMMENTARY" },
+  { label: "칼럼", value: "COLUMN" },
+  { label: "기고", value: "CONTRIBUTION" },
+  { label: "서평", value: "BOOK_REVIEW" },
+  { label: "힙스터 피드", value: "HIPSTER_FEED" },
+  { label: "한밤중의 라디오", value: "MIDNIGHT_RADIO" },
+  { label: "수필", value: "ESSAY" },
+];
+
 export const CONCEPT_OPTIONS: CategoryOption[] = [
   { label: "전체", value: "ALL" },
-  { label: "고전 시가", value: "CLASSICAL_POETRY" },
-  { label: "시", value: "POETRY" },
-  { label: "소설", value: "NOVEL" },
-  { label: "희곡", value: "DRAMA" },
-  { label: "에세이", value: "ESSAY" },
+  {
+    label: "학술/리포트",
+    value: "ACADEMIC",
+  },
+  { label: "지적 허영/과시", value: "INTELLECTUAL_DISPLAY" },
+  { label: "내 얘기를 재밌게 (SNS용)", value: "PERSONAL_STORY" },
 ];
 
 // 감정 옵션 (화면 표시용 한국어 → API 통신용 영어)

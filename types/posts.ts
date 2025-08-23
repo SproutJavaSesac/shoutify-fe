@@ -11,10 +11,19 @@ export type PostSortType = "createdAt" | "reactions" | "comments";
 
 export type ConceptType =
   | "ALL"
-  | "CLASSICAL_POETRY"
-  | "POETRY"
-  | "NOVEL"
-  | "DRAMA"
+  | "ACADEMIC"
+  | "INTELLECTUAL_DISPLAY"
+  | "PERSONAL_STORY";
+
+export type GenreType =
+  | "MODERN_LITERATURE"
+  | "CLASSICAL_LITERATURE"
+  | "COMMENTARY"
+  | "COLUMN"
+  | "CONTRIBUTION"
+  | "BOOK_REVIEW"
+  | "HIPSTER_FEED"
+  | "MIDNIGHT_RADIO"
   | "ESSAY";
 
 export type EmotionType =
@@ -31,6 +40,11 @@ export interface CategoryOption {
   value: ConceptType;
 }
 
+export interface GenreTypeOption{
+  label: string;
+  value: GenreType;
+}
+
 export interface Post {
   postId: IdType;
   nickname: string;
@@ -42,6 +56,7 @@ export interface Post {
   commentCount: number;
   emotion: EmotionType;
   conceptType: ConceptType;
+  genreType?: GenreType;
   isDeleted?: boolean;
   isHidden?: boolean;
   isMine?: boolean;
@@ -91,6 +106,7 @@ export type PostCreateBodyRequest = {
   title: string;
   content: string;
   conceptType: string;
+  genreType: string;
   emotionType: string | null;
   imageUrl?: string;
 };

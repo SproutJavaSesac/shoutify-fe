@@ -1,5 +1,5 @@
 import { ApiContract, IdType } from "@/types/apis";
-import { ConceptType } from "@/types/posts";
+import { ConceptType, GenreType } from "@/types/posts";
 
 // 첨삭 기본 타입 정의
 export interface ProofreadData {
@@ -55,6 +55,7 @@ export interface ProofreadResult extends ProofreadData {
 export type ProofreadCreateBodyRequest = {
   title: string;
   conceptType: ConceptType;
+  genreType: GenreType;
   emotionType?: string;
   content: string;
   taskUuid?: string;

@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DIFF_COLORS } from "@/constants/proofreads";
+import { useToast } from "@/hooks/use-toast";
 import { DiffSegment } from "@/types/proofreads";
-import { Eye, EyeOff, GitCompare } from "lucide-react";
+import { Copy, Eye, EyeOff, GitCompare } from "lucide-react";
 import { useState } from "react";
 
 interface ProofreadDiffViewProps {
@@ -63,6 +64,23 @@ export function ProofreadDiffView({
         </Button>
       </div>
 
+      {viewMode === "side-by-side" ? (
+        <SideBySideView
+          originalTitle={originalTitle}
+          originalContent={originalContent}
+          modifiedTitle={modifiedTitle}
+          modifiedContent={modifiedContent}
+          titleDiff={titleDiff}
+          contentDiff={contentDiff}
+          showDiffOnly={showDiffOnly}
+        />
+      ) : (
+        <UnifiedView
+          titleDiff={titleDiff}
+          contentDiff={contentDiff}
+          showDiffOnly={showDiffOnly}
+        />
+      )}
       {/* 색상 가이드 */}
       <Card className="bg-gray-50">
         <CardContent className="pt-4">
@@ -82,24 +100,6 @@ export function ProofreadDiffView({
           </div>
         </CardContent>
       </Card>
-
-      {viewMode === "side-by-side" ? (
-        <SideBySideView
-          originalTitle={originalTitle}
-          originalContent={originalContent}
-          modifiedTitle={modifiedTitle}
-          modifiedContent={modifiedContent}
-          titleDiff={titleDiff}
-          contentDiff={contentDiff}
-          showDiffOnly={showDiffOnly}
-        />
-      ) : (
-        <UnifiedView
-          titleDiff={titleDiff}
-          contentDiff={contentDiff}
-          showDiffOnly={showDiffOnly}
-        />
-      )}
     </div>
   );
 }
@@ -133,14 +133,52 @@ function SideBySideView({
     modifiedParts: modifiedContentParts,
   } = separateDiffParts(contentDiff);
 
+  const { toast } = useToast();
+
+  // 복사하기 함수
+  const handleCopyText = async () => {
+    const textToCopy = `제목: ${modifiedTitle}\n\n내용:\n${modifiedContent}`;
+
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      toast({
+        description: "첨삭된 글이 클립보드에 복사되었습니다!",
+      });
+    } catch (error) {
+      // 클립보드 API가 지원되지 않는 경우 대체 방법
+      const textarea = document.createElement("textarea");
+      textarea.value = textToCopy;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+
+      toast({
+        description: "첨삭된 글이 클립보드에 복사되었습니다!",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* 제목 비교 */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <GitCompare className="h-5 w-5" />
-          제목 변환
-        </h3>
+        <div className="flex flex-space-x-4 items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <GitCompare className="h-5 w-5" />
+            제목 변환
+          </h3>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCopyText}
+            className="flex items-center gap-2"
+          >
+            <Copy className="h-4 w-4" />
+            복사하기
+          </Button>
+        </div>
         <div className="grid md:grid-cols-2 gap-4">
           {/* 원본 제목 */}
           <Card className="border-red-200">
