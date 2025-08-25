@@ -24,7 +24,7 @@ export const MEMBER_API_ENDPOINTS = {
   /**
    * 내 배지 조회 API 엔드포인트
    */
-  MEMBER_BADGES: `${MEMBER_API_BASE_URL}/badges`,
+  MEMBER_BADGES: `${MEMBER_API_BASE_URL}/me/badges`,
 
   /**
    * 내 랭킹 조회 API 엔드포인트

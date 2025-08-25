@@ -1,16 +1,8 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import {
-  Award,
-  Bookmark,
-  Heart,
-  MessageCircle,
-  TrendingUp,
-  User,
-} from "lucide-react";
-import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { POST_ROUTES } from "@/constants/posts";
 import {
   useMyBadges,
@@ -22,13 +14,21 @@ import {
   useUserPosts,
   useUserRanking,
 } from "@/lib/hooks/useMembers";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useEffect } from "react";
+import { IdType } from "@/types/apis";
 import { MyBadgeSummary, MyPostSummary, RankingSummary } from "@/types/members";
 import { RankingCategoryType, RankingPeriodType } from "@/types/rankings";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { IdType } from "@/types/apis";
+import {
+  Award,
+  Bookmark,
+  Heart,
+  MessageCircle,
+  TrendingUp,
+  User,
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect } from "react";
 
 interface UserProfileProps {
   memberId: IdType;
@@ -96,7 +96,7 @@ export function UserProfile({ memberId }: Readonly<{ memberId: IdType }>) {
     loading: myBadgesLoading,
     error: myBadgesError,
     refetch: refetchMyBadges,
-  } = useMyBadges({ page: 1, size: 10 }, { immediate: isMyProfile });
+  } = useMyBadges();
 
   const {
     data: myRanking,
@@ -109,7 +109,7 @@ export function UserProfile({ memberId }: Readonly<{ memberId: IdType }>) {
       period: 30,
       periodType: "MONTHLY" as RankingPeriodType,
     },
-    { immediate: isMyProfile },
+    { immediate: isMyProfile }
   );
 
   // 다른 사용자 정보 조회 훅들
@@ -128,7 +128,7 @@ export function UserProfile({ memberId }: Readonly<{ memberId: IdType }>) {
   } = useUserPosts(
     memberId,
     { page: 1, size: 10 },
-    { immediate: !isMyProfile },
+    { immediate: !isMyProfile }
   );
 
   const {
@@ -139,7 +139,7 @@ export function UserProfile({ memberId }: Readonly<{ memberId: IdType }>) {
   } = useUserBadges(
     memberId,
     { page: 1, size: 10 },
-    { immediate: !isMyProfile },
+    { immediate: !isMyProfile }
   );
 
   const {
@@ -154,7 +154,7 @@ export function UserProfile({ memberId }: Readonly<{ memberId: IdType }>) {
       period: 30,
       periodType: "MONTHLY" as RankingPeriodType,
     },
-    { immediate: !isMyProfile },
+    { immediate: !isMyProfile }
   );
 
   // 현재 표시할 데이터 선택
@@ -186,7 +186,7 @@ export function UserProfile({ memberId }: Readonly<{ memberId: IdType }>) {
       refetchUserBadges();
       refetchUserRanking();
     }
-  }, [memberId, isMyProfile]);
+  }, []); // TODO memberId, isMyProfile 추가 고려
 
   if (infoLoading || postsLoading || badgesLoading || rankingLoading) {
     return (
@@ -364,7 +364,7 @@ export function UserProfile({ memberId }: Readonly<{ memberId: IdType }>) {
                         </div>
                       </div>
                     </div>
-                  ),
+                  )
                 )
               ) : (
                 <div className="text-center py-8">
