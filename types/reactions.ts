@@ -3,7 +3,7 @@ export type ReactionActionType = "add" | "remove";
 import { ApiContract, IdType } from "./apis";
 
 export interface Reaction {
-  type: ReactionLabelType; // 내가 누른 리액션
+  myReaction: ReactionLabelType; // 내가 누른 리액션
   reactionTotalCount: number;
   reactionDetails: ReactionDetailCountMap;
 }

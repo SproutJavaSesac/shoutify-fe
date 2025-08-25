@@ -81,7 +81,7 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
       fetchPostReaction({ postId: parseInt(postId) })
         .then((reactionData) => {
           setReactions(reactionData.reactionDetails);
-          setMyReaction(reactionData.type);
+          setMyReaction(reactionData.myReaction);
         })
         .catch((error) => {
           console.error("반응 상태 가져오기 실패:", error);
@@ -105,8 +105,9 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
       // 성공 후 최신 반응 상태를 GET으로 가져와서 업데이트
       fetchPostReaction({ postId: parseInt(postId) })
         .then((reactionData) => {
+          console.log({ reactionData });
           setReactions(reactionData.reactionDetails);
-          setMyReaction(reactionData.type);
+          setMyReaction(reactionData.myReaction);
         })
         .catch((error) => {
           console.error("반응 상태 가져오기 실패:", error);
@@ -131,7 +132,7 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
       fetchPostReaction({ postId: parseInt(postId) })
         .then((reactionData) => {
           setReactions(reactionData.reactionDetails);
-          setMyReaction(reactionData.type);
+          setMyReaction(reactionData.myReaction);
         })
         .catch((error) => {
           console.error("반응 상태 가져오기 실패:", error);
@@ -186,7 +187,7 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
             postId: parseInt(postId),
           });
           setReactions(reactionData.reactionDetails);
-          setMyReaction(reactionData.type);
+          setMyReaction(reactionData.myReaction);
         } catch (reactionError) {
           // 반응 데이터가 없을 수도 있으므로 에러는 조용히 처리
           console.log(

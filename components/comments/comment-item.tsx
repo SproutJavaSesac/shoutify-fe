@@ -48,7 +48,7 @@ export const CommentItem = memo(function CommentItem({
   // 개별 댓글의 반응 상태 관리
   const [reactions, setReactions] = useState(comment.reactions || {});
   const [myReaction, setMyReaction] = useState<ReactionLabelType | null>(
-    comment.reaction || null
+    comment.myReaction || null
   );
   const [isReactionLoading, setIsReactionLoading] = useState(false);
 
@@ -59,7 +59,7 @@ export const CommentItem = memo(function CommentItem({
       fetchCommentReaction({ postId, commentId: comment.commentId })
         .then((reactionData) => {
           setReactions(reactionData.reactionDetails);
-          setMyReaction(reactionData.type);
+          setMyReaction(reactionData.myReaction);
         })
         .catch((error) => {
           console.error("반응 상태 가져오기 실패:", error);
@@ -83,7 +83,7 @@ export const CommentItem = memo(function CommentItem({
       fetchCommentReaction({ postId, commentId: comment.commentId })
         .then((reactionData) => {
           setReactions(reactionData.reactionDetails);
-          setMyReaction(reactionData.type);
+          setMyReaction(reactionData.myReaction);
         })
         .catch((error) => {
           console.error("반응 상태 가져오기 실패:", error);
@@ -107,7 +107,7 @@ export const CommentItem = memo(function CommentItem({
       fetchCommentReaction({ postId, commentId: comment.commentId })
         .then((reactionData) => {
           setReactions(reactionData.reactionDetails);
-          setMyReaction(reactionData.type);
+          setMyReaction(reactionData.myReaction);
         })
         .catch((error) => {
           console.error("반응 상태 가져오기 실패:", error);

@@ -1,6 +1,6 @@
 "use client";
 
-import { Pagination, ReactionButtons } from "@/components/commons";
+import { Pagination } from "@/components/commons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,7 +17,7 @@ import {
 import { utcToLocaleDateString } from "@/lib/utils";
 import { ConceptType, PostSortType } from "@/types/posts";
 import { ReactionLabelType } from "@/types/reactions";
-import { Calendar, Eye, MessageCircle } from "lucide-react";
+import { Calendar, Eye, HeartIcon, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -300,27 +300,11 @@ export default function PostsList({
                   </div>
 
                   <div className="flex items-center space-x-4">
-                    {/* 반응 버튼들 */}
-                    <ReactionButtons
-                      reactions={
-                        post.reactionDetailCount || {
-                          HAPPY: 0,
-                          SAD: 0,
-                          ANGRY: 0,
-                          EXCITED: 0,
-                          CONFUSED: 0,
-                          PROUD: 0,
-                        }
-                      }
-                      myReaction={post.myReaction || null}
-                      onReactionClick={(reactionType) =>
-                        handlePostReaction(post.postId, reactionType)
-                      }
-                      isAuthenticated={!!user}
-                      isLoading={reactionLoadingStates[post.postId] || false}
-                      size="sm"
-                      showAllReactions={false}
-                    />
+                    {/* 반응하기 총 개수 post.reactionCount 이용 */}
+                    <div className="flex items-center space-x-1 text-sm text-gray-500">
+                      <HeartIcon className="h-4 w-4" />
+                      <span>{post.reactionCount}</span>
+                    </div>
 
                     {/* 댓글 수 */}
                     <div className="flex items-center space-x-1 text-sm text-gray-500">

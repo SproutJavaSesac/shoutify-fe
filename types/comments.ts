@@ -24,7 +24,7 @@ export interface Comment {
   content: string;
   reactionCount: number;
   reactions: ReactionDetailCountMap;
-  reaction?: ReactionLabelType | null; // 내 반응 정보 추가
+  myReaction?: ReactionLabelType | null; // 내 반응 정보 추가
   isDeleted: boolean;
   isReported: boolean;
   isMine?: boolean; // TODO isMine 추가 시 ? 제거하기
