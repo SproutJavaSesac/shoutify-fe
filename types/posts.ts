@@ -40,7 +40,7 @@ export interface CategoryOption {
   value: ConceptType;
 }
 
-export interface GenreTypeOption{
+export interface GenreTypeOption {
   label: string;
   value: GenreType;
 }
@@ -48,6 +48,8 @@ export interface GenreTypeOption{
 export interface Post {
   postId: IdType;
   nickname: string;
+  beforeTitle?: string; // AI 첨삭 이전 제목
+  beforeContent?: string; // AI 첨삭 이전 내용
   afterTitle: string;
   afterContent: string;
   createdAt: Date;

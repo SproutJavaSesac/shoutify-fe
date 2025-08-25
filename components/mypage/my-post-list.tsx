@@ -19,16 +19,18 @@ export function MyPostList({
   onHidePost,
   onUnhidePost,
 }: MyPostListProps) {
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedPostId, setSelectedPostId] = useState<string | number | null>(
+    null
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handlePostClick = (post: Post) => {
-    setSelectedPost(post);
+    setSelectedPostId(post.postId);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
-    setSelectedPost(null);
+    setSelectedPostId(null);
     setIsModalOpen(false);
   };
 
@@ -173,9 +175,9 @@ export function MyPostList({
       </Card>
 
       {/* 게시글 상세 모달 */}
-      {selectedPost && (
+      {selectedPostId && (
         <PostDetailModal
-          post={selectedPost}
+          postId={selectedPostId}
           isOpen={isModalOpen}
           onClose={handleCloseModal}
         />

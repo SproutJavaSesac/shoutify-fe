@@ -42,7 +42,7 @@ export const createPost = async (
 ): Promise<ExtractResponse<PostCreateContract>> => {
   return api.post<ExtractResponse<PostCreateContract>>(
     POST_API_ENDPOINTS.POSTS_CREATE,
-    data
+    { ...data, conceptType: "ESSAY" }
   );
 };
 
