@@ -31,6 +31,19 @@ export interface Comment {
   updatedAt: string;
 }
 
+// 마이페이지 댓글 목록에서 사용할 댓글 타입
+export interface MyComment {
+  commentId: string | number;
+  postId: string | number;
+  postTitle: string;
+  beforeContent?: string; // AI 첨삭 이전 내용
+  afterContent: string; // AI 첨삭 후 내용
+  reactionCount: number;
+  createdAt: string;
+  isDeleted?: boolean;
+  isMine?: boolean;
+}
+
 export interface CommentListRequest {
   postId: string | number;
   paginationParams: PaginationParams;

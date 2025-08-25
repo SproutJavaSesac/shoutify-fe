@@ -17,9 +17,8 @@ import {
   GENRE_OPTIONS,
 } from "@/constants/posts";
 import { useToast } from "@/hooks/use-toast";
-import { usePostFetchEffect } from "@/lib/hooks/usePosts";
 import { generateWordDiff } from "@/lib/utils/diff";
-import { DiffSegment } from "@/types/proofreads";
+import { Post } from "@/types/posts";
 import {
   Calendar,
   Copy,
@@ -27,7 +26,6 @@ import {
   Eye,
   GitBranch,
   Heart,
-  Loader2,
   MessageCircle,
   Settings,
   Sparkles,
@@ -38,51 +36,44 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 interface PostDetailModalProps {
-  postId: string | number;
+  post: Post;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export function PostDetailModal({
-  postId,
+  post,
   isOpen,
   onClose,
 }: PostDetailModalProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const [diffData, setDiffData] = useState<{
-    titleDiff: DiffSegment[];
-    contentDiff: DiffSegment[];
-  } | null>(null);
 
-  // 게시글 상세 정보 가져오기
-  const {
-    data: post,
-    loading,
-    error,
-    refetch,
-  } = usePostFetchEffect({
-    postId,
-  });
-
-  // diff 데이터 생성
-  useEffect(() => {
-    if (post?.beforeTitle && post?.beforeContent) {
-      const titleDiff = generateWordDiff(
-        post.beforeTitle || post.afterTitle,
-        post.afterTitle
-      );
-      const contentDiff = generateWordDiff(
-        post.beforeContent || post.afterContent,
-        post.afterContent
-      );
-
-      setDiffData({ titleDiff, contentDiff });
+  // diff 데이터를 useMemo로 생성하여 무한 루프 방지
+  const diffData = useMemo(() => {
+    if (!post.beforeTitle && !post.beforeContent) {
+      return null;
     }
-  }, [post]);
+
+    const titleDiff = generateWordDiff(
+      post.beforeTitle || post.afterTitle,
+      post.afterTitle
+    );
+    const contentDiff = generateWordDiff(
+      post.beforeContent || post.afterContent,
+      post.afterContent
+    );
+
+    return { titleDiff, contentDiff };
+  }, [
+    post.beforeTitle,
+    post.beforeContent,
+    post.afterTitle,
+    post.afterContent,
+  ]);
 
   const getConceptLabel = (conceptType: string) => {
     return (
@@ -107,7 +98,6 @@ export function PostDetailModal({
     try {
       const dateObj = typeof date === "string" ? new Date(date) : date;
 
-      // 유효한 날짜인지 확인
       if (isNaN(dateObj.getTime())) {
         return "날짜 정보 없음";
       }
@@ -126,8 +116,6 @@ export function PostDetailModal({
   };
 
   const handleCopyPost = async () => {
-    if (!post) return;
-
     const textToCopy = `제목: ${post.afterTitle}\n\n내용:\n${post.afterContent}`;
 
     try {
@@ -136,7 +124,6 @@ export function PostDetailModal({
         description: "게시글이 클립보드에 복사되었습니다!",
       });
     } catch (error) {
-      // 클립보드 API가 지원되지 않는 경우 대체 방법
       const textarea = document.createElement("textarea");
       textarea.value = textToCopy;
       document.body.appendChild(textarea);
@@ -151,8 +138,7 @@ export function PostDetailModal({
   };
 
   const handleViewProfile = () => {
-    if (post?.nickname) {
-      // memberId 대신 nickname으로 프로필 페이지 이동
+    if (post.nickname) {
       router.push(`/profile/member/${encodeURIComponent(post.nickname)}`);
     }
   };
@@ -160,40 +146,6 @@ export function PostDetailModal({
   const handleEditProfile = () => {
     router.push("/profile/edit");
   };
-
-  if (loading) {
-    return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <span className="ml-2">게시글을 불러오는 중...</span>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  if (error || !post) {
-    return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
-          <div className="flex flex-col items-center justify-center py-12">
-            <X className="h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              게시글을 불러올 수 없습니다
-            </h3>
-            <p className="text-gray-500 mb-4">
-              {error || "게시글이 삭제되었거나 접근할 수 없습니다."}
-            </p>
-            <Button onClick={() => refetch()} variant="outline">
-              다시 시도
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -270,12 +222,14 @@ export function PostDetailModal({
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Badge
-                      variant="outline"
-                      className="bg-blue-50 text-blue-700"
-                    >
-                      {getConceptLabel(post.conceptType)}
-                    </Badge>
+                    {post.conceptType && (
+                      <Badge
+                        variant="outline"
+                        className="bg-blue-50 text-blue-700"
+                      >
+                        {getConceptLabel(post.conceptType)}
+                      </Badge>
+                    )}
                     {post.genreType && (
                       <Badge
                         variant="secondary"
@@ -362,10 +316,10 @@ export function PostDetailModal({
 
           {/* AI 첨삭 변화 탭 */}
           <TabsContent value="diff" className="space-y-6 mt-6">
-            {post.beforeTitle && post.beforeContent && diffData ? (
+            {diffData ? (
               <ProofreadDiffView
-                originalTitle={post.beforeTitle}
-                originalContent={post.beforeContent}
+                originalTitle={post.beforeTitle || post.afterTitle}
+                originalContent={post.beforeContent || post.afterContent}
                 modifiedTitle={post.afterTitle}
                 modifiedContent={post.afterContent}
                 titleDiff={diffData.titleDiff}
