@@ -3,9 +3,8 @@ export type ReactionActionType = "add" | "remove";
 import { ApiContract, IdType } from "./apis";
 
 export interface Reaction {
-  status: ReactionActionType;
-  reaction: ReactionLabelType;
-  reactionCount: number;
+  myReaction: ReactionLabelType; // 내가 누른 리액션
+  reactionTotalCount: number;
   reactionDetails: ReactionDetailCountMap;
 }
 
@@ -35,6 +34,13 @@ export interface PostReactionResponse extends ReactionResponse {}
 export interface CommentReactionResponse extends ReactionResponse {}
 
 // API Contract 타입들
+export type PostReactionFetchContract = ApiContract<
+  { postId: IdType },
+  never,
+  never,
+  PostReactionResponse
+>;
+
 export type PostReactionCreateContract = ApiContract<
   { postId: IdType },
   never,
@@ -50,10 +56,17 @@ export type PostReactionUpdateContract = ApiContract<
 >;
 
 export type PostReactionDeleteContract = ApiContract<
-  { postId: IdType },
+  { postId: IdType; type: ReactionLabelType },
   never,
   never,
   PostReactionResponse
+>;
+
+export type CommentReactionFetchContract = ApiContract<
+  { postId: IdType; commentId: IdType },
+  never,
+  never,
+  CommentReactionResponse
 >;
 
 export type CommentReactionCreateContract = ApiContract<
@@ -71,7 +84,7 @@ export type CommentReactionUpdateContract = ApiContract<
 >;
 
 export type CommentReactionDeleteContract = ApiContract<
-  { postId: IdType; commentId: IdType },
+  { postId: IdType; commentId: IdType; type: ReactionLabelType },
   never,
   never,
   CommentReactionResponse

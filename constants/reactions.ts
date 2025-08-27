@@ -1,5 +1,6 @@
 import { POST_API_ENDPOINTS } from "@/constants/posts";
-import { ReactionLabelEmojiMap } from "@/types/reactions";
+import { IdType } from "@/types/apis";
+import { ReactionLabelEmojiMap, ReactionLabelType } from "@/types/reactions";
 
 /**
  * 반응하기 ENUM을 EMOJI로 매핑하는 상수입니다.
@@ -25,6 +26,14 @@ export const REACTION_API_ENDPOINTS = {
     `${POST_API_ENDPOINTS.POST_DETAIL(postId)}/reactions`,
 
   /**
+   * 게시글 반응 삭제 API 엔드포인트
+   * @param postId 게시글 ID
+   * @param type 삭제할 반응 타입
+   */
+  POST_REACTION_DELETE: ({ postId, type }: { postId: IdType, type: ReactionLabelType }) =>
+    `${POST_API_ENDPOINTS.POST_DETAIL(postId)}/reactions/${type}`,
+
+  /**
    * 댓글에 반응하기 API 엔드포인트
    * @param postId 게시글 ID
    * @param commentId 댓글 ID
@@ -33,7 +42,16 @@ export const REACTION_API_ENDPOINTS = {
     postId,
     commentId,
   }: {
-    postId: string | number;
-    commentId: string | number;
+    postId: IdType;
+    commentId: IdType;
   }) => `/posts/${postId}/comments/${commentId}/reactions`,
+
+  /**
+   * 댓글 반응 삭제 API 엔드포인트
+   * @param postId 게시글 ID
+   * @param commentId 댓글 ID
+   * @param type 삭제할 반응 타입
+   */
+  COMMENT_REACTION_DELETE: ({ postId, commentId, type }: { postId: IdType; commentId: IdType; type: ReactionLabelType }) =>
+    `/posts/${postId}/comments/${commentId}/reactions/${type}`,
 };
