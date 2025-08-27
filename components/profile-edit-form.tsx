@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export function ProfileEditForm() {
-  const { user, logout } = useAuth();
+  const { user, logout, withdraw } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -84,14 +84,15 @@ export function ProfileEditForm() {
     try {
       // Simulate account deletion
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      await logout();
+      await withdraw();
+      // await logout();
       toast({
-        description: "Account deleted successfully",
+        description: "회원 탈퇴가 완료되었습니다.",
       });
-      router.push("/");
+      // router.push("/");
     } catch (error) {
       toast({
-        description: "Failed to delete account. Please try again.",
+        description: "회원 탈퇴에 실패하였습니다. 다시 시도해 주세요.",
         variant: "destructive",
       });
     } finally {

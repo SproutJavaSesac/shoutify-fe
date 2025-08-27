@@ -19,6 +19,21 @@ export function loginWithGoogle(redirectUrl?: string): void {
   window.location.href = loginUrl;
 }
 
+export function loginWithKakao(redirectUrl?: string): void {
+  const backendUrl =
+    process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") ??
+    "http://localhost:8080";
+
+  let loginUrl = `${backendUrl}${AUTH_API_ENDPOINTS.SOCIAL_LOGIN("kakao")}`;
+
+  if (redirectUrl) {
+    const encodedRedirectUrl = encodeURIComponent(redirectUrl);
+    loginUrl += `?state=${encodedRedirectUrl}`;
+  }
+
+  window.location.href = loginUrl;
+}
+
 // 로그인 상태 확인
 export async function checkLoginStatus(): Promise<LoginStatusResponse> {
   try {
