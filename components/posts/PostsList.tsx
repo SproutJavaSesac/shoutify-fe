@@ -1,17 +1,25 @@
 "use client";
 
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Pagination } from "@/components/commons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Eye, MessageCircle } from "lucide-react";
-import Link from "next/link";
-import { usePostListFetchEffect } from "@/lib/hooks/usePosts";
-import { ConceptType, PostSortType } from "@/types/posts";
-import { CONCEPT_OPTIONS, POST_ROUTES } from "@/constants/posts";
-import { utcToLocaleDateString } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Pagination } from "@/components/commons";
+import { CONCEPT_OPTIONS, POST_ROUTES } from "@/constants/posts";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
+import { usePostListFetchEffect } from "@/lib/hooks/usePosts";
+import {
+  usePostReactionCreate,
+  usePostReactionDelete,
+  usePostReactionUpdate,
+} from "@/lib/hooks/useReactions";
+import { utcToLocaleDateString } from "@/lib/utils";
+import { ConceptType, PostSortType } from "@/types/posts";
+import { ReactionLabelType } from "@/types/reactions";
+import { Calendar, Eye, HeartIcon, MessageCircle } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 interface PostsListProps {
   initialSort?: PostSortType;
@@ -26,6 +34,14 @@ export default function PostsList({
   limit = 10,
   keyword,
 }: Readonly<PostsListProps>) {
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  // 각 게시글별 반응 로딩 상태
+  const [reactionLoadingStates, setReactionLoadingStates] = useState<
+    Record<string | number, boolean>
+  >({});
+
   const {
     data: posts,
     loading,
@@ -43,6 +59,125 @@ export default function PostsList({
     size: limit,
     immediate: true,
   });
+
+  // 게시글 반응 관련 훅들
+  const { mutate: createPostReaction } = usePostReactionCreate({
+    onSuccess: () => {
+      refetch(); // 게시글 목록 새로고침
+    },
+    onError: (error) => {
+      toast({
+        title: "반응 등록 실패",
+        description: error,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const { mutate: updatePostReaction } = usePostReactionUpdate({
+    onSuccess: () => {
+      refetch(); // 게시글 목록 새로고침
+    },
+    onError: (error) => {
+      toast({
+        title: "반응 수정 실패",
+        description: error,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const { mutate: deletePostReaction } = usePostReactionDelete({
+    onSuccess: () => {
+      refetch(); // 게시글 목록 새로고침
+    },
+    onError: (error) => {
+      toast({
+        title: "반응 삭제 실패",
+        description: error,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // 게시글 반응 처리 핸들러
+  const handlePostReaction = async (
+    postId: string | number,
+    reactionType: ReactionLabelType
+  ) => {
+    // 로그인 체크
+    if (!user) {
+      toast({
+        title: "로그인 필요",
+        description: "반응을 누르려면 로그인이 필요합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 이미 처리 중이면 무시
+    if (reactionLoadingStates[postId]) return;
+
+    // 로딩 상태 시작
+    setReactionLoadingStates((prev) => ({
+      ...prev,
+      [postId]: true,
+    }));
+
+    try {
+      const post = posts?.find((p) => p.postId === postId);
+      if (!post) return;
+
+      const currentMyReaction = post.myReaction;
+
+      // 액션 결정
+      let action: "create" | "update" | "delete";
+
+      if (!currentMyReaction) {
+        // 첫 반응 → POST (생성)
+        action = "create";
+      } else if (currentMyReaction === reactionType) {
+        // 같은 반응 클릭 → DELETE (삭제)
+        action = "delete";
+      } else {
+        // 다른 반응으로 변경 → PUT (수정)
+        action = "update";
+      }
+
+      // CUD 작업 수행
+      switch (action) {
+        case "create":
+          createPostReaction({
+            paths: { postId },
+            body: { type: reactionType },
+          });
+          break;
+        case "update":
+          updatePostReaction({
+            paths: { postId },
+            body: { type: reactionType },
+          });
+          break;
+        case "delete":
+          deletePostReaction({
+            paths: { postId, type: currentMyReaction! },
+          });
+          break;
+      }
+    } catch (error) {
+      toast({
+        title: "반응 처리 실패",
+        description: "반응 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      // 로딩 상태 해제
+      setReactionLoadingStates((prev) => ({
+        ...prev,
+        [postId]: false,
+      }));
+    }
+  };
 
   if (loading) {
     return (
@@ -165,6 +300,12 @@ export default function PostsList({
                   </div>
 
                   <div className="flex items-center space-x-4">
+                    {/* 반응하기 총 개수 post.reactionCount 이용 */}
+                    <div className="flex items-center space-x-1 text-sm text-gray-500">
+                      <HeartIcon className="h-4 w-4" />
+                      <span>{post.reactionCount}</span>
+                    </div>
+
                     {/* 댓글 수 */}
                     <div className="flex items-center space-x-1 text-sm text-gray-500">
                       <MessageCircle className="h-4 w-4" />

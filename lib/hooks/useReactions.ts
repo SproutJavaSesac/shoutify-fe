@@ -1,23 +1,44 @@
-import { useMutation } from "./useApi";
 import {
   createCommentReaction,
   createPostReaction,
   deleteCommentReaction,
   deletePostReaction,
+  fetchCommentReaction,
+  fetchPostReaction,
   updateCommentReaction,
-  updatePostReaction
+  updatePostReaction,
 } from "@/apis/reactions";
+import { ApiOptions, IdType } from "@/types/apis";
 import type {
   CommentReactionCreateContract,
   CommentReactionDeleteContract,
+  CommentReactionFetchContract,
   CommentReactionResponse,
   CommentReactionUpdateContract,
   PostReactionCreateContract,
   PostReactionDeleteContract,
+  PostReactionFetchContract,
   PostReactionResponse,
-  PostReactionUpdateContract
+  PostReactionUpdateContract,
 } from "@/types/reactions";
-import { ApiOptions } from "@/types/apis";
+import { useCallback } from "react";
+import { useApi, useMutation } from "./useApi";
+
+/**
+ * 게시글 반응 조회 훅
+ */
+export function usePostReactionFetchEffect(postId: IdType) {
+  const apiCall = useCallback(
+    async () => {
+      return await fetchPostReaction({ postId });
+    },
+    [postId] // postId가 변경될 때마다 새로운 함수 생성
+  );
+
+  return useApi<PostReactionFetchContract>(apiCall, {
+    immediate: true,
+  });
+}
 
 /**
  * 게시글 반응 생성 훅
@@ -44,6 +65,28 @@ export function usePostReactionDelete(
   options?: ApiOptions<PostReactionResponse>
 ) {
   return useMutation<PostReactionDeleteContract>(deletePostReaction, options);
+}
+
+/**
+ * 댓글 반응 조회 훅
+ */
+export function useCommentReactionFetchEffect({
+  postId,
+  commentId,
+}: {
+  postId: IdType;
+  commentId: IdType;
+}) {
+  const apiCall = useCallback(
+    async () => {
+      return await fetchCommentReaction({ postId, commentId });
+    },
+    [postId, commentId] // postId 또는 commentId가 변경될 때마다 새로운 함수 생성
+  );
+
+  return useApi<CommentReactionFetchContract>(apiCall, {
+    immediate: true,
+  });
 }
 
 /**
