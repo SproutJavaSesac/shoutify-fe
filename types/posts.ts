@@ -43,6 +43,7 @@ export interface Post {
   commentCount: number;
   emotion: EmotionType;
   conceptType: ConceptType;
+  isDeleted?: boolean;
   isHidden?: boolean;
   isMine?: boolean;
   reactionDetailCount?: ReactionDetailCountMap;

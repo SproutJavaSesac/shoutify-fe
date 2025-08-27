@@ -45,9 +45,16 @@ export function ReportModal({
   const [showConfirm, setShowConfirm] = useState(false);
   const { toast } = useToast();
 
-  const { mutate: reportPost, loading: postLoading } = useCreatePostReport();
-  const { mutate: reportComment, loading: commentLoading } =
-    useCreateCommentReport();
+  const {
+    mutate: reportPost,
+    loading: postLoading,
+    error: postError,
+  } = useCreatePostReport();
+  const {
+    mutate: reportComment,
+    loading: commentLoading,
+    error: commentError,
+  } = useCreateCommentReport();
 
   const isSubmitting = postLoading || commentLoading;
 
@@ -78,41 +85,45 @@ export function ReportModal({
     // 이미 validation을 통과했으므로 selectedReason은 ReportReasonType임이 확실
     if (!selectedReason) return;
 
-    try {
-      const reportData = {
-        reasonType: selectedReason,
-        reasonDetail: selectedReason === "OTHER" ? customReason.trim() : null,
-      };
+    const reportData = {
+      reasonType: selectedReason,
+      reasonDetail: selectedReason === "OTHER" ? customReason.trim() : null,
+    };
 
-      if (type === "post") {
-        await reportPost({
-          postId: targetId,
-          body: reportData,
-        });
-      } else {
-        await reportComment({
-          commentId: targetId,
-          body: reportData,
-        });
-      }
+    let result;
+    if (type === "post") {
+      result = await reportPost({
+        postId: targetId,
+        body: reportData,
+      });
+    } else {
+      result = await reportComment({
+        commentId: targetId,
+        body: reportData,
+      });
+    }
 
+    // mutate 함수가 성공적으로 완료되었는지 확인
+    if (result) {
       toast({
         title: "신고가 접수되었습니다",
         description:
           "신고해 주셔서 감사합니다. 관리팀에서 검토 후 조치할 예정입니다.",
       });
-
       handleClose();
-    } catch (error) {
+    } else {
+      // hooks의 error 상태를 활용하여 구체적인 에러 메시지 표시
+      const errorMessage = type === "post" ? postError : commentError;
       toast({
         title: "신고 접수 실패",
         description:
+          errorMessage ||
           "신고 접수 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
         variant: "destructive",
       });
-    } finally {
-      setShowConfirm(false);
     }
+
+    setShowConfirm(false);
   };
 
   const handleClose = () => {

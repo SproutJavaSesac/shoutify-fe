@@ -1,6 +1,6 @@
 import {api} from "./client";
 import {
-    Comment,
+    Comment,CommentFetchResponse,
     CommentCreateContract,
     CommentCreateResponse,
     CommentDeleteContract,
@@ -49,9 +49,9 @@ export async function createComment({
 export async function getComment({
   postId,
   commentId,
-}: CommentPathParams): Promise<{ data: Comment }> {
-  return api.public.get<{ data: Comment }>(
-    COMMENT_API_ENDPOINTS.COMMENT_DETAIL({ postId, commentId })
+}: CommentPathParams): Promise<Comment> {
+  return api.public.get<Comment>(
+    COMMENT_API_ENDPOINTS.COMMENT_DETAIL_FOR_ADMIN({ postId, commentId })
   );
 }
 

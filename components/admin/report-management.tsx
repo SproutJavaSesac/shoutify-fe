@@ -6,7 +6,6 @@ import {
   FilterBar,
   FilterSearchBar,
   FilterSelect,
-  FilterSortSelect,
   Pagination,
 } from "@/components/commons";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +34,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
 import {
   REPORT_ACTION_OPTIONS,
   REPORT_REASON_OPTIONS,
@@ -82,7 +80,6 @@ export function ReportManagement() {
   const [processingAction, setProcessingAction] = useState<
     ReportProcessActionType | ""
   >("");
-  const [adminNote, setAdminNote] = useState("");
 
   // 원본 콘텐츠 조회 상태
   const [originalContent, setOriginalContent] = useState<{
@@ -95,6 +92,23 @@ export function ReportManagement() {
   });
 
   const { toast } = useToast();
+
+  // API hooks
+  const { data, loading, error, refetch } = useReportList({
+    page: currentPage,
+    size: 20,
+    sort: sortBy,
+    order: orderBy,
+    statusType: selectedStatus,
+    reasonType: selectedReason,
+    keyword: searchKeyword || undefined,
+  });
+
+  const {
+    mutate: processReport,
+    loading: processLoading,
+    error: processError,
+  } = useProcessReport();
 
   // 원본 콘텐츠 조회 함수
   const fetchOriginalContent = async (report: Report) => {
@@ -109,13 +123,12 @@ export function ReportManagement() {
         report.postId &&
         report.commentId
       ) {
-        const [post, commentResponse] = await Promise.all([
-          getPost(report.postId),
-          getComment({ postId: report.postId, commentId: report.commentId }),
-        ]);
+        const comment = await getComment({
+          postId: report.postId,
+          commentId: report.commentId,
+        });
         setOriginalContent({
-          post,
-          comment: commentResponse.data,
+          comment,
           loading: false,
         });
       }
@@ -127,19 +140,6 @@ export function ReportManagement() {
       });
     }
   };
-
-  // API hooks
-  const { data, loading, error, refetch } = useReportList({
-    page: currentPage,
-    size: 20,
-    sort: sortBy,
-    order: orderBy,
-    statusType: selectedStatus,
-    reasonType: selectedReason,
-    keyword: searchKeyword || undefined,
-  });
-
-  const { mutate: processReport, loading: processLoading } = useProcessReport();
 
   const handleSearch = () => {
     setCurrentPage(0);
@@ -156,7 +156,6 @@ export function ReportManagement() {
     refetch();
   };
 
-  // 정렬 옵션들
   const sortOptions = [
     { value: "createdAt-DESC", label: "최신순" },
     { value: "createdAt-ASC", label: "등록순" },
@@ -170,7 +169,6 @@ export function ReportManagement() {
       reportId: selectedReport.reportId,
       body: {
         action: processingAction,
-        adminNote: adminNote || undefined,
       },
     });
 
@@ -181,7 +179,6 @@ export function ReportManagement() {
       });
       setSelectedReport(null);
       setProcessingAction("");
-      setAdminNote("");
       refetch();
     }
   };
@@ -203,10 +200,12 @@ export function ReportManagement() {
         icon: XCircle,
         text: "거부됨",
       },
-    } as const satisfies Record<
-      ReportStatusType,
-      { color: string; icon: typeof Clock; text: string }
-    >;
+      POSTPONE: {
+        color: "bg-blue-100 text-blue-800",
+        icon: Clock,
+        text: "보류됨",
+      },
+    } as const;
 
     const { color, icon: Icon, text } = config[status] || config.PENDING;
 
@@ -240,15 +239,42 @@ export function ReportManagement() {
     }
   };
 
+  // 우선순위에 따른 행 스타일링
+  const getRowClassName = (report: Report) => {
+    const baseClass = "hover:bg-gray-50 cursor-pointer transition-colors";
+
+    // 높은 우선순위 - 긴급 (reportCount >= 5)
+    if (report.reportCount && report.reportCount >= 5) {
+      return `${baseClass} bg-red-50 border-l-4 border-l-red-500`;
+    }
+
+    // 중간 우선순위 - 주의 (reportCount >= 3)
+    if (report.reportCount && report.reportCount >= 3) {
+      return `${baseClass} bg-yellow-50 border-l-4 border-l-yellow-500`;
+    }
+
+    // 처리 완료된 항목은 투명하게 표시
+    if (report.statusType === "ACCEPTED" || report.statusType === "REJECTED") {
+      return `${baseClass} opacity-75`;
+    }
+
+    return `${baseClass} font-medium`;
+  };
+
   if (error) {
     return (
       <Card>
         <CardContent className="p-6">
           <div className="text-center">
             <AlertTriangle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">데이터 로딩 오류</h3>
+            <h3 className="text-lg font-semibold mb-2 text-red-600">
+              데이터 로딩 오류
+            </h3>
             <p className="text-muted-foreground mb-4">{error}</p>
-            <Button onClick={refetch}>다시 시도</Button>
+            <Button onClick={refetch} className="mr-2">
+              <Loader2 className="h-4 w-4 mr-2" />
+              다시 시도
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -257,9 +283,9 @@ export function ReportManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      {/* Header & Statistics */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Flag className="h-6 w-6" />
             신고 관리
@@ -267,27 +293,47 @@ export function ReportManagement() {
           <p className="text-muted-foreground mt-1">
             사용자 신고를 검토하고 적절한 조치를 취합니다
           </p>
+          {processError && (
+            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
+              ⚠️ 처리 오류: {processError}
+            </div>
+          )}
         </div>
 
         {data?.summary && (
-          <div className="flex gap-4 text-sm">
-            <div className="text-center">
-              <div className="font-bold text-lg text-yellow-600">
-                {data.summary.pending}
-              </div>
-              <div className="text-muted-foreground">대기</div>
-            </div>
-            <div className="text-center">
-              <div className="font-bold text-lg text-green-600">
-                {data.summary.approved}
-              </div>
-              <div className="text-muted-foreground">승인</div>
-            </div>
-            <div className="text-center">
-              <div className="font-bold text-lg text-red-600">
-                {data.summary.rejected}
-              </div>
-              <div className="text-muted-foreground">거부</div>
+          <div className="lg:col-span-1">
+            <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
+              <Card className="border-l-4 border-l-yellow-500">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        처리 대기
+                      </p>
+                      <p className="text-2xl font-bold text-yellow-600">
+                        {data.summary.pending}
+                      </p>
+                    </div>
+                    <Clock className="h-8 w-8 text-yellow-500" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-l-green-500">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        승인 완료
+                      </p>
+                      <p className="text-2xl font-bold text-green-600">
+                        {data.summary.approved}
+                      </p>
+                    </div>
+                    <CheckCircle className="h-8 w-8 text-green-500" />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         )}
@@ -295,82 +341,48 @@ export function ReportManagement() {
 
       {/* Filters */}
       <FilterBar title="신고 필터" onReset={handleResetFilters}>
-        {/* 첫 번째 줄: 검색과 정렬 */}
         <div className="flex gap-4 items-center w-full">
           <FilterSearchBar
             onSearch={(query) => {
               setSearchKeyword(query);
               handleSearch();
             }}
-            placeholder="신고 내용 검색..."
-            initialValue={searchKeyword}
+            placeholder="신고 내용이나 사용자 검색..."
             className="flex-1"
           />
 
-          <FilterSortSelect
-            options={sortOptions}
-            value={`${sortBy}-${orderBy}`}
+          <FilterSelect
+            options={REPORT_STATUS_OPTIONS}
+            value={selectedStatus}
             onValueChange={(value) => {
-              const [sort, order] = value.split("-") as [
-                ReportSortType,
-                "ASC" | "DESC",
-              ];
-              setSortBy(sort);
-              setOrderBy(order);
-              handleSearch();
+              setSelectedStatus(value as ReportStatusType | undefined);
             }}
-            placeholder="정렬"
-            className="w-28"
+            placeholder="상태 전체"
+            className="min-w-[120px]"
           />
-        </div>
 
-        {/* 두 번째 줄: 상태와 사유 필터 */}
-        <div className="flex gap-4 items-center">
-          <div className="flex gap-2 items-center">
-            <span className="text-sm text-gray-600 whitespace-nowrap">
-              필터:
-            </span>
-            <FilterSelect
-              options={REPORT_STATUS_OPTIONS}
-              value={selectedStatus ?? "__ALL__"}
-              onValueChange={(value) =>
-                setSelectedStatus(
-                  value === "__ALL__" ? undefined : (value as ReportStatusType)
-                )
-              }
-              placeholder="상태"
-              className="w-24"
-              allOptionLabel="전체"
-            />
-
-            <FilterSelect
-              options={REPORT_REASON_OPTIONS}
-              value={selectedReason ?? "__ALL__"}
-              onValueChange={(value) =>
-                setSelectedReason(
-                  value === "__ALL__" ? undefined : (value as ReportReasonType)
-                )
-              }
-              placeholder="사유"
-              className="w-32"
-              allOptionLabel="전체"
-            />
-          </div>
+          <FilterSelect
+            options={REPORT_REASON_OPTIONS}
+            value={selectedReason}
+            onValueChange={(value) => {
+              setSelectedReason(value as ReportReasonType | undefined);
+            }}
+            placeholder="사유 전체"
+            className="min-w-[140px]"
+          />
         </div>
       </FilterBar>
 
-      {/* Results */}
+      {/* Reports Table */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>
-              신고 목록
-              {data?.pagination && (
-                <span className="text-sm font-normal text-muted-foreground ml-2">
-                  (총 {data.pagination.totalCount}개)
-                </span>
-              )}
-            </span>
+            <span>신고 목록</span>
+            {data?.reports.length && (
+              <span className="text-sm font-normal text-muted-foreground">
+                총 {data.pagination.totalCount}건
+              </span>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -390,24 +402,27 @@ export function ReportManagement() {
                     <TableHead>신고 횟수</TableHead>
                     <TableHead>상태</TableHead>
                     <TableHead>신고 일시</TableHead>
-                    <TableHead className="text-center">
-                      내용보기 / 처리
-                    </TableHead>
+                    <TableHead>최종 수정</TableHead>
+                    <TableHead className="text-center">작업</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {data.reports.map((report) => (
-                    <TableRow key={report.reportId}>
+                    <TableRow
+                      key={report.reportId}
+                      className={getRowClassName(report)}
+                    >
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          {report.reportType === "POST" ? (
-                            <MessageSquare className="h-4 w-4" />
-                          ) : (
-                            <MessageSquare className="h-4 w-4" />
-                          )}
+                          <MessageSquare className="h-4 w-4" />
                           <div>
                             <div className="font-medium">
                               {report.reportType === "POST" ? "게시글" : "댓글"}
+                              {report.reportCount >= 5 && (
+                                <Badge className="ml-1 bg-red-100 text-red-800 text-xs">
+                                  긴급
+                                </Badge>
+                              )}
                             </div>
                             <div className="text-sm text-muted-foreground">
                               ID:{" "}
@@ -418,27 +433,41 @@ export function ReportManagement() {
                           </div>
                         </div>
                       </TableCell>
+
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4" />
-                          {report.reporterNickname ||
-                            `사용자 ${report.reporterId}`}
+                          <div>
+                            <div className="font-medium">
+                              {report.reporterNickname ||
+                                `사용자 ${report.reporterId}`}
+                            </div>
+                          </div>
                         </div>
                       </TableCell>
+
                       <TableCell>
                         <div>
-                          <div>{getReasonLabel(report.reasonType)}</div>
+                          <div className="font-medium">
+                            {getReasonLabel(report.reasonType)}
+                          </div>
                           {report.reasonDetail && (
-                            <div className="text-sm text-muted-foreground">
+                            <div
+                              className="text-sm text-muted-foreground truncate max-w-[200px]"
+                              title={report.reasonDetail}
+                            >
                               {report.reasonDetail}
                             </div>
                           )}
                         </div>
                       </TableCell>
+
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Flag className="h-4 w-4 text-red-500" />
-                          <span className="font-semibold text-red-600">
+                          <span
+                            className={`font-bold ${report.reportCount >= 5 ? "text-red-600" : report.reportCount >= 3 ? "text-yellow-600" : "text-gray-600"}`}
+                          >
                             {report.reportCount}
                           </span>
                           <span className="text-sm text-muted-foreground">
@@ -446,42 +475,82 @@ export function ReportManagement() {
                           </span>
                         </div>
                       </TableCell>
+
                       <TableCell>{getStatusBadge(report.statusType)}</TableCell>
-                      <TableCell>{formatDate(report.createdAt)}</TableCell>
+
+                      <TableCell>
+                        <div className="text-sm">
+                          <div>{formatDate(report.createdAt)}</div>
+                          <div className="text-xs text-muted-foreground">
+                            신고 접수
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      <TableCell>
+                        <div className="text-sm">
+                          {report.updatedAt ? (
+                            <>
+                              <div>{formatDate(report.updatedAt)}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {report.statusType === "PENDING"
+                                  ? "최종 수정"
+                                  : "처리 완료"}
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-muted-foreground text-xs">
+                              미수정
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+
                       <TableCell>
                         <div className="flex items-center gap-2 justify-center">
-                          {/* 원본 콘텐츠 보기 버튼 */}
-                          <Dialog
-                            onOpenChange={(open) =>
-                              !open && setOriginalContent({ loading: false })
-                            }
-                          >
+                          <Dialog>
                             <DialogTrigger asChild>
+                              {/* 처리 버튼 */}
                               <Button
-                                variant="ghost"
+                                variant={
+                                  report.statusType === "PENDING"
+                                    ? "default"
+                                    : "ghost"
+                                }
                                 size="sm"
-                                onClick={() => fetchOriginalContent(report)}
+                                onClick={() => {
+                                  setSelectedReport(report);
+                                  fetchOriginalContent(report);
+                                }}
+                                className={
+                                  report.statusType === "PENDING"
+                                    ? "bg-red-600 hover:bg-red-700"
+                                    : ""
+                                }
                               >
-                                <Eye className="h-4 w-4 mr-1" />
-                                원본 보기
+                                {report.statusType === "PENDING" ? (
+                                  <>
+                                    <AlertTriangle className="h-4 w-4" />
+                                    처리하기
+                                  </>
+                                ) : (
+                                  <>
+                                    <Eye className="h-4 w-4" />
+                                    상세보기
+                                  </>
+                                )}
                               </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto">
                               <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2">
-                                  <Flag className="h-5 w-5" />
-                                  신고된{" "}
-                                  {report.reportType === "POST"
-                                    ? "게시글"
-                                    : "댓글"}{" "}
-                                  원본
-                                </DialogTitle>
+                                <DialogTitle>신고 처리</DialogTitle>
                               </DialogHeader>
 
                               <div className="space-y-6">
                                 {/* 신고 정보 */}
                                 <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                                  <h4 className="font-semibold text-red-800 mb-2">
+                                  <h4 className="font-semibold text-red-800 mb-3 flex items-center gap-2">
+                                    <Flag className="h-4 w-4" />
                                     신고 정보
                                   </h4>
                                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -494,223 +563,275 @@ export function ReportManagement() {
                                     </div>
                                     <div>
                                       <span className="font-medium">
+                                        신고 사유:
+                                      </span>{" "}
+                                      {getReasonLabel(report.reasonType)}
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">
                                         신고 일시:
                                       </span>{" "}
                                       {formatDate(report.createdAt)}
                                     </div>
                                     <div>
                                       <span className="font-medium">
-                                        신고 사유:
+                                        처리 일시:
                                       </span>{" "}
-                                      {getReasonLabel(report.reasonType)}
+                                      {report.statusType === "PENDING"
+                                        ? "대기 중"
+                                        : formatDate(report.updatedAt)}
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">
+                                        신고 횟수:
+                                      </span>{" "}
+                                      <span className="font-bold text-red-600">
+                                        {report.reportCount}회
+                                      </span>
                                     </div>
                                     <div>
                                       <span className="font-medium">상태:</span>{" "}
                                       {getStatusBadge(report.statusType)}
                                     </div>
-                                    {report.reasonDetail && (
-                                      <div className="col-span-2">
-                                        <span className="font-medium">
-                                          상세 사유:
+                                    {report.updatedAt &&
+                                      report.updatedAt !== report.createdAt && (
+                                        <div>
+                                          <span className="font-medium">
+                                            최종 수정:
+                                          </span>{" "}
+                                          {formatDate(report.updatedAt)}
+                                        </div>
+                                      )}
+                                  </div>
+                                  {report.reasonDetail && (
+                                    <div className="mt-3">
+                                      <span className="font-medium">
+                                        상세 사유:
+                                      </span>
+                                      <p className="mt-1 text-gray-600 bg-white p-2 rounded border">
+                                        {report.reasonDetail}
+                                      </p>
+                                    </div>
+                                  )}
+                                  {/* Original content 삭제 여부 */}
+                                  <div className="mt-3">
+                                    <span className="font-medium">
+                                      원본 삭제 여부:
+                                    </span>{" "}
+                                    {report.reportType === "POST" ? (
+                                      originalContent.post &&
+                                      originalContent.post.isDeleted ? (
+                                        <span className="text-red-600">
+                                          삭제됨
                                         </span>
-                                        <p className="mt-1 text-gray-600">
-                                          {report.reasonDetail}
-                                        </p>
-                                      </div>
+                                      ) : (
+                                        <span className="text-green-600">
+                                          활성
+                                        </span>
+                                      )
+                                    ) : originalContent.comment &&
+                                      originalContent.comment.isDeleted ? (
+                                      <span className="text-red-600">
+                                        삭제됨
+                                      </span>
+                                    ) : (
+                                      <span className="text-green-600">
+                                        활성
+                                      </span>
                                     )}
                                   </div>
                                 </div>
+                                {/* 원본 내용 */}
+                                <div className="mt-4">
+                                  <span className="font-medium">
+                                    원본 내용:
+                                  </span>
+                                  <p className="mt-1 text-gray-600 bg-white p-2 rounded border">
+                                    {
+                                      // originalContent가 loading인지, error인지 확인, ReportType에 따라서 post/comment 내용 확인하기
+                                      originalContent.loading ? (
+                                        // Loading... 동적으로 보이게 하기.
+                                        <p className="mt-1 text-gray-600 bg-white p-2 rounded border">
+                                          Loading...
+                                        </p>
+                                      ) : originalContent.error ? (
+                                        <p className="mt-1 text-gray-600 bg-white p-2 rounded border">
+                                          Error: {originalContent.error}
+                                        </p>
+                                      ) : (
+                                        originalContent && (
+                                          <p className="mt-1 text-gray-600 bg-white p-2 rounded border">
+                                            {originalContent.post
+                                              ? originalContent.post
+                                                  .afterContent
+                                              : originalContent.comment
+                                                ? originalContent.comment
+                                                    .content
+                                                : null}
+                                          </p>
+                                        )
+                                      )
+                                    }
+                                  </p>
+                                </div>
 
-                                {/* 원본 콘텐츠 */}
-                                <div className="space-y-4">
-                                  {originalContent.loading ? (
-                                    <div className="flex items-center justify-center py-8">
-                                      <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                                      원본 콘텐츠를 불러오는 중...
+                                {/* Process Form */}
+                                {selectedReport &&
+                                selectedReport.statusType === "PENDING" ? (
+                                  <div className="border-t pt-4 space-y-4">
+                                    <h3 className="font-medium flex items-center">
+                                      <AlertTriangle className="h-5 w-5 mr-2 text-red-500" />
+                                      신고 처리
+                                    </h3>
+
+                                    <div>
+                                      <Label htmlFor="action">처리 액션</Label>
+                                      <Select
+                                        value={processingAction}
+                                        onValueChange={(value) =>
+                                          setProcessingAction(
+                                            value as ReportProcessActionType
+                                          )
+                                        }
+                                      >
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="처리 방법을 선택하세요" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {REPORT_ACTION_OPTIONS.map(
+                                            (option) => (
+                                              <SelectItem
+                                                key={option.value}
+                                                value={option.value}
+                                              >
+                                                {option.label}
+                                              </SelectItem>
+                                            )
+                                          )}
+                                        </SelectContent>
+                                      </Select>
                                     </div>
-                                  ) : originalContent.error ? (
-                                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                      <p className="text-yellow-800">
-                                        {originalContent.error}
+                                    <div className="flex space-x-3 pt-4">
+                                      <Button
+                                        variant="outline"
+                                        onClick={() => setSelectedReport(null)}
+                                        className="flex-1"
+                                      >
+                                        취소
+                                      </Button>
+                                      <Button
+                                        onClick={handleProcessReport}
+                                        disabled={
+                                          processLoading || !processingAction
+                                        }
+                                        className="flex-1 bg-red-600 hover:bg-red-700"
+                                      >
+                                        {processLoading
+                                          ? "처리 중..."
+                                          : "처리 완료"}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="border-t pt-4">
+                                    <h3 className="font-medium flex items-center mb-2">
+                                      <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
+                                      처리 완료된 신고
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground">
+                                      이 신고는 이미 처리되었습니다.
+                                    </p>
+                                  </div>
+                                )}
+                                {/* 처리 섹션 */}
+                                {/* {report.statusType === "PENDING" ? (
+                                  <div className="border-t pt-4 space-y-4">
+                                    <h3 className="font-medium flex items-center">
+                                      <AlertTriangle className="h-5 w-5 mr-2 text-red-500" />
+                                      신고 처리
+                                      {report.reportCount >= 5 && (
+                                        <Badge className="ml-2 bg-red-100 text-red-800">
+                                          긴급 {report.reportCount}회
+                                        </Badge>
+                                      )}
+                                    </h3>
+
+                                    <div>
+                                      <Label>처리 액션</Label>
+                                      <div className="grid grid-cols-2 gap-3 mt-2">
+                                        {REPORT_ACTION_OPTIONS.map((option) => (
+                                          <Button
+                                            key={option.value}
+                                            variant={
+                                              processingAction === option.value
+                                                ? "default"
+                                                : "outline"
+                                            }
+                                            className="p-4 h-auto flex flex-col items-center space-y-2"
+                                            onClick={() => {
+                                              setProcessingAction(
+                                                option.value as ReportProcessActionType
+                                              );
+                                              setSelectedReport(report);
+                                            }}
+                                          >
+                                            <div className="text-sm font-medium">
+                                              {option.label}
+                                            </div>
+                                          </Button>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    {processingAction && (
+                                      <div className="flex space-x-3 pt-4">
+                                        <Button
+                                          variant="outline"
+                                          onClick={() =>
+                                            setProcessingAction("")
+                                          }
+                                          className="flex-1"
+                                        >
+                                          취소
+                                        </Button>
+                                        <Button
+                                          onClick={handleProcessReport}
+                                          disabled={
+                                            !processingAction || processLoading
+                                          }
+                                          className="flex-1"
+                                        >
+                                          {processLoading ? (
+                                            <>
+                                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                              처리 중...
+                                            </>
+                                          ) : (
+                                            <>
+                                              <CheckCircle className="h-4 w-4 mr-2" />
+                                              처리 확정
+                                            </>
+                                          )}
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="border-t pt-4">
+                                    <div className="bg-gray-50 p-4 rounded-lg">
+                                      <h3 className="font-medium flex items-center mb-3">
+                                        <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
+                                        처리 완료된 신고
+                                      </h3>
+                                      <p className="text-sm text-muted-foreground">
+                                        이 신고는 이미 처리되었습니다.
                                       </p>
                                     </div>
-                                  ) : (
-                                    <>
-                                      {originalContent.post &&
-                                        report.reportType === "POST" && (
-                                          <div className="border rounded-lg p-4">
-                                            <h4 className="font-semibold mb-3">
-                                              게시글 원본
-                                            </h4>
-                                            <div className="space-y-3">
-                                              <div>
-                                                <span className="text-sm font-medium text-gray-500">
-                                                  제목:
-                                                </span>
-                                                <p className="mt-1 font-medium">
-                                                  {
-                                                    originalContent.post
-                                                      .afterTitle
-                                                  }
-                                                </p>
-                                              </div>
-                                              <div>
-                                                <span className="text-sm font-medium text-gray-500">
-                                                  작성자:
-                                                </span>
-                                                <p className="mt-1">
-                                                  {
-                                                    originalContent.post
-                                                      .nickname
-                                                  }
-                                                </p>
-                                              </div>
-                                              <div>
-                                                <span className="text-sm font-medium text-gray-500">
-                                                  내용:
-                                                </span>
-                                                <div className="mt-1 p-3 bg-gray-50 rounded max-h-64 overflow-y-auto">
-                                                  <p className="whitespace-pre-wrap">
-                                                    {
-                                                      originalContent.post
-                                                        .afterContent
-                                                    }
-                                                  </p>
-                                                </div>
-                                              </div>
-                                              <div className="text-xs text-gray-500">
-                                                작성일:{" "}
-                                                {format(
-                                                  new Date(
-                                                    originalContent.post.createdAt
-                                                  ),
-                                                  "yyyy-MM-dd HH:mm",
-                                                  { locale: ko }
-                                                )}
-                                              </div>
-                                            </div>
-                                          </div>
-                                        )}
-
-                                      {originalContent.comment &&
-                                        report.reportType === "COMMENT" && (
-                                          <>
-                                            {/* 원본 게시글 */}
-                                            {originalContent.post && (
-                                              <div className="border rounded-lg p-4 bg-gray-50">
-                                                <h4 className="font-semibold mb-3">
-                                                  원본 게시글
-                                                </h4>
-                                                <div className="space-y-2">
-                                                  <p className="font-medium">
-                                                    {
-                                                      originalContent.post
-                                                        .afterTitle
-                                                    }
-                                                  </p>
-                                                  <p className="text-sm text-gray-600 line-clamp-3">
-                                                    {
-                                                      originalContent.post
-                                                        .afterContent
-                                                    }
-                                                  </p>
-                                                  <div className="text-xs text-gray-500">
-                                                    작성자:{" "}
-                                                    {
-                                                      originalContent.post
-                                                        .nickname
-                                                    }{" "}
-                                                    | 작성일:{" "}
-                                                    {format(
-                                                      new Date(
-                                                        originalContent.post.createdAt
-                                                      ),
-                                                      "yyyy-MM-dd HH:mm",
-                                                      { locale: ko }
-                                                    )}
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            )}
-
-                                            {/* 신고된 댓글 */}
-                                            <div className="border rounded-lg p-4">
-                                              <h4 className="font-semibold mb-3">
-                                                댓글 원본
-                                              </h4>
-                                              <div className="space-y-3">
-                                                <div>
-                                                  <span className="text-sm font-medium text-gray-500">
-                                                    작성자:
-                                                  </span>
-                                                  <p className="mt-1">
-                                                    {
-                                                      originalContent.comment
-                                                        .commenterNickname
-                                                    }
-                                                  </p>
-                                                </div>
-                                                <div>
-                                                  <span className="text-sm font-medium text-gray-500">
-                                                    내용:
-                                                  </span>
-                                                  <div className="mt-1 p-3 bg-gray-50 rounded">
-                                                    <p className="whitespace-pre-wrap">
-                                                      {
-                                                        originalContent.comment
-                                                          .content
-                                                      }
-                                                    </p>
-                                                  </div>
-                                                </div>
-                                                <div className="text-xs text-gray-500">
-                                                  작성일:{" "}
-                                                  {format(
-                                                    new Date(
-                                                      originalContent.comment.createdAt
-                                                    ),
-                                                    "yyyy-MM-dd HH:mm",
-                                                    { locale: ko }
-                                                  )}
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </>
-                                        )}
-                                    </>
-                                  )}
-                                </div>
+                                  </div>
+                                )} */}
                               </div>
                             </DialogContent>
                           </Dialog>
-
-                          {/* 처리 버튼 */}
-                          <Button
-                            variant={
-                              report.statusType === "PENDING"
-                                ? "default"
-                                : "ghost"
-                            }
-                            size="sm"
-                            onClick={() => setSelectedReport(report)}
-                            className={
-                              report.statusType === "PENDING"
-                                ? "bg-red-600 hover:bg-red-700"
-                                : ""
-                            }
-                          >
-                            {report.statusType === "PENDING" ? (
-                              <>
-                                <AlertTriangle className="h-4 w-4" />
-                                처리하기
-                              </>
-                            ) : (
-                              <>
-                                <Eye className="h-4 w-4" />
-                                상세보기
-                              </>
-                            )}
-                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -720,11 +841,13 @@ export function ReportManagement() {
 
               {/* 페이지네이션 */}
               {data?.pagination && (
-                <Pagination
-                  pagination={data.pagination}
-                  onPageChange={setCurrentPage}
-                  showFirstLastButtons={true}
-                />
+                <div className="mt-4">
+                  <Pagination
+                    pagination={data.pagination}
+                    onPageChange={setCurrentPage}
+                    showFirstLastButtons={true}
+                  />
+                </div>
               )}
             </div>
           ) : (
@@ -738,147 +861,6 @@ export function ReportManagement() {
           )}
         </CardContent>
       </Card>
-
-      {/* Report Detail Dialog */}
-      <Dialog
-        open={!!selectedReport}
-        onOpenChange={() => setSelectedReport(null)}
-      >
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>신고 상세 정보</DialogTitle>
-          </DialogHeader>
-
-          {selectedReport && (
-            <div className="space-y-6 mt-4">
-              {/* Report Info */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium">신고 대상</Label>
-                  <p className="mt-1">
-                    {selectedReport.reportType === "POST" ? "게시글" : "댓글"}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">현재 상태</Label>
-                  <div className="mt-1">
-                    {getStatusBadge(selectedReport.statusType)}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">신고 사유</Label>
-                  <p className="mt-1">
-                    {getReasonLabel(selectedReport.reasonType)}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">신고 일시</Label>
-                  <p className="mt-1">{formatDate(selectedReport.createdAt)}</p>
-                </div>
-                {selectedReport.updatedAt && (
-                  <div>
-                    <Label className="text-sm font-medium">처리 일시</Label>
-                    <p className="mt-1">
-                      {formatDate(selectedReport.updatedAt)}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Content ID */}
-              <div>
-                <Label className="text-sm font-medium">신고된 콘텐츠 ID</Label>
-                <div className="mt-1 p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm">
-                    {selectedReport.reportType === "POST"
-                      ? `게시글 ID: ${selectedReport.postId}`
-                      : `댓글 ID: ${selectedReport.commentId}`}
-                  </p>
-                </div>
-              </div>
-
-              {/* Detail Reason */}
-              {selectedReport.reasonDetail && (
-                <div>
-                  <Label className="text-sm font-medium">상세 사유</Label>
-                  <p className="mt-1 p-3 bg-gray-50 rounded-lg text-sm">
-                    {selectedReport.reasonDetail}
-                  </p>
-                </div>
-              )}
-
-              {/* Process Form */}
-              {selectedReport.statusType === "PENDING" ? (
-                <div className="border-t pt-4 space-y-4">
-                  <h3 className="font-medium flex items-center">
-                    <AlertTriangle className="h-5 w-5 mr-2 text-red-500" />
-                    신고 처리
-                  </h3>
-
-                  <div>
-                    <Label htmlFor="action">처리 액션</Label>
-                    <Select
-                      value={processingAction}
-                      onValueChange={(value) =>
-                        setProcessingAction(value as ReportProcessActionType)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="처리 방법을 선택하세요" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {REPORT_ACTION_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="admin-note">관리자 메모 (선택사항)</Label>
-                    <Textarea
-                      id="admin-note"
-                      value={adminNote}
-                      onChange={(e) => setAdminNote(e.target.value)}
-                      placeholder="처리 사유나 추가 메모를 입력하세요"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="flex space-x-3 pt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => setSelectedReport(null)}
-                      className="flex-1"
-                    >
-                      취소
-                    </Button>
-                    <Button
-                      onClick={handleProcessReport}
-                      disabled={processLoading || !processingAction}
-                      className="flex-1 bg-red-600 hover:bg-red-700"
-                    >
-                      {processLoading ? "처리 중..." : "처리 완료"}
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="border-t pt-4">
-                  <h3 className="font-medium flex items-center mb-2">
-                    <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
-                    처리 완료된 신고
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    이 신고는 이미 처리되었습니다.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
