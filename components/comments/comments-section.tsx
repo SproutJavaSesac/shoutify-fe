@@ -1,15 +1,9 @@
 "use client";
 
 import { CommentForm } from "@/components/comments/comment-form";
-import {
-  DeleteButton,
-  Pagination,
-  ReactionButtons,
-  ReportButton,
-} from "@/components/commons";
+import { CommentItem } from "@/components/comments/comment-item";
+import { Pagination } from "@/components/commons";
 import { ReportModal } from "@/components/report-modal";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
@@ -18,15 +12,7 @@ import {
   useCommentDelete,
   useCommentList,
 } from "@/lib/hooks/useComments";
-import {
-  useCommentReactionCreate,
-  useCommentReactionDelete,
-  useCommentReactionUpdate,
-} from "@/lib/hooks/useReactions";
-import { utcToLocaleDateString } from "@/lib/utils";
 import { Comment, CommentSortType } from "@/types/comments";
-import { ReactionLabelType } from "@/types/reactions";
-import { MessageCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 export function CommentsSection({
@@ -39,11 +25,6 @@ export function CommentsSection({
     string | number | null
   >(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // 각 댓글별 내 반응 상태 (commentId -> ReactionLabelType)
-  const [myReactions, setMyReactions] = useState<
-    Record<string | number, ReactionLabelType | null>
-  >({});
 
   // 각 댓글별 삭제 로딩 상태
   const [deletingComments, setDeletingComments] = useState<
@@ -113,7 +94,9 @@ export function CommentsSection({
         variant: "destructive",
       });
     },
-  }); // 댓글 삭제
+  });
+
+  // 댓글 삭제
   const { mutate: deleteComment } = useCommentDelete({
     onSuccess: () => {
       toast({
@@ -129,105 +112,6 @@ export function CommentsSection({
       });
     },
   });
-
-  // 댓글 리액션 훅들
-  const { mutate: createCommentReaction } = useCommentReactionCreate({
-    onSuccess: () => {
-      toast({
-        description: "반응을 표시했습니다.",
-      });
-      refetch(); // 댓글 목록 새로고침하여 최신 반응 상태 반영
-    },
-    onError: (errorMessage) => {
-      toast({
-        title: "반응 실패",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      // 실패 시 상태 롤백은 필요없음 (미리 상태 업데이트하지 않으므로)
-    },
-  });
-
-  const { mutate: updateCommentReaction } = useCommentReactionUpdate({
-    onSuccess: () => {
-      toast({
-        description: "반응을 변경했습니다.",
-      });
-      refetch();
-    },
-    onError: (errorMessage) => {
-      toast({
-        title: "반응 변경 실패",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      // 실패 시 상태 롤백은 필요없음 (미리 상태 업데이트하지 않으므로)
-    },
-  });
-
-  const { mutate: deleteCommentReaction } = useCommentReactionDelete({
-    onSuccess: () => {
-      toast({
-        description: "반응을 취소했습니다.",
-      });
-      refetch();
-    },
-    onError: (errorMessage) => {
-      toast({
-        title: "반응 취소 실패",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      // 실패 시 상태 롤백은 필요없음 (미리 상태 업데이트하지 않으므로)
-    },
-  });
-
-  // 댓글 리액션 핸들러 - 게시글과 동일한 로직
-  const handleCommentReaction = (
-    commentId: string | number,
-    reactionType: ReactionLabelType
-  ) => {
-    const currentReaction = myReactions[commentId];
-
-    // 현재 선택된 반응과 같은 반응을 다시 클릭한 경우 - 삭제
-    if (currentReaction === reactionType) {
-      console.log("Deleting comment reaction:", {
-        postId,
-        commentId,
-        reactionType,
-      });
-      deleteCommentReaction({
-        paths: { postId, commentId },
-      });
-      // 성공 시에만 상태 업데이트 (onSuccess 콜백에서 처리)
-    }
-    // 처음 반응을 선택하는 경우 - 생성
-    else if (!currentReaction) {
-      console.log("Creating comment reaction:", {
-        postId,
-        commentId,
-        reactionType,
-      });
-      createCommentReaction({
-        paths: { postId, commentId },
-        body: { type: reactionType },
-      });
-      // 성공 시에만 상태 업데이트 (onSuccess 콜백에서 처리)
-    }
-    // 다른 반응으로 변경하는 경우 - 수정
-    else {
-      console.log("Updating comment reaction:", {
-        postId,
-        commentId,
-        reactionType,
-      });
-      updateCommentReaction({
-        paths: { postId, commentId },
-        body: { type: reactionType },
-      });
-      // 성공 시에만 상태 업데이트 (onSuccess 콜백에서 처리)
-    }
-  };
 
   // 하이라이트된 댓글로 스크롤
   useEffect(() => {
@@ -311,134 +195,15 @@ export function CommentsSection({
     setSortType(newSort);
   };
 
+  // 답글 토글 핸들러
+  const handleReply = (commentId: string | number) => {
+    setReplyingTo(replyingTo === commentId ? null : commentId);
+  };
+
   // order 순서로 정렬된 댓글 목록 생성 - 서버에서 정렬된 데이터를 order 순으로만 정렬
   const sortedComments = comments
     ? [...comments].sort((a, b) => a.order - b.order)
     : [];
-
-  // 댓글 렌더링 함수
-  const renderComment = (comment: Comment) => {
-    const isHighlighted = comment.commentId === highlightedCommentId;
-    const isReply = comment.level > 0;
-
-    // level에 따른 들여쓰기 계산 (level 1당 32px)
-    const indentStyle = {
-      marginLeft: `${comment.level * 32}px`,
-    };
-
-    return (
-      <div
-        key={comment.commentId}
-        ref={isHighlighted ? highlightRef : undefined}
-        style={indentStyle}
-        className={`border rounded-lg p-4 ${
-          isReply ? "bg-gray-50" : "bg-white"
-        } ${isHighlighted ? "ring-2 ring-blue-300 bg-blue-50" : ""}`}
-      >
-        {/* 댓글 헤더 */}
-        <div className="flex items-start justify-between mb-2">
-          <div className="flex items-center space-x-2 flex-1 min-w-0">
-            <span className="font-medium text-gray-900 truncate">
-              {comment.commenterNickname}
-            </span>
-            <span className="text-xs text-gray-500 whitespace-nowrap">
-              {utcToLocaleDateString(comment.createdAt)}
-            </span>
-            {comment.isMine && (
-              <Badge variant="outline" className="text-xs whitespace-nowrap">
-                내 댓글
-              </Badge>
-            )}
-            {/* level 표시 (개발용 - 나중에 제거) */}
-            <span className="text-xs text-gray-400 whitespace-nowrap">
-              level: {comment.level}
-            </span>
-          </div>
-
-          <div className="flex items-center space-x-2 flex-shrink-0 ml-4">
-            {/* 신고 버튼 - 내 댓글이 아닌 경우에만 표시 */}
-            {!comment.isMine && (
-              <ReportButton
-                onClick={() => handleReportComment(comment)}
-                className="text-xs px-2 py-1 h-6 min-w-[40px] text-gray-500 hover:text-red-500"
-                size="sm"
-              >
-                신고
-              </ReportButton>
-            )}
-
-            {/* 삭제 버튼 */}
-            <DeleteButton
-              isMine={
-                comment.commenterId ? comment.commenterId === user?.id : false
-              }
-              onClick={() => handleDeleteComment(comment.commentId)}
-              className="text-xs px-2 py-1 h-6 min-w-[40px] text-red-500 hover:text-red-700"
-              size="sm"
-              variant="ghost"
-              confirmDescription="이 댓글을 삭제하시겠습니까?"
-              disabled={deletingComments.has(comment.commentId)}
-            />
-          </div>
-        </div>
-
-        {/* 댓글 내용 */}
-        <p className="text-gray-800 mb-3 whitespace-pre-line">
-          {comment.content}
-        </p>
-
-        {/* 댓글 액션 (반응, 답글) */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            {/* 반응 버튼들 */}
-            <ReactionButtons
-              reactions={comment.reactions || {}}
-              myReaction={myReactions[comment.commentId]}
-              onReactionClick={(reactionType) =>
-                handleCommentReaction(comment.commentId, reactionType)
-              }
-              isAuthenticated={!!user}
-              size="sm"
-              showAllReactions={true}
-            />
-          </div>
-
-          {/* 답글 버튼 (대댓글까지 표시) */}
-          {comment.level < 2 && !comment.isDeleted && !comment.isReported && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setReplyingTo(
-                  replyingTo === comment.commentId ? null : comment.commentId
-                );
-              }}
-              className="text-xs"
-            >
-              <MessageCircle className="h-3 w-3 mr-1" />
-              답글
-            </Button>
-          )}
-        </div>
-
-        {/* 답글 작성 폼 */}
-        {comment.level === 0 && replyingTo === comment.commentId && (
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-            <CommentForm
-              placeholder="답글을 입력하세요..."
-              onSubmit={(content) =>
-                handleReplySubmit(content, comment.commentId)
-              }
-              onCancel={() => setReplyingTo(null)}
-              showCancel={true}
-              minHeight="min-h-[80px]"
-              submitLabel="답글 등록"
-            />
-          </div>
-        )}
-      </div>
-    );
-  };
 
   if (loading) {
     return (
@@ -485,7 +250,39 @@ export function CommentsSection({
           {/* 댓글 목록 */}
           {sortedComments && sortedComments.length > 0 ? (
             <div className="space-y-4">
-              {sortedComments.map((comment) => renderComment(comment))}
+              {sortedComments.map((comment) => (
+                <div key={comment.commentId}>
+                  <CommentItem
+                    comment={comment}
+                    postId={postId}
+                    isHighlighted={comment.commentId === highlightedCommentId}
+                    onReply={handleReply}
+                    onDelete={handleDeleteComment}
+                    onReport={handleReportComment}
+                    highlightRef={
+                      comment.commentId === highlightedCommentId
+                        ? (highlightRef as any)
+                        : undefined
+                    }
+                    isDeleting={deletingComments.has(comment.commentId)}
+                  />
+                  {/* 답글 작성 폼 */}
+                  {comment.level === 0 && replyingTo === comment.commentId && (
+                    <div className="mt-4 ml-8 p-3 bg-gray-50 rounded-lg">
+                      <CommentForm
+                        placeholder="답글을 입력하세요..."
+                        onSubmit={(content) =>
+                          handleReplySubmit(content, comment.commentId)
+                        }
+                        onCancel={() => setReplyingTo(null)}
+                        showCancel={true}
+                        minHeight="min-h-[80px]"
+                        submitLabel="답글 등록"
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">

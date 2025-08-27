@@ -16,6 +16,8 @@ interface ReactionButtonsProps {
   isAuthenticated?: boolean;
   // Auth wrapper 함수 (withAuth에서 자동 주입됨)
   executeWithAuth?: (action: () => void) => void;
+  // 로딩 상태
+  isLoading?: boolean;
   // 스타일 옵션
   size?: "sm" | "default" | "lg";
   className?: string;
@@ -31,6 +33,7 @@ export function BaseReactionButtons({
   onReactionClick,
   isAuthenticated = false,
   executeWithAuth,
+  isLoading = false,
   size = "sm",
   className = "",
   showAllReactions = true,
@@ -112,9 +115,11 @@ export function BaseReactionButtons({
                 size="sm"
                 className={`${getButtonSize()} ${
                   isSelected ? "bg-blue-100 ring-1 ring-blue-300" : ""
-                } hover:bg-gray-100`}
+                } hover:bg-gray-100 ${
+                  isLoading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
                 onClick={() => handleReactionClick(reactionType)}
-                // disabled={!isAuthenticated}
+                disabled={isLoading}
               >
                 {emoji}
               </Button>
@@ -143,8 +148,11 @@ export function BaseReactionButtons({
                   key={`new-${reactionType}`}
                   variant="ghost"
                   size="sm"
-                  className={`${getButtonSize()} opacity-50 hover:opacity-100 hover:bg-gray-100`}
+                  className={`${getButtonSize()} opacity-50 hover:opacity-100 hover:bg-gray-100 ${
+                    isLoading ? "cursor-not-allowed" : ""
+                  }`}
                   onClick={() => handleReactionClick(reactionType)}
+                  disabled={isLoading}
                 >
                   {emoji}
                 </Button>

@@ -1,6 +1,7 @@
 "use client";
 
 import { deletePost, getPost, hidePost, unhidePost } from "@/apis/posts";
+import { fetchPostReaction } from "@/apis/reactions";
 import {
   BookmarkButton,
   DeleteButton,
@@ -23,6 +24,7 @@ import {
   usePostReactionDelete,
   usePostReactionUpdate,
 } from "@/lib/hooks/useReactions";
+// import { usePostReactionManager } from "@/lib/hooks/useReactions";
 import { utcToLocaleDateString } from "@/lib/utils";
 import { Post } from "@/types/posts";
 import {
@@ -34,18 +36,6 @@ import { Eye, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
-const postMockData = {
-  author: "LiteraryMuse",
-  emotion: "melancholy",
-  reactions: { "❤️": 15, "😊": 8, "😢": 12, "🤔": 7, "👏": 3 },
-  comments: 12,
-  bookmarks: 23,
-};
-
-const emotionColors = {
-  melancholy: "bg-blue-100 text-blue-800",
-};
 
 export function PostDetail({ postId }: Readonly<{ postId: string }>) {
   const [loading, setLoading] = useState(true);
@@ -78,58 +68,84 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
   const [isHideLoading, setIsHideLoading] = useState(false);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
+  const [isReactionLoading, setIsReactionLoading] = useState(false);
 
   const { toast } = useToast();
   const { user } = useAuth();
   const router = useRouter();
 
-  // 게시글 리액션 훅들
-  const { mutate: createReaction } = usePostReactionCreate({
+  // 게시글 반응 관련 훅들
+  const { mutate: createPostReaction } = usePostReactionCreate({
     onSuccess: (response) => {
-      setReactions(response.reactionDetails);
-      setMyReaction(response.reaction);
-      toast({
-        description: "반응을 표시했습니다.",
-      });
+      // 성공 후 최신 반응 상태를 GET으로 가져와서 업데이트
+      fetchPostReaction({ postId: parseInt(postId) })
+        .then((reactionData) => {
+          setReactions(reactionData.reactionDetails);
+          setMyReaction(reactionData.myReaction);
+        })
+        .catch((error) => {
+          console.error("반응 상태 가져오기 실패:", error);
+        })
+        .finally(() => {
+          setIsReactionLoading(false);
+        });
     },
-    onError: (errorMessage) => {
+    onError: (error) => {
+      setIsReactionLoading(false);
       toast({
-        title: "반응 실패",
-        description: errorMessage,
+        title: "반응 등록 실패",
+        description: error,
         variant: "destructive",
       });
     },
   });
 
-  const { mutate: updateReaction } = usePostReactionUpdate({
+  const { mutate: updatePostReaction } = usePostReactionUpdate({
     onSuccess: (response) => {
-      setReactions(response.reactionDetails);
-      setMyReaction(response.reaction);
-      toast({
-        description: "반응을 변경했습니다.",
-      });
+      // 성공 후 최신 반응 상태를 GET으로 가져와서 업데이트
+      fetchPostReaction({ postId: parseInt(postId) })
+        .then((reactionData) => {
+          console.log({ reactionData });
+          setReactions(reactionData.reactionDetails);
+          setMyReaction(reactionData.myReaction);
+        })
+        .catch((error) => {
+          console.error("반응 상태 가져오기 실패:", error);
+        })
+        .finally(() => {
+          setIsReactionLoading(false);
+        });
     },
-    onError: (errorMessage) => {
+    onError: (error) => {
+      setIsReactionLoading(false);
       toast({
-        title: "반응 변경 실패",
-        description: errorMessage,
+        title: "반응 수정 실패",
+        description: error,
         variant: "destructive",
       });
     },
   });
 
-  const { mutate: deleteReaction } = usePostReactionDelete({
+  const { mutate: deletePostReaction } = usePostReactionDelete({
     onSuccess: (response) => {
-      setReactions(response.reactionDetails);
-      setMyReaction(null);
-      toast({
-        description: "반응을 취소했습니다.",
-      });
+      // 성공 후 최신 반응 상태를 GET으로 가져와서 업데이트
+      fetchPostReaction({ postId: parseInt(postId) })
+        .then((reactionData) => {
+          setReactions(reactionData.reactionDetails);
+          setMyReaction(reactionData.myReaction);
+        })
+        .catch((error) => {
+          console.error("반응 상태 가져오기 실패:", error);
+        })
+        .finally(() => {
+          setIsReactionLoading(false);
+        });
     },
-    onError: (errorMessage) => {
+    onError: (error) => {
+      setIsReactionLoading(false);
       toast({
-        title: "반응 취소 실패",
-        description: errorMessage,
+        title: "반응 삭제 실패",
+        description: error,
         variant: "destructive",
       });
     },
@@ -160,7 +176,26 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
       }
 
       // 내 반응 설정 (API에서 제공한다면)
-      // setMyReaction(response.myReaction || null);
+      if (response.myReaction !== undefined) {
+        setMyReaction(response.myReaction);
+      }
+
+      // 초기 로딩 시 사용자 반응 상태도 가져오기
+      if (user) {
+        try {
+          const reactionData = await fetchPostReaction({
+            postId: parseInt(postId),
+          });
+          setReactions(reactionData.reactionDetails);
+          setMyReaction(reactionData.myReaction);
+        } catch (reactionError) {
+          // 반응 데이터가 없을 수도 있으므로 에러는 조용히 처리
+          console.log(
+            "반응 데이터가 없거나 가져오는데 실패했습니다:",
+            reactionError
+          );
+        }
+      }
 
       setLoading(false);
     } catch (err) {
@@ -170,31 +205,6 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
       );
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleReaction = (reactionType: ReactionLabelType) => {
-    if (!postData) return;
-
-    // 현재 선택된 반응과 같은 반응을 다시 클릭한 경우 - 삭제
-    if (myReaction === reactionType) {
-      deleteReaction({
-        paths: { postId },
-      });
-    }
-    // 처음 반응을 선택하는 경우 - 생성
-    else if (!myReaction) {
-      createReaction({
-        paths: { postId },
-        body: { type: reactionType },
-      });
-    }
-    // 다른 반응으로 변경하는 경우 - 수정
-    else {
-      updateReaction({
-        paths: { postId },
-        body: { type: reactionType },
-      });
     }
   };
 
@@ -294,6 +304,71 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
 
   const handleUserClick = () => {
     setUserProfileModal(true);
+  };
+
+  // 게시글 반응 처리 핸들러
+  const handlePostReaction = async (reactionType: ReactionLabelType) => {
+    // 로그인 체크
+    if (!user) {
+      toast({
+        title: "로그인 필요",
+        description: "반응을 누르려면 로그인이 필요합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 이미 처리 중이면 무시
+    if (isReactionLoading) return;
+
+    // 로딩 상태 시작
+    setIsReactionLoading(true);
+
+    try {
+      // 액션 결정
+      let action: "create" | "update" | "delete";
+
+      if (!myReaction) {
+        // 첫 반응 → POST (생성)
+        action = "create";
+      } else if (myReaction === reactionType) {
+        // 같은 반응 클릭 → DELETE (삭제)
+        action = "delete";
+      } else {
+        // 다른 반응으로 변경 → PUT (수정)
+        action = "update";
+      }
+
+      // CUD 작업 수행
+      switch (action) {
+        case "create":
+          createPostReaction({
+            paths: { postId: parseInt(postId) },
+            body: { type: reactionType },
+          });
+          break;
+        case "update":
+          updatePostReaction({
+            paths: { postId: parseInt(postId) },
+            body: { type: reactionType },
+          });
+          break;
+        case "delete":
+          deletePostReaction({
+            paths: { postId: parseInt(postId), type: myReaction! },
+          });
+          break;
+      }
+    } catch (error) {
+      // 에러 시 로딩 상태 해제
+      setIsReactionLoading(false);
+
+      toast({
+        title: "반응 처리 실패",
+        description: "반응 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
   };
 
   // 컴포넌트 마운트 시 데이터 로드
@@ -454,7 +529,9 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
               <ReactionButtons
                 reactions={reactions}
                 myReaction={myReaction}
-                onReactionClick={handleReaction}
+                onReactionClick={handlePostReaction}
+                isAuthenticated={!!user}
+                isLoading={isReactionLoading}
                 size="default"
                 showAllReactions={true}
               />
