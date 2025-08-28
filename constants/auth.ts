@@ -3,7 +3,7 @@ export const AUTH_API_ENDPOINTS = {
    * 소셜 로그인 API 엔드포인트
    */
   SOCIAL_LOGIN: (provider: string): string =>
-    `/oauth2/authorization/${provider}`,
+    `/api/oauth2/authorization/${provider}`,
 
   /**
    * 로그아웃 API 엔드포인트
@@ -18,5 +18,10 @@ export const AUTH_API_ENDPOINTS = {
   /**
    * 회원 탈퇴 API 엔드포인트
    */
-  WITHDRAW: "/members",
+  WITHDRAW: "/members/me",
+
+  /**
+   * 온보딩 프로필 설정 API 엔드포인트
+   */
+  COMPLETE_ONBOARDING: "/auth/onboarding",
 };

@@ -1,5 +1,6 @@
 // 내 정보 조회 응답
 import { ApiContract, IdType, Pagination } from "@/types/apis";
+import { OnboardingProfile } from "@/types/auth";
 import { RankingCategoryType, RankingPeriodType } from "@/types/rankings";
 
 export interface MyInfoGetResponse {
@@ -10,11 +11,17 @@ export interface MyInfoGetResponse {
   postCount: number;
   reactionCount: number; // 임시: 하드코딩된 값
   commentCount: number;
+  bio?: string; // 자기소개 (기존 방식)
+  interests?: string[]; // 관심사 (기존 방식)
+  profile?: OnboardingProfile; // 새로운 온보딩 프로필
 }
 
 // 내 정보 수정 요청
 export interface MyInfoEditRequest {
   nickname: string;
+  bio?: string;
+  interests?: string[];
+  profile?: Partial<OnboardingProfile>; // 온보딩 프로필 부분 업데이트
 }
 
 // 내 정보 수정 응답
