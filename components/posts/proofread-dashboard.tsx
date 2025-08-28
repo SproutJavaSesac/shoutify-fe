@@ -44,8 +44,8 @@ export function ProofreadDashboard({ metadata }: ProofreadDashboardProps) {
         <CardContent className="space-y-6">
           {/* AI 점수 섹션 */}
           <div className="relative">
-            {/* 점수가 없을 때의 준비중 오버레이 */}
-            {!hasAiScores && (
+            {/* 점수가 없을 때의 준비중 오버레이 - 우선 시연 위해서 보여줌. */}
+            {hasAiScores && (
               <div className="absolute inset-0 bg-white/70 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
                 <div className="text-center">
                   <div className="text-lg font-medium text-gray-600 mb-1">
