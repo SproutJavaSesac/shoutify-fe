@@ -5,6 +5,7 @@ import {
   checkLoginStatus,
   deleteAccount,
   loginWithGoogle,
+  loginWithKakao
 } from "@/apis/auth";
 import { useToast } from "@/hooks/use-toast";
 import type { AuthState, AuthUser, OAuth2Provider } from "@/types/auth";
@@ -20,6 +21,7 @@ interface AuthContextValue extends AuthState {
   login: (provider: OAuth2Provider, redirectUrl?: string) => void;
   logout: () => Promise<void>;
   checkAuthStatus: () => Promise<void>;
+  withdraw: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -113,7 +115,9 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
       loginWithGoogle(redirectUrl);
     }
     // 다른 소셜 로그인 추가 시 여기에 로직 추가
-    // if (provider === 'kakao') { ... }
+    if (provider === 'kakao') {
+      loginWithKakao(redirectUrl);
+    }
   };
 
   // 로그아웃
@@ -190,6 +194,7 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
     login,
     logout,
     checkAuthStatus,
+    withdraw,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
