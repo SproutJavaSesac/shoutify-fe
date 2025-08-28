@@ -1,11 +1,3 @@
-import { api } from "./client";
-import {
-  Post,
-  PostCreateContract,
-  PostDeleteContract,
-  PostPaginationContract,
-  PostPaginationResponse,
-} from "@/types/posts";
 import { POST_API_ENDPOINTS } from "@/constants/posts";
 import {
   ApiPaginationArgs,
@@ -13,10 +5,18 @@ import {
   IdType,
   MutationArgs,
 } from "@/types/apis";
+import {
+  Post,
+  PostCreateContract,
+  PostDeleteContract,
+  PostPaginationContract,
+  PostPaginationResponse,
+} from "@/types/posts";
+import { api } from "./client";
 
 // 게시글 목록 조회
 export async function getPosts(
-  args?: ApiPaginationArgs<PostPaginationContract>,
+  args?: ApiPaginationArgs<PostPaginationContract>
 ): Promise<PostPaginationResponse> {
   try {
     // query 파라미터가 있는 경우, args에서 쿼리 파라미터를 추출
@@ -38,18 +38,18 @@ export async function getPost(postId: string | number): Promise<Post> {
 }
 
 export const createPost = async (
-  data: MutationArgs<PostCreateContract>,
+  data: MutationArgs<PostCreateContract>
 ): Promise<ExtractResponse<PostCreateContract>> => {
   return api.post<ExtractResponse<PostCreateContract>>(
     POST_API_ENDPOINTS.POSTS_CREATE,
-    data,
+    { ...data, conceptType: "ESSAY" }
   );
 };
 
 // 게시글 삭제
 export async function deletePost(postId: IdType): Promise<string> {
   return api.delete<ExtractResponse<PostDeleteContract>>(
-    POST_API_ENDPOINTS.POST_DELETE(postId),
+    POST_API_ENDPOINTS.POST_DELETE(postId)
   );
 }
 

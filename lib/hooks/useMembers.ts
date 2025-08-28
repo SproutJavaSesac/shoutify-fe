@@ -1,5 +1,3 @@
-import { useCallback } from "react";
-import { useApi, useMutation } from "./useApi";
 import {
   getMemberInfo,
   getMyBadges,
@@ -10,8 +8,9 @@ import {
   getUserInfo,
   getUserPosts,
   getUserRanking,
-  updateMyInfo
+  updateMyInfo,
 } from "@/apis/members";
+import { ApiOptions, IdType } from "@/types/apis";
 import type {
   MyBadgeListContract,
   MyBadgeListResponse,
@@ -30,9 +29,10 @@ import type {
   UserBadgeListContract,
   UserInfoGetContract,
   UserPostListContract,
-  UserRankingListContract
+  UserRankingListContract,
 } from "@/types/members";
-import { ApiOptions, IdType } from "@/types/apis";
+import { useCallback } from "react";
+import { useApi, useMutation } from "./useApi";
 
 /**
  * 내 정보 조회 훅
@@ -109,13 +109,17 @@ export function useMyComments(
  * 내 배지 목록 조회 훅
  */
 export function useMyBadges(
-  params?: PaginationParams,
   options?: ApiOptions<MyBadgeListResponse>
 ) {
-  return useApi<MyBadgeListContract>(
-    (args) => getMyBadges({ ...args, queries: params }),
-    options
+  const apiCall = useCallback(
+    () => getMyBadges(),
+    []
   );
+
+  return useApi<MyBadgeListContract>(apiCall,{
+    ...options,
+    immediate: true
+  });
 }
 
 /**

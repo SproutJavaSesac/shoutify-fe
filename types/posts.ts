@@ -11,10 +11,19 @@ export type PostSortType = "createdAt" | "reactions" | "comments";
 
 export type ConceptType =
   | "ALL"
-  | "CLASSICAL_POETRY"
-  | "POETRY"
-  | "NOVEL"
-  | "DRAMA"
+  | "ACADEMIC"
+  | "INTELLECTUAL_DISPLAY"
+  | "PERSONAL_STORY";
+
+export type GenreType =
+  | "MODERN_LITERATURE"
+  | "CLASSICAL_LITERATURE"
+  | "COMMENTARY"
+  | "COLUMN"
+  | "CONTRIBUTION"
+  | "BOOK_REVIEW"
+  | "HIPSTER_FEED"
+  | "MIDNIGHT_RADIO"
   | "ESSAY";
 
 export type EmotionType =
@@ -31,10 +40,17 @@ export interface CategoryOption {
   value: ConceptType;
 }
 
+export interface GenreTypeOption {
+  label: string;
+  value: GenreType;
+}
+
 export interface Post {
   postId: IdType;
   authorId?: IdType; // TODO authorId 확정되면 ? 없애기.
   nickname: string;
+  beforeTitle?: string; // AI 첨삭 이전 제목
+  beforeContent?: string; // AI 첨삭 이전 내용
   afterTitle: string;
   afterContent: string;
   createdAt: Date;
@@ -43,11 +59,21 @@ export interface Post {
   commentCount: number;
   emotion: EmotionType;
   conceptType: ConceptType;
+  genreType?: GenreType;
   isDeleted?: boolean;
   isHidden?: boolean;
   isMine?: boolean;
   reactionDetailCount?: ReactionDetailCountMap;
   myReaction?: ReactionLabelType | null; // 내 반응 정보 추가
+  // AI 점수 필드들 (옵셔널)
+  aiScore?: {
+    conceptScore?: number;
+    writingScore?: number;
+    creativityScore?: number;
+    emotionScore?: number;
+    genreScore?: number;
+    totalScore?: number;
+  };
 }
 
 export type PaginationParamsType = {
@@ -84,6 +110,7 @@ export type PostCreateBodyRequest = {
   title: string;
   content: string;
   conceptType: string;
+  genreType: string;
   emotionType: string | null;
   imageUrl?: string;
 };

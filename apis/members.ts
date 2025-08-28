@@ -1,24 +1,23 @@
-import {api} from "./client";
+import { MEMBER_API_ENDPOINTS } from "@/constants/members";
+import { ApiQueryArgs, MutationArgs } from "@/types/apis";
 import type {
-    MyBadgeListContract,
-    MyBadgeListResponse,
-    MyCommentListContract,
-    MyCommentListResponse,
-    MyInfoEditContract,
-    MyInfoEditResponse,
-    MyInfoGetContract,
-    MyInfoGetResponse,
-    MyPostListContract,
-    MyPostListResponse,
-    MyRankingListContract,
-    MyRankingListResponse,
-    UserBadgeListContract,
-    UserInfoGetContract,
-    UserPostListContract,
-    UserRankingListContract,
+  MyBadgeListResponse,
+  MyCommentListContract,
+  MyCommentListResponse,
+  MyInfoEditContract,
+  MyInfoEditResponse,
+  MyInfoGetContract,
+  MyInfoGetResponse,
+  MyPostListContract,
+  MyPostListResponse,
+  MyRankingListContract,
+  MyRankingListResponse,
+  UserBadgeListContract,
+  UserInfoGetContract,
+  UserPostListContract,
+  UserRankingListContract,
 } from "@/types/members";
-import {MEMBER_API_ENDPOINTS} from "@/constants/members";
-import {ApiQueryArgs, MutationArgs} from "@/types/apis";
+import { api } from "./client";
 
 /**
  * 내 정보 조회
@@ -89,10 +88,8 @@ export async function getMyComments(
 /**
  * 내 배지 목록 조회
  */
-export async function getMyBadges(
-  args?: ApiQueryArgs<MyBadgeListContract>
-): Promise<MyBadgeListResponse> {
-  return api.get(MEMBER_API_ENDPOINTS.MEMBER_BADGES, args?.queries);
+export async function getMyBadges(): Promise<MyBadgeListResponse> {
+  return api.get(MEMBER_API_ENDPOINTS.MEMBER_BADGES);
 }
 
 /**

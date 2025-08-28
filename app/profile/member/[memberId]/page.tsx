@@ -1,18 +1,17 @@
 import { UserProfile } from "@/components/user-profile";
-import { IdType } from "@/types/apis";
 
 interface PublicProfilePageProps {
-  params: Promise<{ id: IdType }>; // Next.js 15에서 params는 Promise
+  params: Promise<{ memberId: string }>; // memberId로 수정
 }
 
-export default async function PostDetailPage({
+export default async function PublicProfilePage({
   params,
 }: PublicProfilePageProps) {
-  const { id } = await params; // params를 await해서 사용
+  const { memberId } = await params; // memberId로 수정
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <UserProfile memberId={id} />
+      <UserProfile memberId={memberId} />
     </div>
   );
 }
