@@ -26,6 +26,6 @@ export const publishProofread = async (
 ): Promise<ExtractResponse<ProofreadPublishContract>> => {
   return await api.post<ExtractResponse<ProofreadPublishContract>>(
     PROOFREAD_API_ENDPOINTS.PUBLISH(args.paths.taskUuid),
-    args
+    args.body
   );
 };
