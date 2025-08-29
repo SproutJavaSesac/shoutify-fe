@@ -54,6 +54,9 @@ export function ProofreadDiffView({
           size="sm"
           onClick={() => setShowDiffOnly(!showDiffOnly)}
           className="flex items-center gap-2"
+          style={{
+            display: viewMode === "unified" ? "none" : "flex",
+          }}
         >
           {showDiffOnly ? (
             <EyeOff className="h-4 w-4" />
@@ -78,7 +81,7 @@ export function ProofreadDiffView({
         <UnifiedView
           titleDiff={titleDiff}
           contentDiff={contentDiff}
-          showDiffOnly={showDiffOnly}
+          showDiffOnly={false}
         />
       )}
       {/* 색상 가이드 */}
