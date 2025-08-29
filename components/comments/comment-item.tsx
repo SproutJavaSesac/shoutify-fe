@@ -215,17 +215,48 @@ export const CommentItem = memo(function CommentItem({
     marginLeft: `${comment.level * 32}px`,
   };
 
+  // 댓글 상태에 따른 스타일 계산
+  const getCommentStyles = () => {
+    let baseStyles = "border rounded-lg p-4 transition-all duration-200";
+
+    if (comment.isDeleted) {
+      // 삭제된 댓글: 회색 배경 + 흐림 효과
+      return `${baseStyles} bg-gray-100 border-gray-200 opacity-60`;
+    }
+
+    if (comment.isBlocked) {
+      // 신고된 댓글: 경고색 테두리 + 반투명
+      return `${baseStyles} bg-red-50 border-red-200 opacity-80`;
+    }
+
+    // 일반 댓글 - 레벨에 관계없이 동일한 배경색 사용
+    const backgroundClass = "bg-white";
+    const highlightClass = isHighlighted
+      ? "ring-2 ring-blue-300 bg-blue-50"
+      : "";
+    const hoverClass = "hover:bg-gray-50";
+
+    return `${baseStyles} ${backgroundClass} ${highlightClass} ${hoverClass}`;
+  };
+
   return (
     <div
       ref={isHighlighted ? highlightRef : undefined}
       style={indentStyle}
-      className={`border rounded-lg p-4 ${
-        isReply ? "bg-gray-50" : "bg-white"
-      } ${isHighlighted ? "ring-2 ring-blue-300 bg-blue-50" : ""}`}
+      className={`relative ${getCommentStyles()}`}
     >
+      {/* 댓글 레벨 표시 - Reddit 스타일 수직선 */}
+      {isReply && (
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-200 to-blue-300 rounded-l-lg opacity-60" />
+      )}
+
       {/* 댓글 헤더 */}
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center space-x-2 flex-1 min-w-0">
+          {/* 답글 표시 아이콘 */}
+          {isReply && (
+            <span className="text-blue-400 text-xs flex-shrink-0">↳</span>
+          )}
           <span className="font-medium text-gray-900 truncate">
             {comment.commenterNickname}
           </span>
@@ -244,65 +275,82 @@ export const CommentItem = memo(function CommentItem({
         </div>
 
         <div className="flex items-center space-x-2 flex-shrink-0 ml-4">
-          {/* 신고 버튼 - 내 댓글이 아닌 경우에만 표시 */}
-          {!comment.isMine && (
-            <ReportButton
-              onClick={() => onReport(comment)}
-              className="text-xs px-2 py-1 h-6 min-w-[40px] text-gray-500 hover:text-red-500"
-              size="sm"
-            >
-              신고
-            </ReportButton>
-          )}
+          {/* 삭제되거나 신고된 댓글이 아닌 경우에만 액션 버튼 표시 */}
+          {!comment.isDeleted && !comment.isBlocked && (
+            <>
+              {/* 신고 버튼 - 내 댓글이 아닌 경우에만 표시 */}
+              {!comment.isMine && (
+                <ReportButton
+                  onClick={() => onReport(comment)}
+                  className="text-xs px-2 py-1 h-6 min-w-[40px] text-gray-500 hover:text-red-500 transition-colors duration-150"
+                  size="sm"
+                >
+                  신고
+                </ReportButton>
+              )}
 
-          {/* 삭제 버튼 */}
-          <DeleteButton
-            isMine={
-              comment.commenterId ? comment.commenterId === user?.id : false
-            }
-            onClick={() => onDelete(comment.commentId)}
-            className="text-xs px-2 py-1 h-6 min-w-[40px] text-red-500 hover:text-red-700"
-            size="sm"
-            variant="ghost"
-            confirmDescription="이 댓글을 삭제하시겠습니까?"
-            disabled={isDeleting}
-          />
+              {/* 삭제 버튼 */}
+              <DeleteButton
+                isMine={
+                  comment.commenterId ? comment.commenterId === user?.id : false
+                }
+                onClick={() => onDelete(comment.commentId)}
+                className="text-xs px-2 py-1 h-6 min-w-[40px] text-gray-500 hover:text-red-500 transition-colors duration-150"
+                size="sm"
+                variant="ghost"
+                confirmDescription="이 댓글을 삭제하시겠습니까?"
+                disabled={isDeleting}
+              />
+            </>
+          )}
         </div>
       </div>
 
       {/* 댓글 내용 */}
-      <p className="text-gray-800 mb-3 whitespace-pre-line">
-        {comment.content}
-      </p>
-
-      {/* 댓글 액션 (반응, 답글) */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          {/* 반응 버튼들 */}
-          <ReactionButtons
-            reactions={reactions}
-            myReaction={myReaction}
-            onReactionClick={handleCommentReaction}
-            isAuthenticated={!!user}
-            isLoading={isReactionLoading}
-            size="sm"
-            showAllReactions={true}
-          />
+      {comment.isDeleted ? (
+        <div className="text-gray-500 italic mb-3 flex items-center">
+          <span>삭제된 댓글입니다</span>
         </div>
+      ) : comment.isBlocked ? (
+        <div className="text-red-600 mb-3 flex items-center">
+          <span className="text-sm">⚠️ 신고로 인해 숨겨진 댓글입니다</span>
+        </div>
+      ) : (
+        <p className="text-gray-800 mb-3 whitespace-pre-line">
+          {comment.content}
+        </p>
+      )}
 
-        {/* 답글 버튼 (대댓글까지 표시) */}
-        {comment.level < 2 && !comment.isDeleted && !comment.isReported && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onReply(comment.commentId)}
-            className="text-xs"
-          >
-            <MessageCircle className="h-3 w-3 mr-1" />
-            답글
-          </Button>
-        )}
-      </div>
+      {/* 댓글 액션 (반응, 답글) - 삭제되거나 신고된 댓글이 아닌 경우에만 표시 */}
+      {!comment.isDeleted && !comment.isBlocked && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            {/* 반응 버튼들 */}
+            <ReactionButtons
+              reactions={reactions}
+              myReaction={myReaction}
+              onReactionClick={handleCommentReaction}
+              isAuthenticated={!!user}
+              isLoading={isReactionLoading}
+              size="sm"
+              showAllReactions={true}
+            />
+          </div>
+
+          {/* 답글 버튼 (대댓글까지 표시) */}
+          {comment.level < 2 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onReply(comment.commentId)}
+              className="text-xs"
+            >
+              <MessageCircle className="h-3 w-3 mr-1" />
+              답글
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 });

@@ -40,9 +40,34 @@ export async function getPost(postId: string | number): Promise<Post> {
 export const createPost = async (
   data: MutationArgs<PostCreateContract>
 ): Promise<ExtractResponse<PostCreateContract>> => {
-  return api.post<ExtractResponse<PostCreateContract>>(
+  // data를 FormData로 변환
+  const formData = new FormData();
+
+  // data 객체의 각 필드를 FormData에 추가
+  Object.entries(data).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      if (value instanceof File) {
+        // 파일인 경우
+        formData.append(key, value);
+      } else if (Array.isArray(value)) {
+        // 배열인 경우 (예: 이미지 파일들)
+        value.forEach((item, index) => {
+          if (item instanceof File) {
+            formData.append(`${key}[${index}]`, item);
+          } else {
+            formData.append(`${key}[${index}]`, String(item));
+          }
+        });
+      } else {
+        // 기본적으로 문자열로 변환
+        formData.append(key, String(value));
+      }
+    }
+  });
+
+  return api.postFormData<ExtractResponse<PostCreateContract>>(
     POST_API_ENDPOINTS.POSTS_CREATE,
-    { ...data, conceptType: "ESSAY" }
+    formData
   );
 };
 

@@ -5,7 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CONCEPT_OPTIONS, POST_ROUTES } from "@/constants/posts";
+import {
+  CONCEPT_OPTIONS,
+  EMOTICON_OPTIONS,
+  GENRE_OPTIONS,
+  POST_ROUTES,
+} from "@/constants/posts";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { usePostListFetchEffect } from "@/lib/hooks/usePosts";
@@ -15,7 +20,12 @@ import {
   usePostReactionUpdate,
 } from "@/lib/hooks/useReactions";
 import { utcToLocaleDateString } from "@/lib/utils";
-import { ConceptType, PostSortType } from "@/types/posts";
+import {
+  ConceptType,
+  EmotionType,
+  GenreType,
+  PostSortType,
+} from "@/types/posts";
 import { ReactionLabelType } from "@/types/reactions";
 import { Calendar, Eye, HeartIcon, MessageCircle } from "lucide-react";
 import Link from "next/link";
@@ -245,6 +255,17 @@ export default function PostsList({
     );
   };
 
+  const getGenreLabel = (genreType: GenreType) => {
+    return (
+      GENRE_OPTIONS.find((option) => option.value === genreType)?.label ||
+      genreType
+    );
+  };
+
+  const getEmotionOption = (emotionType: EmotionType) => {
+    return EMOTICON_OPTIONS.find((option) => option.value === emotionType);
+  };
+
   return (
     <div className="space-y-6">
       {/* 검색 결과 정보 */}
@@ -258,24 +279,60 @@ export default function PostsList({
       </div>
 
       {/* 게시글 목록 */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         {posts.map((post) => (
-          <Card key={post.postId} className="hover:shadow-md transition-shadow">
+          <Card
+            key={post.postId}
+            className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-transparent hover:border-l-blue-500"
+          >
             <CardContent className="p-6">
               <div className="space-y-4">
                 {/* 헤더 */}
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="secondary" className="text-xs">
-                      {getConceptLabel(post.conceptType)}
-                    </Badge>
-                    {post.emotion && (
-                      <Badge variant="outline" className="text-xs">
-                        {post.emotion}
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center flex-wrap gap-2">
+                    {/* 게시글의 감정 표시 (PostDetail과 같은 스타일) */}
+
+                    {/* 장르 표시 */}
+                    {post.genreType && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs border-purple-200 text-purple-700 hover:bg-purple-50 px-2 py-1"
+                      >
+                        🎨 {getGenreLabel(post.genreType)}
                       </Badge>
                     )}
+                    {post.authorSelectEmotion && (
+                      <>
+                        {(() => {
+                          const emotionOption = getEmotionOption(
+                            post.authorSelectEmotion
+                          );
+                          return emotionOption ? (
+                            <Badge
+                              className={`${emotionOption.color} text-xs font-medium px-2 py-1`}
+                            >
+                              {emotionOption.emotionType} {emotionOption.label}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-xs">
+                              {post.authorSelectEmotion}
+                            </Badge>
+                          );
+                        })()}
+                      </>
+                    )}
+                    {!post.authorSelectEmotion && (
+                      <Badge className="bg-gray-100 text-gray-600 text-xs">
+                        감정 없음
+                      </Badge>
+                    )}
+
+                    {/* 컨셉 표시 */}
+                    {/* <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 px-2 py-1">
+                      📝 {getConceptLabel(post.conceptType)}
+                    </Badge> */}
                   </div>
-                  <div className="flex items-center text-xs text-gray-500">
+                  <div className="flex items-center text-xs text-gray-500 ml-2 flex-shrink-0">
                     <Calendar className="h-3 w-3 mr-1" />
                     {utcToLocaleDateString(post.createdAt)}
                   </div>
@@ -283,33 +340,33 @@ export default function PostsList({
 
                 {/* 제목 */}
                 <Link href={POST_ROUTES.DETAIL(post.postId)}>
-                  <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer line-clamp-2">
+                  <h3 className="text-xl font-bold text-gray-900 hover:text-blue-600 cursor-pointer line-clamp-2 transition-colors duration-200 leading-tight">
                     {post.afterTitle}
                   </h3>
                 </Link>
 
                 {/* 내용 미리보기 */}
-                <p className="text-gray-600 text-sm line-clamp-3">
+                <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
                   {post.afterContent}
                 </p>
 
                 {/* 푸터 */}
-                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <span>by {post.nickname}</span>
+                    <span className="font-medium">by {post.nickname}</span>
                   </div>
 
                   <div className="flex items-center space-x-4">
                     {/* 반응하기 총 개수 post.reactionCount 이용 */}
-                    <div className="flex items-center space-x-1 text-sm text-gray-500">
+                    <div className="flex items-center space-x-1 text-sm text-gray-500 hover:text-red-500 transition-colors">
                       <HeartIcon className="h-4 w-4" />
-                      <span>{post.reactionCount}</span>
+                      <span className="font-medium">{post.reactionCount}</span>
                     </div>
 
                     {/* 댓글 수 */}
-                    <div className="flex items-center space-x-1 text-sm text-gray-500">
+                    <div className="flex items-center space-x-1 text-sm text-gray-500 hover:text-blue-500 transition-colors">
                       <MessageCircle className="h-4 w-4" />
-                      <span>{post.commentCount}</span>
+                      <span className="font-medium">{post.commentCount}</span>
                     </div>
 
                     {/* 숨김 상태 */}
@@ -322,7 +379,10 @@ export default function PostsList({
 
                     {/* 내 글 표시 */}
                     {post.isMine && (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge
+                        variant="outline"
+                        className="text-xs border-green-200 text-green-700 bg-green-50"
+                      >
                         내 글
                       </Badge>
                     )}

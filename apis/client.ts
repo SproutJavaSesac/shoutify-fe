@@ -69,17 +69,61 @@ class ApiClient {
     return this.request<T>(url, { method: "DELETE", auth: authenticated });
   }
 
+  // FormData를 위한 메서드들
+  async postFormData<T>(
+    url: string,
+    formData: FormData,
+    authenticated = true
+  ): Promise<T> {
+    return this.request<T>(url, {
+      method: "POST",
+      body: formData,
+      auth: authenticated,
+      isFormData: true,
+    });
+  }
+
+  async putFormData<T>(
+    url: string,
+    formData: FormData,
+    authenticated = true
+  ): Promise<T> {
+    return this.request<T>(url, {
+      method: "PUT",
+      body: formData,
+      auth: authenticated,
+      isFormData: true,
+    });
+  }
+
+  async patchFormData<T>(
+    url: string,
+    formData: FormData,
+    authenticated = true
+  ): Promise<T> {
+    return this.request<T>(url, {
+      method: "PATCH",
+      body: formData,
+      auth: authenticated,
+      isFormData: true,
+    });
+  }
+
   // 기본 요청 함수
   private async request<T>(
     url: string,
-    options: RequestInit & { auth?: boolean }
+    options: RequestInit & { auth?: boolean; isFormData?: boolean }
   ): Promise<T> {
-    const { auth = true, ...fetchOptions } = options; // 기본적으로 인증 필요한 요청으로 설정
+    const { auth = true, isFormData = false, ...fetchOptions } = options; // 기본적으로 인증 필요한 요청으로 설정
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
       ...(fetchOptions.headers as Record<string, string>),
     };
+
+    // FormData가 아닌 경우에만 Content-Type 설정
+    if (!isFormData) {
+      headers["Content-Type"] = "application/json";
+    }
 
     // 인증이 필요하고 토큰이 있는 경우에만 헤더 추가
     if (auth && this.token) {
@@ -179,6 +223,14 @@ export const api = {
   put: <T>(url: string, data?: any) => client.put<T>(url, data, true),
   delete: <T>(url: string) => client.delete<T>(url, true),
   patch: <T>(url: string, data?: any) => client.patch<T>(url, data, true),
+
+  // FormData를 위한 메서드들
+  postFormData: <T>(url: string, formData: FormData) =>
+    client.postFormData<T>(url, formData, true),
+  putFormData: <T>(url: string, formData: FormData) =>
+    client.putFormData<T>(url, formData, true),
+  patchFormData: <T>(url: string, formData: FormData) =>
+    client.patchFormData<T>(url, formData, true),
 
   // 인증이 필요 없는 공개 API 호출
   public: {

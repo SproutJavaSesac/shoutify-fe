@@ -57,7 +57,7 @@ export interface Post {
   imgUrl: string;
   reactionCount: number;
   commentCount: number;
-  emotion: EmotionType;
+  authorSelectEmotion: EmotionType;
   conceptType: ConceptType;
   genreType?: GenreType;
   isDeleted?: boolean;

@@ -6,12 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
+import { useCommentDelete } from "@/lib/hooks/useComments";
 import {
   useMyBadges,
   useMyComments,
   useMyInfo,
   useMyPosts,
 } from "@/lib/hooks/useMembers";
+import {
+  usePostDelete,
+  usePostHide,
+  usePostUnhide,
+} from "@/lib/hooks/usePosts";
 import {
   Award,
   Edit,
@@ -60,6 +66,84 @@ export function MyPageContent() {
     refetch: refetchBadges,
   } = useMyBadges();
 
+  const {
+    mutate: deletePost,
+    loading: isDeleting,
+    error: deleteError,
+  } = usePostDelete({
+    onSuccess: (response) => {
+      toast({
+        description: "게시글이 삭제되었습니다.",
+      });
+      refetchPosts(); // 목록 새로고침
+    },
+    onError: (error) => {
+      toast({
+        title: "삭제 실패",
+        description: "게시글 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+  const {
+    mutate: hidePost,
+    loading: isHiding,
+    error: hideError,
+  } = usePostHide({
+    onSuccess: (response) => {
+      toast({
+        description: "게시글이 숨김 처리되었습니다.",
+      });
+      refetchPosts(); // 목록 새로고침
+    },
+    onError: (error) => {
+      toast({
+        title: "숨김 처리 실패",
+        description: "게시글 숨김 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+  const {
+    mutate: unhidePost,
+    loading: isUnhiding,
+    error: unhideError,
+  } = usePostUnhide({
+    onSuccess: (response) => {
+      toast({
+        description: "게시글이 공개 처리되었습니다.",
+      });
+      refetchPosts(); // 목록 새로고침
+    },
+    onError: (error) => {
+      toast({
+        title: "공개 처리 실패",
+        description: "게시글 공개 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const {
+    mutate: deleteComment,
+    loading: isDeletingComment,
+    error: deleteCommentError,
+  } = useCommentDelete({
+    onSuccess: (response) => {
+      toast({
+        description: "댓글이 삭제되었습니다.",
+      });
+      refetchComments(); // 목록 새로고침
+    },
+    onError: (error) => {
+      toast({
+        title: "삭제 실패",
+        description: "댓글 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const posts = postsData?.posts || [];
   const comments = commentsData?.comments || [];
   const badges = badgesData?.badges || []; // 404 시 전역에서 null 반환, 여기서 빈 배열로 fallback
@@ -87,67 +171,19 @@ export function MyPageContent() {
   };
 
   const handleDeletePost = async (postId: number) => {
-    try {
-      // TODO: API 호출로 실제 삭제
-      toast({
-        description: "게시글이 삭제되었습니다.",
-      });
-      refetchPosts(); // 목록 새로고침
-    } catch (error) {
-      toast({
-        title: "삭제 실패",
-        description: "게시글 삭제 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    }
+    await deletePost({ paths: {postId} });
   };
 
   const handleHidePost = async (postId: number) => {
-    try {
-      // TODO: API 호출로 숨김 처리
-      toast({
-        description: "게시글이 숨김 처리되었습니다.",
-      });
-      refetchPosts(); // 목록 새로고침
-    } catch (error) {
-      toast({
-        title: "숨김 처리 실패",
-        description: "게시글 숨김 처리 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    }
+    await hidePost({ paths: {postId} });
   };
 
   const handleUnhidePost = async (postId: number) => {
-    try {
-      // TODO: API 호출로 공개 처리
-      toast({
-        description: "게시글이 공개 처리되었습니다.",
-      });
-      refetchPosts(); // 목록 새로고침
-    } catch (error) {
-      toast({
-        title: "공개 처리 실패",
-        description: "게시글 공개 처리 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    }
+    await unhidePost({ paths: { postId } });
   };
 
   const handleDeleteComment = async (commentId: number | string) => {
-    try {
-      // TODO: API 호출로 댓글 삭제
-      toast({
-        description: "댓글이 삭제되었습니다.",
-      });
-      refetchComments(); // 목록 새로고침
-    } catch (error) {
-      toast({
-        title: "삭제 실패",
-        description: "댓글 삭제 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    }
+    await deleteComment({ commentId });
   };
 
   const stats = {

@@ -267,20 +267,22 @@ export function CommentsSection({
                     isDeleting={deletingComments.has(comment.commentId)}
                   />
                   {/* 답글 작성 폼 */}
-                  {comment.level === 0 && replyingTo === comment.commentId && (
-                    <div className="mt-4 ml-8 p-3 bg-gray-50 rounded-lg">
-                      <CommentForm
-                        placeholder="답글을 입력하세요..."
-                        onSubmit={(content) =>
-                          handleReplySubmit(content, comment.commentId)
-                        }
-                        onCancel={() => setReplyingTo(null)}
-                        showCancel={true}
-                        minHeight="min-h-[80px]"
-                        submitLabel="답글 등록"
-                      />
-                    </div>
-                  )}
+                  {comment.level >= 0 &&
+                    comment.level < 2 &&
+                    replyingTo === comment.commentId && (
+                      <div className="mt-4 ml-8 p-3 bg-gray-50 rounded-lg">
+                        <CommentForm
+                          placeholder="답글을 입력하세요..."
+                          onSubmit={(content) =>
+                            handleReplySubmit(content, comment.commentId)
+                          }
+                          onCancel={() => setReplyingTo(null)}
+                          showCancel={true}
+                          minHeight="min-h-[80px]"
+                          submitLabel="답글 등록"
+                        />
+                      </div>
+                    )}
                 </div>
               ))}
             </div>
