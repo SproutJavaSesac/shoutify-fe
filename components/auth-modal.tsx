@@ -1,18 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
 import { Loader2 } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -62,12 +62,12 @@ export function AuthModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold">
-            {mode === "login" ? "Welcome Back" : "Join Literary Community"}
+            {mode === "login" ? "로그인" : "구절구절에 가입하기"}
           </DialogTitle>
           <p className="text-center text-gray-600 mt-2">
             {mode === "login"
-              ? "Sign in to continue your literary journey"
-              : "Create an account to start sharing your stories"}
+              ? "당신의 문학적 여정을 계속하려면 로그인하세요"
+              : "당신의 이야기를 공유하려면 계정을 만들어주세요"}
           </p>
         </DialogHeader>
 
@@ -101,7 +101,7 @@ export function AuthModal({
                 />
               </svg>
             )}
-            <span>Continue with Google</span>
+            <span>구글로 계속하기</span>
           </Button>
 
           {/* KakaoTalk Login */}
@@ -118,7 +118,7 @@ export function AuthModal({
                 <path d="M12 3C7.03 3 3 6.14 3 10.1c0 2.52 1.65 4.74 4.1 6.1l-.9 3.3c-.1.36.26.66.6.5l4.06-2.65c.38.04.76.06 1.14.06 4.97 0 9-3.14 9-7.1S16.97 3 12 3z" />
               </svg>
             )}
-            <span>Continue with KakaoTalk</span>
+            <span>카카오톡으로 계속하기</span>
           </Button>
 
           <div className="relative">
@@ -132,28 +132,29 @@ export function AuthModal({
           <div className="text-center">
             <p className="text-sm text-gray-600">
               {mode === "login"
-                ? "Don't have an account?"
-                : "Already have an account?"}
+                ? "계정이 없으신가요?"
+                : "이미 계정이 있으신가요?"}
             </p>
             <Button
               variant="link"
               className="p-0 h-auto font-semibold"
               onClick={() => setMode(mode === "login" ? "register" : "login")}
             >
-              {mode === "login" ? "Sign up" : "Sign in"}
+              {mode === "login" ? "회원 가입" : "로그인"}
             </Button>
           </div>
         </div>
 
         <div className="mt-6 text-xs text-gray-500 text-center">
-          By continuing, you agree to our{" "}
+          계속한다면 서비스{" "}
           <a href="#" className="underline hover:text-gray-700">
-            Terms of Service
+            이용약관
           </a>{" "}
-          and{" "}
+          과{" "}
           <a href="#" className="underline hover:text-gray-700">
-            Privacy Policy
-          </a>
+            개인정보 처리방침
+          </a>{" "}
+          에 동의한 것으로 간주합니다.
         </div>
       </DialogContent>
     </Dialog>
