@@ -17,7 +17,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { UserProfileModal } from "@/components/user-profile-modal";
-import { EMOTICON_OPTIONS } from "@/constants/posts";
+import {
+  CONCEPT_OPTIONS,
+  EMOTICON_OPTIONS,
+  GENRE_OPTIONS,
+} from "@/constants/posts";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import {
@@ -27,13 +31,13 @@ import {
 } from "@/lib/hooks/useReactions";
 // import { usePostReactionManager } from "@/lib/hooks/useReactions";
 import { utcToLocaleDateString } from "@/lib/utils";
-import { Post } from "@/types/posts";
+import { ConceptType, GenreType, Post } from "@/types/posts";
 import {
   EmotionOption,
   ReactionDetailCountMap,
   ReactionLabelType,
 } from "@/types/reactions";
-import { Eye, MessageCircle } from "lucide-react";
+import { ArrowLeft, Eye, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -74,6 +78,25 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
   const { toast } = useToast();
   const { user } = useAuth();
   const router = useRouter();
+
+  // Helper functions
+  const getConceptLabel = (conceptType: ConceptType) => {
+    return (
+      CONCEPT_OPTIONS.find((option) => option.value === conceptType)?.label ||
+      conceptType
+    );
+  };
+
+  const getGenreLabel = (genreType: GenreType) => {
+    return (
+      GENRE_OPTIONS.find((option) => option.value === genreType)?.label ||
+      genreType
+    );
+  };
+
+  const handleGoBack = () => {
+    router.back();
+  };
 
   // 게시글 반응 관련 훅들
   const { mutate: createPostReaction } = usePostReactionCreate({
@@ -428,12 +451,34 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
 
   return (
     <article className="mb-8">
+      {/* 뒤로가기 버튼 */}
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleGoBack}
+          className="flex items-center space-x-2 hover:bg-gray-100 transition-all duration-200 px-4 py-2 rounded-lg text-gray-600 hover:text-gray-800"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span className="font-medium">뒤로가기</span>
+        </Button>
+      </div>
+
       <Card>
         <CardContent className="p-8">
           {/* Header */}
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
-              <div className="flex items-center space-x-2 mb-2">
+              <div className="flex items-center flex-wrap gap-2 mb-4">
+                {/* 장르 표시 */}
+                {postData.genreType && (
+                  <Badge
+                    variant="outline"
+                    className="border-purple-200 text-purple-700 hover:bg-purple-50"
+                  >
+                    🎨 {getGenreLabel(postData.genreType)}
+                  </Badge>
+                )}
                 {/* 게시글의 원본 감정 표시 */}
                 {postEmotion && (
                   <Badge className={postEmotion.color}>
@@ -441,8 +486,16 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
                   </Badge>
                 )}
                 {!postEmotion && (
-                  <Badge className="bg-gray-200 text-gray-800">감정 없음</Badge>
+                  <Badge className="bg-gray-100 text-gray-600">감정 없음</Badge>
                 )}
+
+                {/* 컨셉 표시 */}
+                {/* <Badge
+                  variant="secondary"
+                  className="bg-blue-100 text-blue-700 hover:bg-blue-200"
+                >
+                  📝 {getConceptLabel(postData.conceptType)}
+                </Badge> */}
               </div>
 
               {/* Title with Bookmark and Share icons */}
