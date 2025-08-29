@@ -163,10 +163,10 @@ export function PostDetail({ postId }: Readonly<{ postId: string }>) {
       setIsHidden(response.isHidden || false);
 
       // 게시글의 원본 감정 설정 (작성자가 설정한 감정)
-      if (response.emotion) {
+      if (response.authorSelectEmotion) {
         // convertEmotionTypeToEmoticon 함수가 있다면 사용하거나, 직접 변환
         const emotionOption = EMOTICON_OPTIONS.find(
-          (option) => option.value === response.emotion
+          (option) => option.value === response.authorSelectEmotion
         );
         setPostEmotion(emotionOption || null);
       }

@@ -269,9 +269,9 @@ export default function PostsList({
                     <Badge variant="secondary" className="text-xs">
                       {getConceptLabel(post.conceptType)}
                     </Badge>
-                    {post.emotion && (
+                    {post.authorSelectEmotion && (
                       <Badge variant="outline" className="text-xs">
-                        {post.emotion}
+                        {post.authorSelectEmotion}
                       </Badge>
                     )}
                   </div>
