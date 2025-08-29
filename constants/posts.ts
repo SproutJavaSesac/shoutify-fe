@@ -21,8 +21,8 @@ export const CONCEPT_OPTIONS: CategoryOption[] = [
     label: "학술/리포트",
     value: "ACADEMIC",
   },
-  { label: "지적 허영/과시", value: "INTELLECTUAL_DISPLAY" },
-  { label: "내 얘기를 재밌게 (SNS용)", value: "PERSONAL_STORY" },
+  { label: "전문가 스타일", value: "INTELLECTUAL_DISPLAY" },
+  { label: "일상 스토리", value: "PERSONAL_STORY" },
 ];
 
 // 감정 옵션 (화면 표시용 한국어 → API 통신용 영어)
