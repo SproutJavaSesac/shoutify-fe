@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { POST_ROUTES } from "@/constants/posts";
 import {
+  ArrowDown,
   ArrowRight,
   Award,
   BarChart3,
@@ -57,7 +58,7 @@ export default function HomePage() {
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">
-            이렇게 바뀝니다
+            이렇게 변환됩니다
           </h2>
           <p className="text-center text-gray-600 mb-12">
             일상의 단순한 표현이 어떻게 문학적으로 변환되는지 확인해보세요
@@ -84,7 +85,9 @@ export default function HomePage() {
                 </div>
 
                 <div className="flex justify-center mb-4">
-                  <ArrowRight className="h-6 w-6 text-blue-500 animate-pulse" />
+                  <div className="flex items-center gap-1 text-blue-500">
+                    <ArrowDown className="h-5 w-5" />
+                  </div>
                 </div>
 
                 <div className="text-center mb-4">
@@ -99,7 +102,7 @@ export default function HomePage() {
                   </p>
                   <div className="text-center mt-2">
                     <span className="text-xs text-blue-600 font-medium">
-                      📖 김소월 스타일
+                      📖 현대 문학 스타일
                     </span>
                   </div>
                 </div>
@@ -126,7 +129,9 @@ export default function HomePage() {
                 </div>
 
                 <div className="flex justify-center mb-4">
-                  <ArrowRight className="h-6 w-6 text-green-500 animate-pulse" />
+                  <div className="flex items-center gap-1 text-green-500">
+                    <ArrowDown className="h-5 w-5" />
+                  </div>
                 </div>
 
                 <div className="text-center mb-4">
@@ -141,7 +146,7 @@ export default function HomePage() {
                   </p>
                   <div className="text-center mt-2">
                     <span className="text-xs text-green-600 font-medium">
-                      🌸 현대시 스타일
+                      ✨ 힙스터 피드 스타일
                     </span>
                   </div>
                 </div>
@@ -167,8 +172,10 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <div className="flex justify-center mb-4">
-                  <ArrowRight className="h-6 w-6 text-purple-500 animate-pulse" />
+                <div className="flex justify-center items-center mb-4">
+                  <div className="flex items-center space-x-1">
+                    <ArrowDown className="h-5 w-5 text-purple-600" />
+                    </div>
                 </div>
 
                 <div className="text-center mb-4">
@@ -183,7 +190,7 @@ export default function HomePage() {
                   </p>
                   <div className="text-center mt-2">
                     <span className="text-xs text-purple-600 font-medium">
-                      🎭 셰익스피어 스타일
+                      📻 한밤중의 라디오
                     </span>
                   </div>
                 </div>
@@ -209,8 +216,10 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <div className="flex justify-center mb-4">
-                  <ArrowRight className="h-6 w-6 text-rose-500 animate-pulse" />
+                <div className="flex justify-center items-center mb-4">
+                  <div className="flex items-center space-x-1">
+                    <ArrowDown className="h-5 w-5 text-rose-600" />
+                  </div>
                 </div>
 
                 <div className="text-center mb-4">
@@ -225,7 +234,7 @@ export default function HomePage() {
                   </p>
                   <div className="text-center mt-2">
                     <span className="text-xs text-rose-600 font-medium">
-                      🌹 로맨틱 시 스타일
+                      📝 수필 스타일
                     </span>
                   </div>
                 </div>
