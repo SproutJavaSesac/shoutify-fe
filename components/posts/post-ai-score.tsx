@@ -43,7 +43,7 @@ export function PostAiScore({ post, className = "" }: PostAiScoreProps) {
       <CardContent className="space-y-4">
         <div className="relative">
           {/* 점수가 없을 때의 준비중 오버레이 */}
-          {!hasAiScores && (
+          {/* {!hasAiScores && (
             <div className="absolute inset-0 bg-white/70 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
               <div className="text-center">
                 <div className="text-sm font-medium text-gray-600 mb-1">
@@ -54,7 +54,7 @@ export function PostAiScore({ post, className = "" }: PostAiScoreProps) {
                 </div>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* 전체 점수 */}
           <div className="mb-3">

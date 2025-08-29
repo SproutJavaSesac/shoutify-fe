@@ -16,10 +16,12 @@ import {
   EMOTICON_OPTIONS,
   GENRE_OPTIONS,
 } from "@/constants/posts";
+import { SCORE_LEVELS } from "@/constants/proofreads";
 import { useToast } from "@/hooks/use-toast";
 import { generateWordDiff } from "@/lib/utils/diff";
 import { Post } from "@/types/posts";
 import {
+  BarChart3,
   Calendar,
   Copy,
   ExternalLink,
@@ -27,6 +29,8 @@ import {
   GitBranch,
   Heart,
   MessageCircle,
+  Palette,
+  PenTool,
   Settings,
   Sparkles,
   Trophy,
@@ -51,6 +55,17 @@ export function PostDetailModal({
 }: PostDetailModalProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const mockPost = {
+    ...post,
+    aiScore: {
+      conceptScore: 85,
+      writingScore: 90,
+      creativityScore: 80,
+      emotionScore: 75,
+      genreScore: 88,
+      totalScore: 83,
+    },
+  };
 
   // diff 데이터를 useMemo로 생성하여 무한 루프 방지
   const diffData = useMemo(() => {
@@ -343,7 +358,7 @@ export function PostDetailModal({
 
           {/* AI 점수 탭 */}
           <TabsContent value="scores" className="space-y-6 mt-6">
-            {post.aiScore ? (
+            {mockPost.aiScore ? (
               <div className="space-y-6">
                 <Card>
                   <CardHeader>
@@ -353,125 +368,70 @@ export function PostDetailModal({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <PostAiScore post={post} />
+                    <PostAiScore post={mockPost} />
                   </CardContent>
                 </Card>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {post.aiScore.conceptScore !== undefined && (
-                    <Card className="text-center hover:shadow-md transition-shadow">
-                      <CardContent className="pt-6">
-                        <div className="text-3xl font-bold text-blue-600 mb-2">
-                          {post.aiScore.conceptScore}
-                        </div>
-                        <p className="text-sm font-medium text-gray-600">
-                          컨셉
-                        </p>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                          <div
-                            className="bg-blue-600 h-2 rounded-full transition-all"
-                            style={{ width: `${post.aiScore.conceptScore}%` }}
-                          ></div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {mockPost.aiScore.conceptScore !== undefined && (
+                    <DetailedScoreCard
+                      title="컨셉 적합도"
+                      score={mockPost.aiScore.conceptScore}
+                      icon={<PenTool className="h-4 w-4 text-purple-600" />}
+                      description="선택한 컨셉에 얼마나 잘 맞는지"
+                      color="purple"
+                    />
                   )}
 
-                  {post.aiScore.writingScore !== undefined && (
-                    <Card className="text-center hover:shadow-md transition-shadow">
-                      <CardContent className="pt-6">
-                        <div className="text-3xl font-bold text-green-600 mb-2">
-                          {post.aiScore.writingScore}
-                        </div>
-                        <p className="text-sm font-medium text-gray-600">
-                          문체
-                        </p>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                          <div
-                            className="bg-green-600 h-2 rounded-full transition-all"
-                            style={{ width: `${post.aiScore.writingScore}%` }}
-                          ></div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                  {mockPost.aiScore.writingScore !== undefined && (
+                    <DetailedScoreCard
+                      title="글쓰기 품질"
+                      score={mockPost.aiScore.writingScore}
+                      icon={<BarChart3 className="h-4 w-4 text-blue-600" />}
+                      description="문법, 어휘, 문체의 완성도"
+                      color="blue"
+                    />
                   )}
 
-                  {post.aiScore.creativityScore !== undefined && (
-                    <Card className="text-center hover:shadow-md transition-shadow">
-                      <CardContent className="pt-6">
-                        <div className="text-3xl font-bold text-purple-600 mb-2">
-                          {post.aiScore.creativityScore}
-                        </div>
-                        <p className="text-sm font-medium text-gray-600">
-                          창의성
-                        </p>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                          <div
-                            className="bg-purple-600 h-2 rounded-full transition-all"
-                            style={{
-                              width: `${post.aiScore.creativityScore}%`,
-                            }}
-                          ></div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                  {mockPost.aiScore.creativityScore !== undefined && (
+                    <DetailedScoreCard
+                      title="창의성"
+                      score={mockPost.aiScore.creativityScore}
+                      icon={<Sparkles className="h-4 w-4 text-yellow-600" />}
+                      description="독창적이고 흥미로운 표현"
+                      color="yellow"
+                    />
                   )}
 
-                  {post.aiScore.emotionScore !== undefined && (
-                    <Card className="text-center hover:shadow-md transition-shadow">
-                      <CardContent className="pt-6">
-                        <div className="text-3xl font-bold text-orange-600 mb-2">
-                          {post.aiScore.emotionScore}
-                        </div>
-                        <p className="text-sm font-medium text-gray-600">
-                          감정
-                        </p>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                          <div
-                            className="bg-orange-600 h-2 rounded-full transition-all"
-                            style={{ width: `${post.aiScore.emotionScore}%` }}
-                          ></div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                  {mockPost.aiScore.emotionScore !== undefined && (
+                    <DetailedScoreCard
+                      title="감정 표현"
+                      score={mockPost.aiScore.emotionScore}
+                      icon={<Heart className="h-4 w-4 text-red-600" />}
+                      description="감정이 얼마나 잘 드러나는지"
+                      color="red"
+                    />
                   )}
 
-                  {post.aiScore.genreScore !== undefined && (
-                    <Card className="text-center hover:shadow-md transition-shadow">
-                      <CardContent className="pt-6">
-                        <div className="text-3xl font-bold text-pink-600 mb-2">
-                          {post.aiScore.genreScore}
-                        </div>
-                        <p className="text-sm font-medium text-gray-600">
-                          장르
-                        </p>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                          <div
-                            className="bg-pink-600 h-2 rounded-full transition-all"
-                            style={{ width: `${post.aiScore.genreScore}%` }}
-                          ></div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                  {mockPost.aiScore.genreScore !== undefined && (
+                    <DetailedScoreCard
+                      title="장르 적합성"
+                      score={mockPost.aiScore.genreScore}
+                      icon={<Palette className="h-4 w-4 text-green-600" />}
+                      description="선택한 장르에 적합한 스타일"
+                      color="green"
+                    />
                   )}
 
-                  {post.aiScore.totalScore !== undefined && (
-                    <Card className="text-center hover:shadow-md transition-shadow border-2 border-yellow-200 bg-yellow-50">
-                      <CardContent className="pt-6">
-                        <div className="text-3xl font-bold text-yellow-700 mb-2">
-                          {post.aiScore.totalScore}
-                        </div>
-                        <p className="text-sm font-medium text-yellow-700">
-                          종합 점수
-                        </p>
-                        <div className="w-full bg-yellow-200 rounded-full h-2 mt-3">
-                          <div
-                            className="bg-yellow-600 h-2 rounded-full transition-all"
-                            style={{ width: `${post.aiScore.totalScore}%` }}
-                          ></div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                  {mockPost.aiScore.totalScore !== undefined && (
+                    <DetailedScoreCard
+                      title="종합 점수"
+                      score={mockPost.aiScore.totalScore}
+                      icon={<Trophy className="h-4 w-4 text-amber-600" />}
+                      description="모든 요소를 종합한 전체 평가"
+                      color="amber"
+                      isTotal={true}
+                    />
                   )}
                 </div>
               </div>
@@ -492,5 +452,107 @@ export function PostDetailModal({
         </Tabs>
       </DialogContent>
     </Dialog>
+  );
+}
+
+interface DetailedScoreCardProps {
+  title: string;
+  score: number;
+  icon: React.ReactNode;
+  description: string;
+  color: string;
+  isTotal?: boolean;
+}
+
+function DetailedScoreCard({
+  title,
+  score,
+  icon,
+  description,
+  color,
+  isTotal = false,
+}: DetailedScoreCardProps) {
+  const getScoreLevel = (score: number) => {
+    const levels = Object.values(SCORE_LEVELS);
+    return levels.find((level) => score >= level.min) || SCORE_LEVELS.BAD;
+  };
+
+  const scoreLevel = getScoreLevel(score);
+
+  const colorClasses = {
+    purple: {
+      bg: "bg-purple-50",
+      border: isTotal ? "border-2 border-purple-200" : "",
+      text: "text-purple-600",
+      progress: "bg-purple-600",
+    },
+    blue: {
+      bg: "bg-blue-50",
+      border: isTotal ? "border-2 border-blue-200" : "",
+      text: "text-blue-600",
+      progress: "bg-blue-600",
+    },
+    green: {
+      bg: "bg-green-50",
+      border: isTotal ? "border-2 border-green-200" : "",
+      text: "text-green-600",
+      progress: "bg-green-600",
+    },
+    yellow: {
+      bg: "bg-yellow-50",
+      border: isTotal ? "border-2 border-yellow-200" : "",
+      text: "text-yellow-600",
+      progress: "bg-yellow-600",
+    },
+    red: {
+      bg: "bg-red-50",
+      border: isTotal ? "border-2 border-red-200" : "",
+      text: "text-red-600",
+      progress: "bg-red-600",
+    },
+    amber: {
+      bg: "bg-amber-50",
+      border: isTotal ? "border-2 border-amber-200" : "",
+      text: "text-amber-600",
+      progress: "bg-amber-600",
+    },
+  };
+
+  const currentColors =
+    colorClasses[color as keyof typeof colorClasses] || colorClasses.blue;
+
+  return (
+    <Card
+      className={`hover:shadow-md transition-shadow ${currentColors.bg} ${currentColors.border}`}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            {icon}
+            <h4 className="font-medium text-gray-800 text-sm">{title}</h4>
+          </div>
+          <Badge variant="outline" className={`${scoreLevel.color} text-xs`}>
+            {score}점
+          </Badge>
+        </div>
+
+        <div className="mb-3">
+          <div className={`text-2xl font-bold mb-2 ${currentColors.text}`}>
+            {score}
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className={`h-2 rounded-full transition-all ${currentColors.progress}`}
+              style={{ width: `${score}%` }}
+            ></div>
+          </div>
+        </div>
+
+        <p className="text-xs text-gray-600 leading-relaxed">{description}</p>
+        <p className={`text-xs font-medium mt-1 ${scoreLevel.color}`}>
+          {scoreLevel.label}
+        </p>
+      </CardContent>
+    </Card>
   );
 }
