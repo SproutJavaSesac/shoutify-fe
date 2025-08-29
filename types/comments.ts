@@ -26,7 +26,7 @@ export interface Comment {
   reactions: ReactionDetailCountMap;
   myReaction?: ReactionLabelType | null; // 내 반응 정보 추가
   isDeleted: boolean;
-  isReported: boolean;
+  isBlocked: boolean;
   isMine?: boolean; // TODO isMine 추가 시 ? 제거하기
   createdAt: string;
   updatedAt: string;
