@@ -290,13 +290,13 @@ export function PostDetailModal({
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    {post.emotion && getEmotionInfo(post.emotion) && (
+                    {post.authorSelectEmotion && getEmotionInfo(post.authorSelectEmotion) && (
                       <div className="flex items-center bg-yellow-50 px-3 py-1 rounded-full">
                         <span className="text-xl mr-2">
-                          {getEmotionInfo(post.emotion)?.emotionType}
+                          {getEmotionInfo(post.authorSelectEmotion)?.emotionType}
                         </span>
                         <span className="text-sm text-gray-600 font-medium">
-                          {getEmotionInfo(post.emotion)?.label}
+                          {getEmotionInfo(post.authorSelectEmotion)?.label}
                         </span>
                       </div>
                     )}

@@ -108,6 +108,7 @@ export function usePostHide(options: ApiOptions<string> = {}) {
 export function usePostUnhide(options: ApiOptions<string> = {}) {
   const mutationFn = useCallback(
     async ({ paths }: { paths: { postId: IdType } }) => {
+      
       return await unhidePost(paths.postId);
     },
     []
