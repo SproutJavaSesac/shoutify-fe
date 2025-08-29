@@ -92,7 +92,7 @@ export function CommentForm({
               </Button>
             )}
             <CommentWriteButton
-              onClick={handleCommentSubmit}
+              onClick={() => {}}
               disabled={!content.trim() || isSubmitting}
               className={showCancel ? "h-9 px-3" : ""}
             >
