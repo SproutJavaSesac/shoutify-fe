@@ -3,6 +3,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
@@ -32,6 +37,7 @@ import {
 import { useMemo } from "react";
 import { MyCommentList } from "./my-comment-list";
 import { MyPostList } from "./my-post-list";
+import Image from "next/image";
 
 export function MyPageContent() {
   const { toast } = useToast();
@@ -41,60 +47,69 @@ export function MyPageContent() {
   const paginationParams = useMemo(() => ({ page: 0, size: 20 }), []);
   const apiOptions = useMemo(() => ({ immediate: true }), []);
 
-  const badgeImages = [
+  const badgeCatalog = [
     {
       badgeId: 1,
       name: "첫 게시글",
       description: "첫 번째 게시글을 작성한 사용자에게 주어지는 배지입니다.",
-      badgeImage: "📝",
+      activeImageUrl: "/badges/first-post-active.png",
+      inactiveImageUrl: "/badges/first-post-inactive.png",
     },
     {
       badgeId: 2,
       name: "새로운 가족",
       description: "회원가입을 완료한 새로운 멤버에게 주어지는 배지입니다.",
-      badgeImage: "👋️",
+      activeImageUrl: "/badges/first-signup-active.png",
+      inactiveImageUrl: "/badges/first-signup-inactive.png",
     },
     {
       badgeId: 3,
       name: "신진 작가",
       description: "게시글을 10개 이상 작성하는 사용자에게 주어지는 배지입니다.",
-      badgeImage: "✍",
+      activeImageUrl: "/badges/novice-writer-active.png",
+      inactiveImageUrl: "/badges/novice-writer-inactive.png",
     },
     {
       badgeId: 4,
       name: "소통의 시작",
       description: "첫 번째 댓글을 작성한 사용자에게 주어지는 배지입니다.",
-      badgeImage: "💬",
+      activeImageUrl: "/badges/first-comment-active.png",
+      inactiveImageUrl: "/badges/first-comment-inactive.png",
     },
     {
       badgeId: 5,
       name: "리액션 요정",
       description: "댓글을 5회 이상 작성한 사용자에게 주어지는 배지입니다.",
-      badgeImage: "✨",
+      activeImageUrl: "/badges/reaction-fairy-active.png",
+      inactiveImageUrl: "/badges/reaction-fairy-inactive.png",
     },
     {
       badgeId: 6,
       name: "인기 게시글",
       description: "작성한 게시글에 댓글이 5개 이상 달린 사용자에게 주어지는 배지입니다.",
-      badgeImage: "🔥",
+      activeImageUrl: "/badges/popular-post-active.png",
+      inactiveImageUrl: "/badges/popular-post-inactive.png",
     },
     {
       badgeId: 7,
       name: "첫 반응하기",
       description: "첫 번째 반응하기를 실행한 사용자에게 주어지는 배지입니다.",
-      badgeImage: "👍",
+      activeImageUrl: "/badges/first-reaction-active.png",
+      inactiveImageUrl: "/badges/first-reaction-inactive.png",
     },
     {
       badgeId: 8,
       name: "다정한 이웃",
       description: "반응하기를 10회 이상 실행한 사용자에게 주어지는 배지입니다.",
-      badgeImage: "❤️",
+      activeImageUrl: "/badges/friendly-neighbor-active.png",
+      inactiveImageUrl: "/badges/friendly-neighbor-inactive.png",
     },
     {
       badgeId: 9,
       name: "첫 랭킹 진입",
       description: "첫 번째로 랭킹에 진입한 사용자에게 주어지는 배지입니다.",
-      badgeImage: "🏆",
+      activeImageUrl: "/badges/first-ranking-active.png",
+      inactiveImageUrl: "/badges/first-ranking-inactive.png",
     }
   ]
 
@@ -394,9 +409,9 @@ export function MyPageContent() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-orange-600">0</div>
+                <div className="text-2xl font-bold text-orange-600">{badgesData?.badgeSummaries.length}</div>
                 <div className="text-sm text-gray-500 mt-1">
-                  배지 시스템 준비 중
+                  획득한 배지
                 </div>
               </CardContent>
             </Card>
@@ -413,24 +428,36 @@ export function MyPageContent() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <Award className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  {badgeImages.filter((badge) => {
+                <div className="grid grid-cols-4 gap-4">
+                  {/*<Award className="h-12 w-12 mx-auto mb-4 text-gray-300" />*/}
+                  {badgeCatalog.filter((badge) => {
                         for (let i = 0; i < badges.length; i++) {
                           if (badge.badgeId === badges[i].badgeId) {
-                            return false;
+                            return true;
                           }
                         }
-                        return true;
+                        return false;
                       }
                   ).map((badge) => (
-                      <div
-                          key={badge.badgeId}
-                      >
-                        <span className="text-4xl mb-2">{badge.badgeImage}</span>
-                        <div>{badge.name}</div>
-                        <div>{badge.description}</div>
-                      </div>
+                      <HoverCard key={badge.badgeId}>
+                        <HoverCardTrigger asChild>
+                        <div>
+                          <Image
+                              src={badge.activeImageUrl}
+                              alt={badge.name}
+                              width={100}
+                              height={100}
+                              className="cursor-pointer"
+                          />
+                        </div>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-80">
+                          <div className="space-y-2">
+                            <h4 className="font-semibold">{badge.name}</h4>
+                            <p className="text-sm">{badge.description}</p>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
                   ))}
                 </div>
               </CardContent>
@@ -445,24 +472,36 @@ export function MyPageContent() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <Trophy className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  {badgeImages.filter((badge) => {
+                <div className="grid grid-cols-4 gap-4">
+                  {/*<Trophy className="h-12 w-12 mx-auto mb-4 text-gray-300" />*/}
+                  {badgeCatalog.filter((badge) => {
                         for (let i = 0; i < badges.length; i++) {
                           if (badge.badgeId === badges[i].badgeId) {
-                            return true;
+                            return false
                           }
                         }
-                        return false;
+                        return true;
                       }
                       ).map((badge) => (
-                      <div
-                          key={badge.badgeId}
-                      >
-                        <span className="text-4xl mb-2">{badge.badgeImage}</span>
-                        <div>{badge.name}</div>
-                        <div>{badge.description}</div>
-                      </div>
+                      <HoverCard key={badge.badgeId}>
+                        <HoverCardTrigger asChild>
+                          <div>
+                            <Image
+                                src={badge.inactiveImageUrl}
+                                alt={badge.name}
+                                width={100}
+                                height={100}
+                                className="cursor-pointer"
+                            />
+                          </div>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-80">
+                          <div className="space-y-2">
+                            <h4 className="font-semibold">{badge.name}</h4>
+                            <p className="text-sm">{badge.description}</p>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
                   ))}
                 </div>
               </CardContent>
