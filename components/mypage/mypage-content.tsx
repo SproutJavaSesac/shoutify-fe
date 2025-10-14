@@ -41,6 +41,63 @@ export function MyPageContent() {
   const paginationParams = useMemo(() => ({ page: 0, size: 20 }), []);
   const apiOptions = useMemo(() => ({ immediate: true }), []);
 
+  const badgeImages = [
+    {
+      badgeId: 1,
+      name: "첫 게시글",
+      description: "첫 번째 게시글을 작성한 사용자에게 주어지는 배지입니다.",
+      badgeImage: "📝",
+    },
+    {
+      badgeId: 2,
+      name: "새로운 가족",
+      description: "회원가입을 완료한 새로운 멤버에게 주어지는 배지입니다.",
+      badgeImage: "👋️",
+    },
+    {
+      badgeId: 3,
+      name: "신진 작가",
+      description: "게시글을 10개 이상 작성하는 사용자에게 주어지는 배지입니다.",
+      badgeImage: "✍",
+    },
+    {
+      badgeId: 4,
+      name: "소통의 시작",
+      description: "첫 번째 댓글을 작성한 사용자에게 주어지는 배지입니다.",
+      badgeImage: "💬",
+    },
+    {
+      badgeId: 5,
+      name: "리액션 요정",
+      description: "댓글을 5회 이상 작성한 사용자에게 주어지는 배지입니다.",
+      badgeImage: "✨",
+    },
+    {
+      badgeId: 6,
+      name: "인기 게시글",
+      description: "작성한 게시글에 댓글이 5개 이상 달린 사용자에게 주어지는 배지입니다.",
+      badgeImage: "🔥",
+    },
+    {
+      badgeId: 7,
+      name: "첫 반응하기",
+      description: "첫 번째 반응하기를 실행한 사용자에게 주어지는 배지입니다.",
+      badgeImage: "👍",
+    },
+    {
+      badgeId: 8,
+      name: "다정한 이웃",
+      description: "반응하기를 10회 이상 실행한 사용자에게 주어지는 배지입니다.",
+      badgeImage: "❤️",
+    },
+    {
+      badgeId: 9,
+      name: "첫 랭킹 진입",
+      description: "첫 번째로 랭킹에 진입한 사용자에게 주어지는 배지입니다.",
+      badgeImage: "🏆",
+    }
+  ]
+
   const {
     data: myInfo,
     loading: profileLoading,
@@ -146,7 +203,7 @@ export function MyPageContent() {
 
   const posts = postsData?.posts || [];
   const comments = commentsData?.comments || [];
-  const badges = badgesData?.badges || []; // 404 시 전역에서 null 반환, 여기서 빈 배열로 fallback
+  const badges = badgesData?.badgeSummaries || []; // 404 시 전역에서 null 반환, 여기서 빈 배열로 fallback
   const isLoading =
     profileLoading || postsLoading || commentsLoading || badgesLoading;
 
@@ -358,8 +415,23 @@ export function MyPageContent() {
               <CardContent>
                 <div className="text-center py-8 text-gray-500">
                   <Award className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>배지 시스템을 준비 중입니다</p>
-                  <p className="text-sm">활동을 통해 배지를 획득해보세요!</p>
+                  {badgeImages.filter((badge) => {
+                        for (let i = 0; i < badges.length; i++) {
+                          if (badge.badgeId === badges[i].badgeId) {
+                            return false;
+                          }
+                        }
+                        return true;
+                      }
+                  ).map((badge) => (
+                      <div
+                          key={badge.badgeId}
+                      >
+                        <span className="text-4xl mb-2">{badge.badgeImage}</span>
+                        <div>{badge.name}</div>
+                        <div>{badge.description}</div>
+                      </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -375,8 +447,23 @@ export function MyPageContent() {
               <CardContent>
                 <div className="text-center py-8 text-gray-500">
                   <Trophy className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>배지 시스템 준비 중입니다</p>
-                  <p className="text-sm">곧 멋진 배지들을 만나보세요! ✨</p>
+                  {badgeImages.filter((badge) => {
+                        for (let i = 0; i < badges.length; i++) {
+                          if (badge.badgeId === badges[i].badgeId) {
+                            return true;
+                          }
+                        }
+                        return false;
+                      }
+                      ).map((badge) => (
+                      <div
+                          key={badge.badgeId}
+                      >
+                        <span className="text-4xl mb-2">{badge.badgeImage}</span>
+                        <div>{badge.name}</div>
+                        <div>{badge.description}</div>
+                      </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>

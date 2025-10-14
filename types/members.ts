@@ -70,15 +70,15 @@ export interface MyCommentListResponse {
   comments: MyCommentSummary[];
   pagination: Pagination;
 }
-
-export interface MyBadgeSummary {
-  badgeId: number;
-  name: string;
-  description: string;
-  iconUrl: string;
-  isEarned: boolean; // 배지가 획득되었는지 여부
-  createdAt?: string | null; // 배지를 획득한 날짜 (선택적)
-}
+//
+// export interface MyBadgeSummary {
+//   badgeId: number;
+//   name: string;
+//   description: string;
+//   iconUrl: string;
+//   isEarned: boolean; // 배지가 획득되었는지 여부
+//   createdAt?: string | null; // 배지를 획득한 날짜 (선택적)
+// }
 
 export interface MyBadgeTotalSummary {
   totalBadges: number; // 총 배지 개수
@@ -86,9 +86,19 @@ export interface MyBadgeTotalSummary {
 }
 
 // 내 배지 목록 응답
+// export interface MyBadgeListResponse {
+//   summaries: MyBadgeTotalSummary[];
+//   badges: MyBadgeSummary[];
+// }
+
 export interface MyBadgeListResponse {
-  summaries: MyBadgeTotalSummary[];
-  badges: MyBadgeSummary[];
+  badgeSummaries: MyBadgeSummary[];
+}
+
+export interface MyBadgeSummary {
+  badgeId: number;
+  name: string;
+  description: string;
 }
 
 export interface MyRankingQueryParams {
